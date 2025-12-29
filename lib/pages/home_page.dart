@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     expensesStream = service.subscribeExpenses();
+    print("Initialized expenses stream");
   }
 
   @override
@@ -59,6 +60,7 @@ class _HomePageState extends State<HomePage> {
                   }
 
                   final expenses = snapshot.data!;
+                  print("Expenses count: ${expenses.length}");
 
                   return ListView.builder(
                     itemCount: expenses.length,

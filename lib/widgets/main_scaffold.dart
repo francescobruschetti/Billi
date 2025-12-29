@@ -4,6 +4,7 @@ import '../pages/search_page.dart';
 import '../pages/favorites_page.dart';
 import '../pages/profile_page.dart';
 
+
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
 
@@ -24,7 +25,34 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      appBar: AppBar(
+        title: const Text('Monitoraggio Spese'),
+        actions: [ ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.of(context).pop(); // Chiude il drawer
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,

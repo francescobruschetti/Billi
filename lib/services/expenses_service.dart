@@ -5,6 +5,7 @@ class ExpensesService {
   final SupabaseClient supabase = Supabase.instance.client;
 
   Stream<List<ExpenseModel>> subscribeExpenses() {
+    print("Subscribing to expenses stream");
     final userId = supabase.auth.currentUser!.id;
 
     return supabase
@@ -21,7 +22,10 @@ class ExpensesService {
     required double amount,
     required String merchantId,
     required String categoryId,
-  }) async {
+  }) async 
+  {
+    print("Adding a new expense: $title, $amount");
+    
     await supabase.from('expenses').insert({
       'title': title,
       'amount': amount,
