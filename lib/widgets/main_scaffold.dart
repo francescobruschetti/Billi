@@ -50,9 +50,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           ],
         ),
       ),
-      body: Column(
-        children: [],
-      ),
+      body: _pages[_currentIndex], // Mostra la pagina corrente come body del main_scaffold. Note: non usare Scaffold all'interno del page Widgets 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,

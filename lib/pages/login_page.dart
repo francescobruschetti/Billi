@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (res.user == null) {
         setState(() => _error = 'Login fallito');
-      } 
+      }
       else {
         // Naviga alla homepage e rimuovi la pagina di login dallo stack
         Navigator.of(context).pushReplacementNamed('/');

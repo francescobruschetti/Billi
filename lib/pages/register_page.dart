@@ -36,6 +36,10 @@ class _RegisterPageState extends State<RegisterPage> {
       
       if (res.user == null) {
         setState(() => _error = 'Registrazione fallita');
+      }      
+      else {
+        // Naviga alla login e rimuovi la pagina di registrazione dallo stack
+        Navigator.of(context).pushReplacementNamed('/login');
       }
     } 
     on AuthException catch (e) {
@@ -78,7 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
               obscureText: true,
             ),
             const SizedBox(height: 24),
-            if (_error != null)
+            if (_error != null) 
               Text(_error!, style: const TextStyle(color: Colors.red)),
             SizedBox(
               width: double.infinity,
