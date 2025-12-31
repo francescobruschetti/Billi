@@ -40,7 +40,13 @@ create index idx_expenses_merchant on expenses(merchant_id);
 -- Row Level Security (OBBLIGATORIO)
 alter table expenses enable row level security;
 
--- Policies 1: Expenses
+-- Policies 0: Expenses (creator can view own)
+create policy "Creator can view own expense"
+on expenses
+for select
+using (auth.uid() = creator_id);
+
+-- Policies 1: Expenses (participants can view)
 create policy "Participants can view expense"
 on expenses
 for select
@@ -53,7 +59,7 @@ using (
   )
 );
 
--- Policies 2: Expenses (creator only)
+-- Policies 2: Expenses (only creator can update)
 create policy "Only creator can update expense"
 on expenses
 for update
@@ -66,12 +72,7 @@ create policy "Participants can view participants"
 on expense_participants
 for select
 using (
-  exists (
-    select 1
-    from expense_participants ep
-    where ep.expense_id = expense_participants.expense_id
-      and ep.user_id = auth.uid()
-  )
+  user_id = auth.uid()
 );
 
 create policy "Only creator can update payments"

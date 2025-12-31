@@ -35,7 +35,7 @@ class ExpensesService {
     });
   }
 
-  Future<List<Map<String, dynamic>>> fetchLatestExpenses({int pageSize = 10, required int pageIndex}) async {
+  Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 10}) async {
     final userId = supabase.auth.currentUser!.id;
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
@@ -46,7 +46,7 @@ class ExpensesService {
         .eq('creator_id', userId)
         .order('created_at', ascending: false)
         .limit(pageSize)
-        .range(from, to); // use ".range(from, to)" for pagination
+        .range(from, to); // pagination
   }
 
 }
