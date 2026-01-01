@@ -78,13 +78,53 @@ class _HomePageState extends State<HomePage> {
                   itemCount: expenses.length,
                   itemBuilder: (context, index) {
                     final e = expenses[index];
+                    final participants = (e['participants'] as List);
+                    final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
+                    final paidSum = participants.fold<double>(0, (sum, p) => sum + (double.tryParse(p['paid_amount']?.toString() ?? '0') ?? 0));
+                    final isShared = participants.length > 1;
+                    final isCovered = (paidSum - totalAmount).abs() < 0.01;
+                    final missing = (totalAmount - paidSum).clamp(0, double.infinity);
+
                     return Card(
-                      child: ListTile(
-                        title: Text(e['title']?.toString() ?? ''),
-                        subtitle: Text(
-                          '${e['merchants']?['name'] ?? '-'} · ${e['categories']?['name'] ?? '-'}'
+                      child: ExpansionTile(
+                        title: Text('${e['merchant_name'] ?? '-'} · ${e['category_name'] ?? '-'}'),
+                        subtitle: Text(e['note']?.toString() ?? ''),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isShared) ...[
+                              const Icon(Icons.safety_divider, color: Colors.blue, size: 30),
+                              if (isCovered) 
+                                const Icon(Icons.check_circle, color: Colors.green)
+                              else
+                                const Icon(Icons.warning, color: Colors.red),
+                            ]
+                            else ...[
+                              const Icon(Icons.person, color: Colors.grey),
+                            ],
+
+                            const SizedBox(width: 4),
+                            Text('€${e['total_amount']?.toString() ?? '-'}'),
+                          ],
                         ),
-                        trailing: Text('€${e['total_amount']?.toString() ?? '-'}'),
+                        children: [
+                          if (isShared) ...[
+                            if (!isCovered)
+                              ListTile(
+                                leading: const Icon(Icons.warning, color: Colors.orange),
+                                title: Text('Mancano: €${missing.toStringAsFixed(2)}'),
+                              ),
+                            
+                            if (participants.isEmpty)
+                              const ListTile(title: Text('Nessun partecipante'))
+                            else 
+                              ...participants.map((p) => ListTile(
+                                leading: const Icon(Icons.person),
+                                title: Text(p['name']?.toString() ?? p['user_id']?.toString() ?? '-'),
+                                trailing: Text('€${p['paid_amount']?.toString() ?? '-'}'),
+                              )),
+                          ]
+                        ],
                       ),
                     );
                   },

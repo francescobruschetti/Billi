@@ -57,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
+              onSubmitted: (_) => _login(), // Permette di inviare il form premendo "Invio"
             ),
             const SizedBox(height: 24),
             if (_error != null)

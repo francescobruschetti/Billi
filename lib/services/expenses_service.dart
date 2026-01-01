@@ -35,18 +35,33 @@ class ExpensesService {
     });
   }
 
+  // Only fetch expenses created by the current user, no matter if there are participants or not
+  // Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 10}) async {
+  //   final userId = supabase.auth.currentUser!.id;
+  //   final from = pageIndex * pageSize;
+  //   final to = from + pageSize - 1;
+
+  //   return await supabase
+  //       .from('expenses')
+  //       .select('*, merchants(name), categories(name)')
+  //       .eq('creator_id', userId)
+  //       .order('created_at', ascending: false)
+  //       .limit(pageSize)
+  //       .range(from, to); // pagination
+  // }
+
   Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 10}) async {
-    final userId = supabase.auth.currentUser!.id;
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
 
-    return await supabase
-        .from('expenses')
-        .select('*, merchants(name), categories(name)')
-        .eq('creator_id', userId)
-        .order('created_at', ascending: false)
-        .limit(pageSize)
-        .range(from, to); // pagination
+    final rows = await supabase
+      .from('creator_expenses_with_participants')
+      .select('*')
+      .order('created_at', ascending: false)
+      .limit(pageSize)
+      .range(from, to); // pagination
+
+    return rows;
   }
 
 }

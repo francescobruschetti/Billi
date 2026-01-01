@@ -60,11 +60,14 @@ for each row execute procedure handle_new_user();
 -- Row Level Security (OBBLIGATORIO)
 alter table profiles enable row level security;
 
+-- Policies
+DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
 create policy "Users can read own profile"
 on profiles
 for select
 using (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 create policy "Users can update own profile"
 on profiles
 for update
