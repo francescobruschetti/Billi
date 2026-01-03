@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {  
+class _SignupPageState extends State<SignupPage> {  
   final _emailController = TextEditingController();
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();

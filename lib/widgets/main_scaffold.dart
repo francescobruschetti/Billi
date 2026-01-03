@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
-import '../pages/search_page.dart';
-import '../pages/favorites_page.dart';
+import '../pages/group/groups_page.dart';
 import '../pages/profile_page.dart';
 
 
@@ -15,10 +14,9 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  final _pages = const [
+  final _pages = const [ // Note: queste sono le pagine che verranno mostrate nel body del main_scaffold
     HomePage(),
-    SearchPage(),
-    FavoritesPage(),
+    GroupsPage(),
     ProfilePage(),
   ];
 
@@ -57,18 +55,14 @@ class _MainScaffoldState extends State<MainScaffold> {
         onTap: (index) {
           setState(() => _currentIndex = index);
         },
-        items: const [
+        items: const [ // Note: queste sono le voci del bottom navigation bar. Devono corrispondere alle pagine definite in 'final _pages'
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Cerca',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Preferiti',
+            icon: Icon(Icons.group),
+            label: 'Gruppi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

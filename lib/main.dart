@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
-import 'pages/login_page.dart';
-import 'pages/register_page.dart';
-import 'pages/logout_page.dart';
+import 'pages/login_logout_signup/login_page.dart';
+import 'pages/login_logout_signup/signup_page.dart';
+import 'pages/login_logout_signup/logout_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ class MonitoraggioSpeseApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
+        '/register': (context) => const SignupPage(),
         '/logout': (context) => const LogoutPage(),
       },
       home: AuthGate(),
