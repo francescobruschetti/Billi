@@ -37,3 +37,28 @@ $$;
 
 grant execute on function public.get_user_groups() to authenticated;
 --------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+-- Get user by email or username
+create or replace function public.get_user_by_email_or_username(
+  p_email varchar(255),
+  p_username text
+)
+returns table (
+  id uuid,
+  email varchar(255),
+  username text,
+  name text
+)
+as $$
+begin
+  return query
+  select u.id, u.email, p.username, p.name
+  from auth.users u
+  left join profiles p on p.id = u.id
+  where u.email = p_email or p.username = p_username;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function public.get_user_by_email_or_username(text, text) to authenticated;
+--------------------------------------------------------------------------

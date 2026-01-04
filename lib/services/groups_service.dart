@@ -1,69 +1,49 @@
-import 'package:flutter/material.dart';
+import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupsService {
   final SupabaseClient supabase = Supabase.instance.client;
 
-  Future<List<Map<dynamic, dynamic>>> fetchAllGroupsForUser() async {
-    final userId = supabase.auth.currentUser!.id;
+  Future<ApiResponseModel<Map<String, dynamic>>> createGroup({ required String name, String? description }) async {
+    try {
+      final res = await supabase.from('groups').insert({
+        'name': name,
+        'description': description
+      }).select().single();
+      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: res);
+    } 
+    catch (e) {
+      print("Errore creazione gruppo: $e");
+      return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllGroupsForUser() async {
     final res = await supabase.rpc('get_user_groups');
-    print("Fetched groups for user $userId: $res");
+    print("Fetched groups: $res");
 
     return (res as List)
         .map((g) => g as Map<String, dynamic>)
         .toList();
   }
 
-  Future<void> createGroupFlow(BuildContext context) async { // TODO: non mi convince, meglio creare una pagina dedicata con cui creare / modificare il gruppo
-    String? groupName;
-    // Primo popup: inserisci nome gruppo
-    await showDialog(
-      context: context,
-      builder: (context) {
-        String tempName = '';
-        return AlertDialog(
-          title: const Text('Crea gruppo'),
-          content: TextField(
-            decoration: const InputDecoration(hintText: 'Nome gruppo'),
-            onChanged: (value) => tempName = value,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                groupName = tempName;
-                Navigator.of(context).pop();
-              },
-              child: const Text('Avanti'),
-            ),
-          ],
-        );
-      },
-    );
-    if (groupName == null || groupName!.isEmpty) return;
+  Future<ApiResponseModel<Map<String, dynamic>>> updateGroup({ required String id, required String name, String? description }) async {
+    try {
+      print('Updating group $id as user ${supabase.auth.currentUser!.id}');
 
-    // Secondo popup: aggiungi utenti
-    await showDialog(
-      context: context,
-      builder: (context) {
-        String userInput = '';
-        return AlertDialog(
-          title: Text('Aggiungi utenti a "$groupName"'),
-          content: TextField(
-            decoration: const InputDecoration(hintText: 'Username o email'),
-            onChanged: (value) => userInput = value,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Qui puoi gestire la logica di aggiunta utenti
-                Navigator.of(context).pop();
-              },
-              child: const Text('Aggiungi'),
-            ),
-          ],
-        );
-      },
-    );
+      print("Updating group $id with name: $name, description: $description");
+      final res = await supabase.from('groups').update({
+        'name': name,
+        'description': description
+      })
+      .eq("id", id)
+      .select().single();
+      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: res);
+    } 
+    catch (e) {
+      print("Errore creazione gruppo: $e");
+      return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
+    }
   }
 
 }

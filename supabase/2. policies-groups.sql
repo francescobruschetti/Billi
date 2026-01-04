@@ -17,13 +17,26 @@ grant select, insert, update, delete on table group_expenses to authenticated;
 
 --------------------------------------------------------------------------
 -- Groups table
-drop policy if exists "User can view own or joined groups" on groups;
-create policy "User can view own or joined groups"
+drop policy if exists "Authenticated users can create groups" on groups;
+create policy "Authenticated users can create groups"
+on groups
+for insert
+with check (
+  auth.uid() = creator_id
+);
+
+create policy "Creator can view own groups"
 on groups
 for select
 using (
   creator_id = auth.uid()
-  OR
+);
+
+drop policy if exists "Participants can view groups" on groups;
+create policy "Participants can view groups"
+on groups
+for select
+using (
   exists (
     select 1
     from group_participants gp

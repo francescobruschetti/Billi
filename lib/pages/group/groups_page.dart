@@ -11,10 +11,10 @@ class GroupsPage extends StatefulWidget {
 
 class _GroupsPageState extends State<GroupsPage> {
 
-  late Future<List<Map<dynamic, dynamic>>> groupsFuture;
+  late Future<List<Map<String, dynamic>>> groupsFuture;
   String searchText = '';
   bool isLoading = true;
-  List<Map<dynamic, dynamic>> allGroups = [];
+  List<Map<String, dynamic>> allGroups = [];
 
   @override
   void initState() {
@@ -48,9 +48,14 @@ class _GroupsPageState extends State<GroupsPage> {
     }
   }
 
+  void _openGroupDetails(Map<String, dynamic> groupDetails) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => GroupDetailsPage(group: groupDetails, isEdit: true)),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) {  
 
     final filteredGroups = allGroups.where((g) =>
       (g['name'] ?? '').toString().toLowerCase().contains(searchText.toLowerCase())
@@ -116,7 +121,7 @@ class _GroupsPageState extends State<GroupsPage> {
                       subtitle: Text('Totale: ${g['role']}, Devi: ${g['has_confirmed']}, Ti devono: ${g['is_enabled']}'), // TODO: da implementare
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        Navigator.pushNamed(context, '/group_detail', arguments: g['id']);
+                        _openGroupDetails(g);
                       },
                     );
                   },

@@ -9,13 +9,34 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {  
-  final _emailController = TextEditingController();
   final _nameController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
-
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _repeatPasswordController = TextEditingController();
   bool _loading = false;
+  bool _isFormValid = false;
   String? _error;
+
+   @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onFormChanged);
+    _usernameController.addListener(_onFormChanged);
+    _emailController.addListener(_onFormChanged);
+    _passwordController.addListener(_onFormChanged);
+    _repeatPasswordController.addListener(_onFormChanged);
+  }
+
+  void _onFormChanged() {
+    setState(() {
+      _isFormValid = _nameController.text.trim().isNotEmpty
+                    && _usernameController.text.trim().isNotEmpty 
+                    && _emailController.text.trim().isNotEmpty
+                    && _passwordController.text.trim().isNotEmpty;
+    });
+  }
+
 
   Future<void> _register() async {
     setState(() {
@@ -62,35 +83,64 @@ class _SignupPageState extends State<SignupPage> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nome'),
+              decoration: InputDecoration(
+                labelText: 'Nome',
+                errorText: null, // TODO: _nameController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                errorText: null, // TODO: _emailController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+              ),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(
+                labelText: 'Username',
+                errorText: null, // TODO: _usernameController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(
+                labelText: 'Password',
+                errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+              ),
               obscureText: true,
             ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                errorText: null, // TODO: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+              ),
+              obscureText: true,
+            ),
+            // TODO: confirm password
+            // const SizedBox(height: 16),
+            // TextField(
+            //   controller: _repeatPasswordController,
+            //   decoration: InputDecoration(
+            //     labelText: 'Ripeti Password',
+            //     errorText: null, // TODO: _repeatPasswordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+            //   ),
+            //   obscureText: true,
+            // ),
             const SizedBox(height: 24),
             if (_error != null) 
               Text(_error!, style: const TextStyle(color: Colors.red)),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : _register,
-                child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Registrati'),
+                onPressed: (_loading || !_isFormValid) ? null : _register,
+                child: _loading ? const CircularProgressIndicator() : const Text('Registrati'),
               ),
             ),
             TextButton(
