@@ -32,18 +32,13 @@ using (
   creator_id = auth.uid()
 );
 
-drop policy if exists "Participants can view groups" on groups;
-create policy "Participants can view groups"
-on groups
+-- Policy ottimizzata: ogni partecipante e il creator vedono tutti i membri del gruppo
+drop policy if exists "User can view participants of own groups" on group_participants;
+create policy "User can view participants of own groups"
+on group_participants
 for select
 using (
-  exists (
-    select 1
-    from group_participants gp
-    where gp.group_id = groups.id
-      and gp.user_id = auth.uid()
-      and gp.is_enabled = true
-  )
+  user_id = auth.uid() OR group_creator_id = auth.uid()
 );
 
 create policy "Only creator can update groups"
@@ -58,30 +53,54 @@ using (creator_id = auth.uid());
 
 --------------------------------------------------------------------------
 -- Group Participants table
+-- Policy: il creator può eliminare ogni partecipante tranne se stesso
+drop policy if exists "Creator can delete any participant except self" on group_participants;
+create policy "Creator can delete any participant except self"
+on group_participants
+for delete
+using (
+  group_creator_id = auth.uid() and user_id <> auth.uid()
+);
+
+-- Policy: ogni utente può eliminare se stesso dal gruppo
+drop policy if exists "User can remove self from group" on group_participants;
+create policy "User can remove self from group"
+on group_participants
+for delete
+using (
+  user_id = auth.uid()
+  AND role <> 'creator'
+);
+
+-- Policy ottimizzata: ogni partecipante può vedere i membri del gruppo
 drop policy if exists "User can view participants of own groups" on group_participants;
 create policy "User can view participants of own groups"
 on group_participants
 for select
 using (
-  user_id = auth.uid() 
-  OR group_creator_id = auth.uid()
+  exists (
+    select 1 from group_participants gp
+    where gp.group_id = group_participants.group_id
+      and gp.user_id = auth.uid()
+      and gp.is_enabled = true
+  )
 );
 
+drop policy if exists "Only creator can add participants" on group_participants;
 create policy "Only creator can add participants"
 on group_participants
 for insert
-with check (group_creator_id = auth.uid());
+with check (
+  (select creator_id from groups where id = group_participants.group_id) = auth.uid()
+);
 
+drop policy if exists "Only creator can update participants" on group_participants;
 create policy "Only creator can update participants"
 on group_participants
 for update
-using (group_creator_id = auth.uid());
-
-create policy "Only creator can delete participants"
-on group_participants
-for delete
-using (group_creator_id = auth.uid());
-
+with check (
+  (select creator_id from groups where id = group_participants.group_id) = auth.uid()
+);
 
 --------------------------------------------------------------------------
 -- Group Expenses table
@@ -119,24 +138,6 @@ create policy "Only creator can delete expenses"
 on group_expenses
 for delete
 using (user_id = auth.uid());
-
-
---------------------------------------------------------------------------
--- Auto-set group_creator_id in participants
-create or replace function set_group_creator_id()
-returns trigger as $$
-begin
-  select creator_id into new.group_creator_id
-  from groups
-  where id = new.group_id;
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger trg_set_group_creator_id
-before insert on group_participants
-for each row
-execute function set_group_creator_id();
 
 --------------------------------------------------------------------------
 -- Auto-update updated_at

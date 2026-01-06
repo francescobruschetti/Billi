@@ -1,5 +1,6 @@
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/group_details_model.dart';
+import 'package:monitoraggio_spese/models/profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupsService {
@@ -50,28 +51,19 @@ class GroupsService {
     required String name, 
     String? description,
     List<Map<String, dynamic>>? participantsToAdd,
-    List<Map<String, dynamic>>? participantsToRemove,
+    List<String>? participantsToRemoveIds,
   })
   async {
     try {
-      final res = await supabase.from('groups').update({
-        'name': name,
-        'description': description
-      })
-      .eq("id", id)
-      .select().single();
+      final res = await supabase.rpc('update_group_and_participants', params: {
+        'p_group_id': id,
+        'p_name': name,
+        'p_description': description,
+        'p_participants_to_add': participantsToAdd?.map((u) => u['id']).toList() ?? [],
+        'p_participants_to_remove': participantsToRemoveIds ?? [],
+      });
 
-      // TODO:
-      // if (participantsToAdd != null && participantsToAdd.isNotEmpty) {
-      //   await supabase.from('group_participants').insert(
-      //     participantsToAdd.map((u) => {
-      //       'group_id': id,
-      //       'user_id': u['id'],
-      //       // aggiungi altri campi se necessari
-      //     }).toList(),
-      //   );
-      // }
-      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: res);
+      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     } 
     catch (e) {
       print("Errore creazione gruppo: $e");

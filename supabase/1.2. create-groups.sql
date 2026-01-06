@@ -19,7 +19,7 @@ create table groups (
 create table group_participants (
   user_id uuid default auth.uid() references auth.users(id) on delete cascade,
   group_id uuid references groups(id) on delete cascade,
-  group_creator_id uuid not null,
+  group_creator_id uuid not null, -- campo aggiuntivo per ottimizzare le policy di accesso ai partecipanti
   role group_role not null default 'member',
 
   has_confirmed boolean default false,
@@ -57,22 +57,3 @@ create index idx_group_expenses_group_id on group_expenses(group_id);
 alter table groups enable row level security;
 alter table group_participants enable row level security;
 alter table group_expenses enable row level security;
-
---------------------------------------------------------------------------
--- Trigger function to set group_creator_id in group_participants
-create or replace function set_group_creator_id()
-returns trigger as $$
-begin
-  select creator_id
-  into new.group_creator_id
-  from groups
-  where id = new.group_id;
-
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger trg_set_group_creator_id
-before insert on group_participants
-for each row
-execute function set_group_creator_id();

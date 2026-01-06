@@ -23,6 +23,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
       appBar: AppBar(
         title: const Text('Monitoraggio Spese'),
         actions: [ ],
@@ -48,7 +49,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           ],
         ),
       ),
-      body: _pages[_currentIndex], // Mostra la pagina corrente come body del main_scaffold. Note: non usare Scaffold all'interno del page Widgets 
+      body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,

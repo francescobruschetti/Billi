@@ -7,9 +7,10 @@ import 'package:monitoraggio_spese/services/profiles_service.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
-  final bool isEdit;
+  final bool isEditAllowed;
 
-  const GroupDetailsPage({super.key, this.groupId, this.isEdit = false});
+
+  const GroupDetailsPage({super.key, this.groupId, this.isEditAllowed = false});
 
   @override
   State<GroupDetailsPage> createState() => _GroupDetailsPageState();
@@ -25,7 +26,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   String? _errorMessage;
   String _searchUser = '';
   final List<Map<String, dynamic>> _selectedUsers = [];
+  final List<String> _removedUserIds = [];
   final List<ProfileModel> _existingUsers = [];
+
+  late final bool isEdit;
 
   @override
   void initState() {
@@ -37,7 +41,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
 
     if (widget.groupId != null) {
       _loadExistingUsers(widget.groupId!);
-    }    
+    }
+
+    isEdit = widget.groupId != null && widget.isEditAllowed;
   }
 
   void _onNameChanged() {
@@ -47,9 +53,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   }
 
   // Apri i dettagli del gruppo dopo la creazione
-  void _openGroupDetails(Map<String, dynamic> groupDetails) {
+  void _openGroupDetails(String groupId) {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupDetails['id'], isEdit: false)),
+      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupId, isEditAllowed: true)),
     );
   }
 
@@ -132,13 +138,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     });
 
     ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(success: false, message: "Errore nella salvataggio dei dati", data: {});
-    if (widget.isEdit) { // Logica di salvataggio modifica gruppo
+    if (isEdit) { // Logica di salvataggio modifica gruppo
       apiResponseModel = await GroupsService().updateGroup(
         id: widget.groupId!,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         participantsToAdd: _selectedUsers,
-        // TODO: participantsToRemove: _existingUsers.where((u) => !_existingUsers.contains(u)).toList(),
+        participantsToRemoveIds: _removedUserIds,
       );
     } 
     else { // Logica di creazione nuovo gruppo
@@ -152,7 +158,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gruppo creato con successo :)')),
       );
-      _openGroupDetails(apiResponseModel.data);
+      _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
     }
     else {
       setState(() {
@@ -172,28 +178,32 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isEdit = widget.isEdit || widget.groupId != null;
+  Widget build(BuildContext context) {   
 
+    // TODO: force reload on back navigation after creation/edit
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(isEdit ? 'Modifica gruppo' : 'Crea gruppo'),
       ),
       body: _isLoading
-        // Loading indicator
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Caricamento dati gruppo...', style: TextStyle(fontSize: 16)),
-              ],
-            ),
-          )
-        // Page content loaded
-        : Padding(
-              padding: const EdgeInsets.all(16.0),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Caricamento dati gruppo...', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -282,7 +292,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                   children: _selectedUsers.map((u) => Chip(
                     label: Text(u['username'] ?? u['email'] ?? u['id']),
                     onDeleted: () {
-                      setState(() => _selectedUsers.removeWhere((x) => x['id'] == u['id']));
+                      setState(() {
+                        _selectedUsers.removeWhere((x) => x['id'] == u['id']);
+                      });
                     },
                   )).toList(),
                 ),
@@ -307,7 +319,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                   children: _existingUsers.map((u) => Chip(
                     label: Text((u.username.isNotEmpty) ? u.username : u.name),
                     onDeleted: () {
-                      setState(() => _existingUsers.removeWhere((x) => x.id == u.id));
+                      setState(() {
+                        _existingUsers.removeWhere((x) => x.id == u.id);
+                        _removedUserIds.add(u.id);
+                      });
                     },
                   )).toList(),
                 ),
