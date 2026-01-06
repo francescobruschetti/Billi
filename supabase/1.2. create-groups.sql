@@ -28,7 +28,8 @@ create table group_participants (
   joined_at timestamp with time zone default now(),
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  primary key (group_id, user_id)
+  primary key (group_id, user_id),
+  constraint fk_group_participants_profiles foreign key (user_id) references profiles(id) on delete cascade
 );
 
 create table group_expenses (
@@ -38,7 +39,8 @@ create table group_expenses (
   paid_amount numeric(10,2) not null check (paid_amount >= 0),
   note text,
   created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
+  updated_at timestamp with time zone default now(),
+  constraint fk_group_expenses_profiles foreign key (user_id) references profiles(id) on delete cascade
 );
 
 --------------------------------------------------------------------------

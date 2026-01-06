@@ -50,7 +50,7 @@ class _GroupsPageState extends State<GroupsPage> {
 
   void _openGroupDetails(Map<String, dynamic> groupDetails) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => GroupDetailsPage(group: groupDetails, isEdit: true)),
+      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupDetails['id'], isEdit: true)),
     );
   }
 
