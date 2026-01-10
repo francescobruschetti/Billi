@@ -12,9 +12,10 @@ class GroupsPage extends StatefulWidget {
 class _GroupsPageState extends State<GroupsPage> {
 
   late Future<List<Map<String, dynamic>>> groupsFuture;
+  List<Map<String, dynamic>> allGroups = [];
+  
   String searchText = '';
   bool isLoading = true;
-  List<Map<String, dynamic>> allGroups = [];
 
   @override
   void initState() {

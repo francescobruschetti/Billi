@@ -1,6 +1,5 @@
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/group_details_model.dart';
-import 'package:monitoraggio_spese/models/profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupsService {
@@ -70,6 +69,4 @@ class GroupsService {
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }
-
-
 }

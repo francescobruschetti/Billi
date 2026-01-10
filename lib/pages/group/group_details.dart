@@ -9,7 +9,6 @@ class GroupDetailsPage extends StatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
   final bool isEditAllowed;
 
-
   const GroupDetailsPage({super.key, this.groupId, this.isEditAllowed = false});
 
   @override
@@ -40,10 +39,19 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     _nameController.addListener(_onNameChanged);
 
     if (widget.groupId != null) {
-      _loadExistingUsers(widget.groupId!);
+      _loadExistingGroup(widget.groupId!);
     }
 
     isEdit = widget.groupId != null && widget.isEditAllowed;
+  }
+  
+  @override
+  void dispose() {
+    _nameController.removeListener(_onNameChanged);
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _linkController.dispose();
+    super.dispose();
   }
 
   void _onNameChanged() {
@@ -101,7 +109,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     }
   }
 
-  Future<void> _loadExistingUsers(String groupId) async {
+  Future<void> _loadExistingGroup(String groupId) async {
     setState(() {
       _isLoading = true;
     });
@@ -137,8 +145,12 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       _isSaveEnabled = false;
     });
 
-    ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(success: false, message: "Errore nella salvataggio dei dati", data: {});
+    String message = '';
+    ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
+      success: false, message: "Errore durante il salvataggio dei dati", data: {}
+    );
     if (isEdit) { // Logica di salvataggio modifica gruppo
+      message = "Dati aggiornatic correttamente";
       apiResponseModel = await GroupsService().updateGroup(
         id: widget.groupId!,
         name: _nameController.text.trim(),
@@ -148,6 +160,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
+      message = "Gruppo creato con successo";
       apiResponseModel = await GroupsService().createGroup(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
@@ -156,31 +169,21 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
 
     if (apiResponseModel.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gruppo creato con successo :)')),
+        SnackBar(content: Text(message)),
       );
       _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
     }
     else {
       setState(() {
-        _errorMessage = 'Errore nella creazione del gruppo';
+        _errorMessage = 'Errore durante il salvataggio dei dati';
         _isSaveEnabled = true;
       });
     }
   }
 
   @override
-  void dispose() {
-    _nameController.removeListener(_onNameChanged);
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _linkController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {   
 
-    // TODO: force reload on back navigation after creation/edit
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(

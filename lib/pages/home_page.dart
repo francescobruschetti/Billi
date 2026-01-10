@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitoraggio_spese/pages/expense_page.dart';
 import '../models/expense_model.dart';
 import '../services/expenses_service.dart';
 
@@ -12,72 +13,78 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ExpensesService service = ExpensesService();
 
-  late Stream<List<ExpenseModel>> expensesStream;
-  List<Map<String, dynamic>> expenses = [];
+  late Future<List<Map<String, dynamic>>> expensesFuture;
+  List<Map<String, dynamic>> allExpenses = [];
 
   int currentPage = 0;
   int pageSize = 10;
   bool isLoading = false;
   bool hasMore = true;
 
-  Future<void> loadExpenses() async {
-    print("Loading expenses for page $currentPage");
-    // Not working correctly if (isLoading || !hasMore) return;
+  void _loadExpenses() async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+    expensesFuture = service.fetchLatestExpenses(pageIndex: currentPage, pageSize: pageSize);
+    final result = await expensesFuture;
 
-    setState(() => isLoading = true);
-    final newItems = await service.fetchLatestExpenses(pageIndex: currentPage, pageSize: pageSize);
-    print("Fetched ${newItems.length} new expenses");
-
-    setState(() {
-      expenses = newItems;
-      isLoading = false;
-      if (newItems.length < pageSize) {
-        hasMore = false;
-      }
-    });
-  }
-
-  Future<void> loadMoreExpenses() async {
-    currentPage++;
-    return loadExpenses();
+    if (mounted) {
+      setState(() {
+        allExpenses = result;
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Page Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Spese Caricate: ${expenses.length}',
+                  'Spese Caricate: ${allExpenses.length}',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: loadExpenses,
-                  child: const Text('Load expenses'),
+                  onPressed: _loadExpenses,
+                  child: Row(
+                    children: const [
+                      Icon(Icons.refresh),
+                      SizedBox(width: 8),
+                      Text('Aggiorna'),
+                    ],
+                  ),
                 ),
               ],
             ),
+            // Page Header "subtitle"
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Totale spese: €${expenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}',
+                'Totale spese: €${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
+            
+            // Page Content
             const SizedBox(height: 16),
             Expanded(
               child: 
-                expenses.isEmpty ? const Center(child: Text('Nessuna spesa caricata')) : ListView.builder(
-                  itemCount: expenses.length,
+                allExpenses.isEmpty ? const Center(child: Text('Nessuna spesa presente')) : ListView.builder(
+                  itemCount: allExpenses.length,
                   itemBuilder: (context, index) {
-                    final e = expenses[index];
+                    final e = allExpenses[index];
                     final participants = (e['participants'] as List);
                     final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
                     final paidSum = participants.fold<double>(0, (sum, p) => sum + (double.tryParse(p['paid_amount']?.toString() ?? '0') ?? 0));
@@ -129,6 +136,52 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
+            ),
+          
+            // Page footer
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExpensePage(isPersonalExpense: true, isEditAllowed: true),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(Icons.add),
+                        const SizedBox(width: 8),
+                        const Text('Spesa Personale'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExpensePage(isPersonalExpense: false, isEditAllowed: true),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(Icons.group_add_outlined),
+                        const SizedBox(width: 8),
+                        const Text('Spesa Condivisa'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

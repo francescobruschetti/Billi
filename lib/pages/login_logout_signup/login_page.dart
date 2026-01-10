@@ -22,12 +22,6 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.addListener(_onFormChanged);
   }
 
-  void _onFormChanged() {
-    setState(() {
-      _isFormValid = _emailController.text.trim().isNotEmpty && _passwordController.text.trim().isNotEmpty;
-    });
-  }
-
   @override
   void dispose() {
     _emailController.removeListener(_onFormChanged);
@@ -36,6 +30,12 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onFormChanged() {
+    setState(() {
+      _isFormValid = _emailController.text.trim().isNotEmpty && _passwordController.text.trim().isNotEmpty;
+    });
   }
 
   Future<void> _login() async {
