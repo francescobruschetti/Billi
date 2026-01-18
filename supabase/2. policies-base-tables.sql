@@ -142,3 +142,55 @@ create trigger trg_update_incomes
 before update on incomes
 for each row execute function update_timestamp();
 --------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+-- Trigger Insert Expense with default category and merchant
+create or replace function insert_expense_with_merchant_category(
+  p_user_id uuid,
+  p_total_amount numeric,
+  p_merchant_name text,
+  p_category_name text,
+  p_note text
+)
+returns table (
+  expense_id uuid, -- id expense
+  creator_id uuid, -- id utente
+  total_amount numeric,
+  merchant_id uuid,
+  category_id uuid,
+  note text,
+  created_at timestamptz
+) as $$
+declare
+  v_merchant_id uuid;
+  v_category_id uuid;
+begin
+  -- Merchant
+  select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) limit 1;
+  if v_merchant_id is null then
+    insert into merchants (name, creator_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
+  end if;
+
+  -- -- Category
+  select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) limit 1;
+  if v_category_id is null then
+    insert into categories (name, creator_id) values (p_category_name, p_user_id) returning id into v_category_id;
+  end if;
+
+  -- -- Expense
+  return query
+  insert into expenses (creator_id, total_amount, merchant_id, category_id, note)
+  values (p_user_id, p_total_amount, v_merchant_id, v_category_id, p_note)
+  returning
+    expenses.id as expense_id,
+    expenses.creator_id  as creator_id,
+    expenses.total_amount as total_amount,
+    expenses.merchant_id as merchant_id,
+    expenses.category_id as category_id,
+    expenses.note        as note,
+    expenses.created_at  as created_at;
+
+end;
+$$ language plpgsql security definer;
+grant execute on function public.insert_expense_with_merchant_category(uuid, numeric, text, text, text) to authenticated;
+--------------------------------------------------------------------------

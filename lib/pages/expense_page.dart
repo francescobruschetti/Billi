@@ -17,6 +17,7 @@ class ExpensePage extends StatefulWidget {
 class _ExpensePageState extends State<ExpensePage> {
   late TextEditingController _priceController;
   late TextEditingController _merchantController;
+  late TextEditingController _categoriesController;
   late TextEditingController _noteController;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
@@ -29,6 +30,7 @@ class _ExpensePageState extends State<ExpensePage> {
     super.initState();
     _priceController = TextEditingController(text: '');
     _merchantController = TextEditingController(text: '');
+    _categoriesController = TextEditingController(text: '');
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
 
@@ -43,13 +45,14 @@ class _ExpensePageState extends State<ExpensePage> {
   void dispose() {
     _priceController.removeListener(_onFieldChanged);
     _merchantController.dispose();
+    _categoriesController.dispose();
     _noteController.dispose();
     super.dispose();
   }
 
   void _onFieldChanged() {
     setState(() {
-      _isSaveEnabled = _priceController.text.isNotEmpty; // es. && _merchantController.text.isNotEmpty;
+      _isSaveEnabled = _priceController.text.isNotEmpty;
     });
   }
 
@@ -111,6 +114,7 @@ class _ExpensePageState extends State<ExpensePage> {
         id: widget.expenseId!,
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
+        categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     } 
@@ -119,6 +123,7 @@ class _ExpensePageState extends State<ExpensePage> {
       apiResponseModel = await ExpensesService().create(
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
+        categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     }
@@ -165,74 +170,98 @@ class _ExpensePageState extends State<ExpensePage> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-          // Campi di input
-          TextField(
-            controller: _priceController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
-            ],
-            decoration: const InputDecoration(labelText: 'Prezzo'),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _merchantController,
-            decoration: const InputDecoration(labelText: 'Negozio'),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _noteController,
-            decoration: const InputDecoration(labelText: 'Note'),
-          ),
+              children: [ // -- Campi di input
+                // -- Prezzo
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _priceController,
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Prezzo',
+                          suffixIcon: Padding(
+                            padding: EdgeInsets.only(right: 12.0),
+                            child: Text('€', style: TextStyle(fontSize: 18)),
+                          ),
+                          suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // -- Negozio
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _merchantController,
+                  decoration: const InputDecoration(labelText: 'Negozio'),
+                ),
+                
+                // -- Categorie
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _categoriesController,
+                  decoration: const InputDecoration(labelText: 'Categorie'),
+                ),
+                
+                // -- Note
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _noteController,
+                  decoration: const InputDecoration(labelText: 'Note'),
+                ),
 
-          // Alert errore
-          if (_errorMessage != null) ...[
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(top: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                border: Border.all(color: Colors.red, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                // Alert errore
+                if (_errorMessage != null) ...[
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      border: Border.all(color: Colors.red, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
+                
+                // Save/Cancel buttons
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
+                        _saveExpense();
+                      } : null, // Disabilita il pulsante se il nome è vuoto
+                      child: const Text('Salva'),
+                    ),
+                    const SizedBox(width: 16),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Annulla'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-          
-          // Save/Cancel buttons
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
-                  _saveExpense();
-                } : null, // Disabilita il pulsante se il nome è vuoto
-                child: const Text('Salva'),
-              ),
-              const SizedBox(width: 16),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Annulla'),
-              ),
-            ],
           ),
-        ],
-              ),
-            ),
     );      
   }
 }

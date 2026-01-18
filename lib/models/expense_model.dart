@@ -3,7 +3,7 @@ class ExpenseModel {
   final String title;
   final double amount;
   final String? merchant;
-  final String? category;
+  final String? categories;
   final DateTime createdAt;
 
   ExpenseModel({
@@ -11,7 +11,7 @@ class ExpenseModel {
     required this.title,
     required this.amount,
     this.merchant,
-    this.category,
+    this.categories,
     required this.createdAt,
   });
 
@@ -20,8 +20,8 @@ class ExpenseModel {
       id: map['id'],
       title: map['title'],
       amount: (map['amount'] as num).toDouble(),
-      merchant: map['merchants']?['name'],
-      category: map['categories']?['name'],
+      merchant: map['merchant']?['name'],
+      categories: map['categories']?['name'],
       createdAt: DateTime.parse(map['created_at']),
     );
   }

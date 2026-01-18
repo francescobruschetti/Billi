@@ -18,54 +18,50 @@ class ExpensesService {
             rows.map((row) => ExpenseModel.fromMap(row)).toList());
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> create({required double price, String? merchant, String? note}) async {
+  Future<ApiResponseModel<Map<String, dynamic>>> create({
+    required double price,
+    String? merchant,
+    String? categories,
+    String? note,
+  }) async {
+    
+    final userId = supabase.auth.currentUser!.id;
     try {
-      final res = await supabase.from('expenses').insert({
-        'total_amount': price,
-        // TODO: qui serve l'id merchant: 'merchant': merchant,
-        'note': note
+      final result = await supabase.rpc('insert_expense_with_merchant_category', params: {
+        'p_user_id': userId,
+        'p_total_amount': price,
+        'p_merchant_name': merchant,
+        'p_category_name': categories,
+        'p_note': note,
       }).select().single();
-      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: res);
-    } 
-    catch (e) {
+      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: result);
+    } catch (e) {
       print("Errore salvataggio spesa: $e");
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 10}) async {
+    final userId = supabase.auth.currentUser!.id;
+
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
 
     final rows = await supabase
-      .from('creator_expenses_with_participants')
-      .select('*')
+      .from('expenses')
+      .select('*, merchant:merchants(*), category:categories(*)')
+      .eq('creator_id', userId)
       .order('created_at', ascending: false)
-      .limit(pageSize)
-      .range(from, to); // pagination
+      .range(from, to);
 
     return rows;
   }
-
-  // Note: old tests
-  // Only fetch expenses created by the current user, no matter if there are participants or not
-  // Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 10}) async {
-  //   final userId = supabase.auth.currentUser!.id;
-  //   final from = pageIndex * pageSize;
-  //   final to = from + pageSize - 1;
-  //   return await supabase
-  //       .from('expenses')
-  //       .select('*, merchants(name), categories(name)')
-  //       .eq('creator_id', userId)
-  //       .order('created_at', ascending: false)
-  //       .limit(pageSize)
-  //       .range(from, to); // pagination
-  // }
 
   Future<ApiResponseModel<Map<String, dynamic>>> update({ 
     required String id, 
     required double price,
     String? merchant, // TODO: da implementare
+    String? categories, // TODO: da implementare
     String? note,
   })
   async {

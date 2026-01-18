@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monitoraggio_spese/pages/expense_page.dart';
-import '../models/expense_model.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 import '../services/expenses_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,27 +20,87 @@ class _HomePageState extends State<HomePage> {
   int pageSize = 10;
   bool isLoading = false;
   bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
 
-  void _loadExpenses() async {
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadExpenses(reset: true);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  String _formatDateTime(String dateTimeStr) {
+    try {
+      final dateTime = DateTime.parse(dateTimeStr);
+      return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } 
+    catch (e) {
+      print('Error parsing date: $e');
+      return dateTimeStr;
+    }
+  }
+
+  void _loadExpenses({bool reset = false}) async {
+    if (isLoading) return;
     if (mounted) {
       setState(() {
         isLoading = true;
       });
+    }
+    if (reset) {
+      currentPage = 0;
+      hasMore = true;
+      allExpenses.clear();
     }
     expensesFuture = service.fetchLatestExpenses(pageIndex: currentPage, pageSize: pageSize);
     final result = await expensesFuture;
 
     if (mounted) {
       setState(() {
-        allExpenses = result;
+        if (reset) {
+          allExpenses = result;
+        } else {
+          allExpenses.addAll(result);
+        }
         isLoading = false;
+        hasMore = result.length == pageSize;
+        if (hasMore) currentPage++;
       });
     }
   }
 
+  void _navigateToAddExpensePage() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExpensePage(isPersonalExpense: true, isEditAllowed: true),
+      ),
+    ).then((result) {
+      if (result == true) {
+        _loadExpenses(reset: true);
+      }
+    });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || isLoading || !hasMore) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll - 100) {
+      _loadExpenses();
+    }
+  }
+
+
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) {    
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -51,12 +111,11 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Spese Caricate: ${allExpenses.length}',
+                  'Totale spese (${allExpenses.length}): ${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}€',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: _loadExpenses,
+                  onPressed: () => _loadExpenses(reset: true),
                   child: Row(
                     children: const [
                       Icon(Icons.refresh),
@@ -72,70 +131,76 @@ class _HomePageState extends State<HomePage> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Totale spese: €${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.titleMedium,
+                'TODO: aggiungere selezione periodo: oggi, questa settimana, questo mese, questo anno, personalizzato',
+                style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
             
             // Page Content
-            const SizedBox(height: 16),
             Expanded(
-              child: 
-                allExpenses.isEmpty ? const Center(child: Text('Nessuna spesa presente')) : ListView.builder(
-                  itemCount: allExpenses.length,
-                  itemBuilder: (context, index) {
-                    final e = allExpenses[index];
-                    final participants = (e['participants'] as List);
-                    final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
-                    final paidSum = participants.fold<double>(0, (sum, p) => sum + (double.tryParse(p['paid_amount']?.toString() ?? '0') ?? 0));
-                    final isShared = participants.length > 1;
-                    final isCovered = (paidSum - totalAmount).abs() < 0.01;
-                    final missing = (totalAmount - paidSum).clamp(0, double.infinity);
+              child:
+                isLoading 
+                ? const LoadingScaffold(message: 'Caricamento spese...')
+                : allExpenses.isEmpty
+                  ? const Center(child: Text('Nessuna spesa presente'))
+                  : ListView.builder(
+                      controller: _scrollController,
+                      itemCount: allExpenses.length + (isLoading ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= allExpenses.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final e = allExpenses[index];
+                        final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
+                        final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
+                        final merchant = e['merchant'] ?? {};
+                        final category = e['category'] ?? {};
+                        final note = e['note']?.toString() ?? '';
 
-                    return Card(
-                      child: ExpansionTile(
-                        title: Text('${e['merchant_name'] ?? '-'} · ${e['category_name'] ?? '-'}'),
-                        subtitle: Text(e['note']?.toString() ?? ''),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isShared) ...[
-                              const Icon(Icons.safety_divider, color: Colors.blue, size: 30),
-                              if (isCovered) 
-                                const Icon(Icons.check_circle, color: Colors.green)
+                        return Card(
+                          child: ExpansionTile(
+                            title: Row(
+                              children: [
+                                const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
+                                const SizedBox(width: 6),
+                                Text(merchant['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.category, size: 20, color: Colors.orange),
+                                const SizedBox(width: 6),
+                                Text(category['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                            subtitle: Text(formattedDateTime, style: const TextStyle(fontSize: 12)),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(width: 4),
+                                Text('€${totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                Icon(
+                                  Icons.expand_more,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ],
+                            ),
+                            children: [
+                              if (note.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(note),
+                                )
                               else
-                                const Icon(Icons.warning, color: Colors.red),
-                            ]
-                            else ...[
-                              const Icon(Icons.person, color: Colors.grey),
+                                const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Text('Nessuna nota'),
+                                ),
                             ],
-
-                            const SizedBox(width: 4),
-                            Text('€${e['total_amount']?.toString() ?? '-'}'),
-                          ],
-                        ),
-                        children: [
-                          if (isShared) ...[
-                            if (!isCovered)
-                              ListTile(
-                                leading: const Icon(Icons.warning, color: Colors.orange),
-                                title: Text('Mancano: €${missing.toStringAsFixed(2)}'),
-                              ),
-                            
-                            if (participants.isEmpty)
-                              const ListTile(title: Text('Nessun partecipante'))
-                            else 
-                              ...participants.map((p) => ListTile(
-                                leading: const Icon(Icons.person),
-                                title: Text(p['name']?.toString() ?? p['user_id']?.toString() ?? '-'),
-                                trailing: Text('€${p['paid_amount']?.toString() ?? '-'}'),
-                              )),
-                          ]
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           
             // Page footer
@@ -144,13 +209,8 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ExpensePage(isPersonalExpense: true, isEditAllowed: true),
-                        ),
-                      );
+                    onPressed: () async {
+                      _navigateToAddExpensePage();
                     },
                     child: Row(
                       children: [

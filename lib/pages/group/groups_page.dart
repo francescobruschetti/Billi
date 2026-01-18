@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:monitoraggio_spese/services/groups_service.dart';
 import 'package:monitoraggio_spese/pages/group/group_details.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class GroupsPage extends StatefulWidget {
   const GroupsPage({super.key});
@@ -99,12 +100,7 @@ class _GroupsPageState extends State<GroupsPage> {
             ),
           ),
           if (isLoading) // Loading data
-            const SizedBox(
-              height: 300,
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
+            const LoadingScaffold(message: 'Caricamento gruppi...')
           else if (allGroups.isEmpty) // No groups found
             const SizedBox(
               height: 300,

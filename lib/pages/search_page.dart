@@ -66,7 +66,7 @@ class _SearchPageState extends State<SearchPage> {
                       child: ListTile(
                         title: Text(e.title),
                         subtitle:
-                            Text('${e.merchant ?? ''} · ${e.category ?? ''}'),
+                            Text('${e.merchant ?? ''} · ${e.categories ?? ''}'),
                         trailing:
                             Text('\$${e.amount.toStringAsFixed(2)}'),
                       ),
