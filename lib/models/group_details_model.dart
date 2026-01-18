@@ -6,7 +6,7 @@ class GroupDetailsModel {
   final String name;
   final String? description;
   final String link;
-  final String creatorId;
+  final String userId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<GroupParticipantModel> groupParticipants;
@@ -16,19 +16,22 @@ class GroupDetailsModel {
     required this.name,
     required this.link,
     required this.description,
-    required this.creatorId,
+    required this.userId,
     required this.createdAt,
     required this.updatedAt,
     required this.groupParticipants,
   });
 
   factory GroupDetailsModel.fromMap(Map<String, dynamic> map) {
+    if (map.isEmpty) {
+      throw Exception("Empty map provided to GroupDetailsModel.fromMap");
+    }
     return GroupDetailsModel(
       id: map['id'],
       name: map['name'],
       link: map['link'],
       description: map['description'],
-      creatorId: map['creator_id'],
+      userId: map['user_id'],
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : DateTime.fromMillisecondsSinceEpoch(0),
       groupParticipants: (map['group_participants'] as List? ?? [])

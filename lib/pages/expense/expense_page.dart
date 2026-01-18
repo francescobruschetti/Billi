@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class ExpensePage extends StatefulWidget {
   final String? expenseId;
-  final bool isPersonalExpense;
   final bool isEditAllowed;
 
-  const ExpensePage({super.key, this.expenseId, required this.isPersonalExpense, this.isEditAllowed = false});
+  const ExpensePage({super.key, this.expenseId, this.isEditAllowed = false});
 
   @override
   State<ExpensePage> createState() => _ExpensePageState();
@@ -22,6 +22,7 @@ class _ExpensePageState extends State<ExpensePage> {
   bool _isLoading = false;
   bool _isSaveEnabled = false;
   String? _errorMessage;
+  String pageTitle = 'Inserisci Spesa';
 
   late final bool isEdit;
 
@@ -34,26 +35,22 @@ class _ExpensePageState extends State<ExpensePage> {
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
 
+    isEdit = widget.expenseId != null && widget.isEditAllowed;
+    _pageTitleSetup();
+
     if (widget.expenseId != null) {
       _loadExistingExpense(widget.expenseId!);
     }
-
-    isEdit = widget.expenseId != null && widget.isEditAllowed;
   }
   
   @override
   void dispose() {
     _priceController.removeListener(_onFieldChanged);
+    _priceController.dispose();
     _merchantController.dispose();
     _categoriesController.dispose();
     _noteController.dispose();
     super.dispose();
-  }
-
-  void _onFieldChanged() {
-    setState(() {
-      _isSaveEnabled = _priceController.text.isNotEmpty;
-    });
   }
 
   double _formatPriceInput() {
@@ -66,52 +63,41 @@ class _ExpensePageState extends State<ExpensePage> {
     return double.tryParse(text) ?? 0.0;
   }
 
+  void _onFieldChanged() {
+    setState(() {
+      _isSaveEnabled = _priceController.text.isNotEmpty;
+    });
+  }
+
+  void _pageTitleSetup() {
+    pageTitle = isEdit ? 'Modifica Spesa' : 'Inserisci Spesa';
+  }
+
   Future<void> _loadExistingExpense(String expenseId) async {
     setState(() {
       _isLoading = true;
     });
 
     // TODO: da implementare caricamento spesa esistente
-    // final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(expenseId);
-    // print("Existing users in group $expenseId: $groupDetailsResponse");
-    
-    // if (groupDetailsResponse.success) {
-    //   print("Group details: ${groupDetailsResponse.data}");
-    //   _nameController.text = groupDetailsResponse.data.name;
-    //   _descriptionController.text = groupDetailsResponse.data.description ?? '';
-    //   _linkController.text = groupDetailsResponse.data.link;
-      
-    //   final userProfiles = groupDetailsResponse.data.groupParticipants.map((p) => p.profile).toList();
-    //   setState(() {
-    //     _existingUsers.clear();
-    //     _existingUsers.addAll(userProfiles);
-    //   });
-    // }
-    // else {
-    //   setState(() {
-    //     _errorMessage = 'Errore durante il caricamento dei partecipanti esistenti: ${groupDetailsResponse.message}';
-    //   });
-    // }
-
+  
     setState(() {
       _isLoading = false;
     });
   }
-
+  
   Future<void> _saveExpense() async {
     setState(() {
       _errorMessage = null;
       _isSaveEnabled = false;
     });
 
-    String message = '';
+    String message = isEdit ? "Dati aggiornati" : "Dati salvati";
     ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
       success: false, message: "Errore durante il salvataggio dei dati", data: {}
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      message = "Dati aggiornatic correttamente";
-      apiResponseModel = await ExpensesService().update(
-        id: widget.expenseId!,
+      apiResponseModel = await ExpensesService().updatePersonal(
+        expenseId: widget.expenseId!,
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),
@@ -119,15 +105,14 @@ class _ExpensePageState extends State<ExpensePage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      message = "Spesa salvata con successo";
-      apiResponseModel = await ExpensesService().create(
+      apiResponseModel = await ExpensesService().createPersonal(
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     }
-
+    
     if (apiResponseModel.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -136,7 +121,7 @@ class _ExpensePageState extends State<ExpensePage> {
     }
     else {
       setState(() {
-        _errorMessage = 'Errore durante il salvataggio dei dati';
+        _errorMessage = 'Errore durante il salvataggio';
         _isSaveEnabled = true;
       });
     }
@@ -148,19 +133,10 @@ class _ExpensePageState extends State<ExpensePage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(isEdit ? 'Modifica Spesa' : 'Inserisci Spesa'),
+        title: Text(pageTitle),
       ),
       body: _isLoading
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Caricamento dati...', style: TextStyle(fontSize: 16)),
-              ],
-            ),
-          )
+        ? const LoadingScaffold(message: 'Carico...')
         : SingleChildScrollView(
             padding: EdgeInsets.only(
               left: 16,

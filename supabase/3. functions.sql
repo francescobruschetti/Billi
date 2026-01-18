@@ -7,7 +7,7 @@ returns table (
   id uuid,
   name text,
   link char(8),
-  creator_id uuid,
+  user_id uuid,
   created_at timestamptz,  -- must match table (timestamp with time zone)
   updated_at timestamptz   -- must match table (timestamp with time zone)
 )
@@ -21,14 +21,14 @@ begin
     g.id,
     g.name,
     g.link,
-    g.creator_id,
+    g.user_id,
     g.created_at,
     g.updated_at
   from groups g
   left join group_participants gp
     on gp.group_id = g.id
   where
-    g.creator_id = auth.uid()
+    g.user_id = auth.uid()
     or (
       gp.user_id = auth.uid()
       and gp.is_enabled = true
@@ -89,7 +89,7 @@ begin
 end;
 $$ language plpgsql security definer;
 
-grant execute on function public.get_user_by_email_or_username(text, text) to authenticated;
+grant execute on function public.get_user_by_email_or_username(varchar, text) to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
@@ -134,19 +134,19 @@ grant execute on function public.update_group_and_participants(uuid, text, text,
 --------------------------------------------------------------------------
 -- TRIGGERS --------------------------------------------------------------
 --------------------------------------------------------------------------
--- Trigger per propagare creator_id da groups a group_participants
-create or replace function set_group_creator_id()
+-- Trigger per propagare user_id da groups a group_participants
+create or replace function set_group_user_id()
 returns trigger as $$
 begin
-  select creator_id into new.group_creator_id
+  select user_id into new.group_user_id
   from groups where id = new.group_id;
   return new;
 end;
 $$ language plpgsql;
 
-create trigger trg_set_group_creator_id
+create trigger trg_set_group_user_id
 before insert on group_participants
-for each row execute function set_group_creator_id();
+for each row execute function set_group_user_id();
 --------------------------------------------------------------------------
 
 -- Trigger: aggiungi automaticamente il creator come partecipante
@@ -156,7 +156,7 @@ begin
   insert into group_participants (
     user_id,
     group_id,
-    group_creator_id,
+    group_user_id,
     role,
     has_confirmed,
     is_enabled,
@@ -164,9 +164,9 @@ begin
     created_at,
     updated_at
   ) values (
-    new.creator_id,
+    new.user_id,
     new.id,
-    new.creator_id,
+    new.user_id,
     'creator',
     true,
     true,

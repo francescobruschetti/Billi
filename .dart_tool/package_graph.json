@@ -8,6 +8,7 @@
       "version": "1.0.0+1",
       "dependencies": [
         "cupertino_icons",
+        "dropdown_search",
         "flutter",
         "supabase_flutter"
       ],
@@ -39,6 +40,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "dropdown_search",
+      "version": "5.0.6",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

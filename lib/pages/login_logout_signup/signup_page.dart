@@ -16,6 +16,8 @@ class _SignupPageState extends State<SignupPage> {
   final _repeatPasswordController = TextEditingController();
   bool _loading = false;
   bool _isFormValid = false;
+  bool _showPassword = false;
+  bool _showRepeatPassword = false;
   String? _error;
 
    @override
@@ -33,10 +35,11 @@ class _SignupPageState extends State<SignupPage> {
       _isFormValid = _nameController.text.trim().isNotEmpty
                     && _usernameController.text.trim().isNotEmpty 
                     && _emailController.text.trim().isNotEmpty
-                    && _passwordController.text.trim().isNotEmpty;
+                    && _passwordController.text.trim().isNotEmpty
+                    && _repeatPasswordController.text.trim().isNotEmpty
+                    && (_passwordController.text.trim() == _repeatPasswordController.text.trim());
     });
   }
-
 
   Future<void> _register() async {
     setState(() {
@@ -111,28 +114,34 @@ class _SignupPageState extends State<SignupPage> {
               decoration: InputDecoration(
                 labelText: 'Password',
                 errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+                suffixIcon: IconButton(
+                  icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _showPassword = !_showPassword;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: !_showPassword,
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _passwordController,
+              controller: _repeatPasswordController,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: 'Ripeti Password',
                 errorText: null, // TODO: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+                suffixIcon: IconButton(
+                  icon: Icon(_showRepeatPassword ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _showRepeatPassword = !_showRepeatPassword;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: !_showRepeatPassword,
             ),
-            // TODO: confirm password
-            // const SizedBox(height: 16),
-            // TextField(
-            //   controller: _repeatPasswordController,
-            //   decoration: InputDecoration(
-            //     labelText: 'Ripeti Password',
-            //     errorText: null, // TODO: _repeatPasswordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
-            //   ),
-            //   obscureText: true,
-            // ),
             const SizedBox(height: 24),
             if (_error != null) 
               Text(_error!, style: const TextStyle(color: Colors.red)),

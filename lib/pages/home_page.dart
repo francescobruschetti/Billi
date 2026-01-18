@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/pages/expense_page.dart';
+import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
+import 'package:monitoraggio_spese/pages/expense/expense_page.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 import '../services/expenses_service.dart';
 
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> allExpenses = [];
 
   int currentPage = 0;
-  int pageSize = 10;
+  int pageSize = 50;
   bool isLoading = false;
   bool hasMore = true;
   final ScrollController _scrollController = ScrollController();
@@ -34,6 +35,9 @@ class _HomePageState extends State<HomePage> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _filterExpenses({bool reset = false}) async {
   }
 
   String _formatDateTime(String dateTimeStr) {
@@ -76,13 +80,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _navigateToAddExpensePage() async {
+  void _navigateToExpensePage({required bool isPersonalExpense, required bool isEditAllowed}) async {
+    var page = isPersonalExpense ? ExpensePage(isEditAllowed: isEditAllowed) : ExpenseGroupPage(isEditAllowed: isEditAllowed);
+
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => ExpensePage(isPersonalExpense: true, isEditAllowed: true),
-      ),
-    ).then((result) {
+      MaterialPageRoute(builder: (context) => page),
+    )
+    .then((result) {
       if (result == true) {
         _loadExpenses(reset: true);
       }
@@ -98,7 +103,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {    
     return Scaffold(
@@ -110,19 +114,22 @@ class _HomePageState extends State<HomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Totale spese (${allExpenses.length}): ${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}€',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Expanded(
+                  child: Text(
+                      'Totale spese (${allExpenses.length}): ${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}€',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                 ),
-                ElevatedButton(
+                const SizedBox(width: 5),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Aggiorna',
                   onPressed: () => _loadExpenses(reset: true),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.refresh),
-                      SizedBox(width: 8),
-                      Text('Aggiorna'),
-                    ],
-                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  tooltip: 'Filtra',
+                  onPressed: () => _filterExpenses(reset: true),
                 ),
               ],
             ),
@@ -150,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                         if (index >= allExpenses.length) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(child: CircularProgressIndicator()),
+                            child: Center(child: Text('Carico altre spese...')),
                           );
                         }
                         final e = allExpenses[index];
@@ -210,7 +217,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      _navigateToAddExpensePage();
+                      _navigateToExpensePage(isPersonalExpense: true, isEditAllowed: true);
                     },
                     child: Row(
                       children: [
@@ -225,12 +232,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ExpensePage(isPersonalExpense: false, isEditAllowed: true),
-                        ),
-                      );
+                      _navigateToExpensePage(isPersonalExpense: false, isEditAllowed: true);
                     },
                     child: Row(
                       children: [

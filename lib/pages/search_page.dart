@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:monitoraggio_spese/models/expense_model.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -52,7 +53,7 @@ class _SearchPageState extends State<SearchPage> {
               stream: expensesStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: LoadingScaffold(message: 'Carico...'));
                 }
 
                 final expenses = snapshot.data!;

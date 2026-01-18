@@ -22,14 +22,14 @@ create policy "Authenticated users can create groups"
 on groups
 for insert
 with check (
-  auth.uid() = creator_id
+  auth.uid() = user_id
 );
 
 create policy "Creator can view own groups"
 on groups
 for select
 using (
-  creator_id = auth.uid()
+  user_id = auth.uid()
 );
 
 -- Policy ottimizzata: ogni partecipante e il creator vedono tutti i membri del gruppo
@@ -38,18 +38,18 @@ create policy "User can view participants of own groups"
 on group_participants
 for select
 using (
-  user_id = auth.uid() OR group_creator_id = auth.uid()
+  auth.uid() = user_id OR auth.uid() = group_user_id
 );
 
 create policy "Only creator can update groups"
 on groups
 for update
-using (creator_id = auth.uid());
+using (user_id = auth.uid());
 
 create policy "Only creator can delete groups"
 on groups
 for delete
-using (creator_id = auth.uid());
+using (user_id = auth.uid());
 
 --------------------------------------------------------------------------
 -- Group Participants table
@@ -59,7 +59,7 @@ create policy "Creator can delete any participant except self"
 on group_participants
 for delete
 using (
-  group_creator_id = auth.uid() and user_id <> auth.uid()
+  group_user_id = auth.uid() and user_id <> auth.uid()
 );
 
 -- Policy: ogni utente può eliminare se stesso dal gruppo
@@ -91,7 +91,7 @@ create policy "Only creator can add participants"
 on group_participants
 for insert
 with check (
-  (select creator_id from groups where id = group_participants.group_id) = auth.uid()
+  (select user_id from groups where id = group_participants.group_id) = auth.uid()
 );
 
 drop policy if exists "Only creator can update participants" on group_participants;
@@ -99,7 +99,7 @@ create policy "Only creator can update participants"
 on group_participants
 for update
 with check (
-  (select creator_id from groups where id = group_participants.group_id) = auth.uid()
+  (select user_id from groups where id = group_participants.group_id) = auth.uid()
 );
 
 --------------------------------------------------------------------------

@@ -10,7 +10,7 @@ create table groups (
   description text,
   link char(8) not null unique default substr(encode(gen_random_bytes(6), 'base64'), 1, 8),
 
-  creator_id uuid not null default auth.uid() references auth.users(id),
+  user_id uuid not null default auth.uid() references auth.users(id),
 
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
@@ -19,7 +19,7 @@ create table groups (
 create table group_participants (
   user_id uuid default auth.uid() references auth.users(id) on delete cascade,
   group_id uuid references groups(id) on delete cascade,
-  group_creator_id uuid not null, -- campo aggiuntivo per ottimizzare le policy di accesso ai partecipanti
+  group_user_id uuid not null, -- campo aggiuntivo per ottimizzare le policy di accesso ai partecipanti
   role group_role not null default 'member',
 
   has_confirmed boolean default false,
@@ -36,7 +36,11 @@ create table group_expenses (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references groups(id) on delete cascade,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  merchant_id uuid references merchants(id),
+  category_id uuid references categories(id),
   paid_amount numeric(10,2) not null check (paid_amount >= 0),
+  total_amount numeric(10,2) not null check (total_amount > 0),
+  split_rate numeric not null check (split_rate >= 0),
   note text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),

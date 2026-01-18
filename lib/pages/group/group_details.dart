@@ -4,6 +4,7 @@ import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/profile_model.dart';
 import 'package:monitoraggio_spese/services/groups_service.dart';
 import 'package:monitoraggio_spese/services/profiles_service.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
@@ -150,7 +151,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       success: false, message: "Errore durante il salvataggio dei dati", data: {}
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      message = "Dati aggiornatic correttamente";
+      message = "Dati aggiornati correttamente";
       apiResponseModel = await GroupsService().updateGroup(
         id: widget.groupId!,
         name: _nameController.text.trim(),
@@ -193,11 +194,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Caricamento dati gruppo...', style: TextStyle(fontSize: 16)),
-                ],
+                children: const [LoadingScaffold(message: 'Caricamento dati gruppo...')],
               ),
             )
           : SingleChildScrollView(
