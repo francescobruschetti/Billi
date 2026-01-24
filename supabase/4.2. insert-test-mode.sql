@@ -16,8 +16,10 @@ insert into group_participants (user_id, group_id, role, has_confirmed, is_enabl
 ((select id from profiles where username = 'm'), (select id from groups where name = 'Amici'), 'member', false, true),
 ((select id from profiles where username = 'm'), (select id from groups where name = 'Vacanza'), 'member', false, true);
 
-insert into group_expenses (group_id, user_id, paid_amount, note) values
-((select id from groups where name = 'Famiglia'), (select id from profiles where username = 'f'), 150.00, 'Spesa settimanale'),
-((select id from groups where name = 'Famiglia'), (select id from profiles where username = 'm'), 75.50, 'Cena fuori'),
-((select id from groups where name = 'Amici'), (select id from profiles where username = 'i'), 200.00, 'Biglietti concerto'),
-((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 500.00, 'Acconto hotel');
+insert into group_expenses (group_id, user_id, total_amount, paid_amount, note) values
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 100.00, 50.00, '1 hotel'),
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 200.00, 100.00, '2 hotel'),
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 300.00, 150.00, '3 hotel'),
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 400.00, 200.00, '4 hotel'),
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 500.00, 250.00, '5 hotel'),
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'm'), 600.00, 300.00, '6 hotel');

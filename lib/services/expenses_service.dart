@@ -74,7 +74,7 @@ class ExpensesService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchLatestExpenses({required int pageIndex, int pageSize = 50}) async {
+  Future<List<Map<String, dynamic>>> fetchLatestPersonalExpenses({required int pageIndex, int pageSize = 50}) async {
     final userId = supabase.auth.currentUser!.id;
 
     final from = pageIndex * pageSize;
@@ -89,6 +89,23 @@ class ExpensesService {
 
     return rows;
   }
+
+Future<List<Map<String, dynamic>>> fetchLatestGroupExpenses({required String groupId, required int pageIndex, int pageSize = 50}) async {
+
+    final from = pageIndex * pageSize;
+    final to = from + pageSize - 1;
+
+    final rows = await supabase
+      .from('group_expenses')
+      .select('*, merchant:merchants(*), category:categories(*)')
+      .eq('group_id', groupId)
+      .order('created_at', ascending: false)
+      .range(from, to);
+
+    return rows;
+  }
+
+
 
   Future<ApiResponseModel<Map<String, dynamic>>> updateGroupExpense({
     required String groupId,

@@ -203,7 +203,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(isEdit ? 'Modifica gruppo' : 'Crea gruppo'),
+        title: Text(isEdit ? 'Dettagli gruppo' : 'Crea gruppo'),
       ),
       body: _isLoading
         ? Center(
@@ -391,6 +391,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
               ],
             ),
           ),
-      );
+    );
   }
 }

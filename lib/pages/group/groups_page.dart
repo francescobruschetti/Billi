@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitoraggio_spese/pages/group/group_expenses.dart';
 import 'package:monitoraggio_spese/services/groups_service.dart';
 import 'package:monitoraggio_spese/pages/group/group_details.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
@@ -53,6 +54,12 @@ class _GroupsPageState extends State<GroupsPage> {
   void _openGroupDetails(Map<String, dynamic> groupDetails) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupDetails['id'], isEditAllowed: true)),
+    );
+  }
+
+  void _openGroupExpenses(Map<String, dynamic> groupDetails) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => GroupExpensesPage(groupId: groupDetails['id'], isEditAllowed: true)),
     );
   }
 
@@ -120,9 +127,15 @@ class _GroupsPageState extends State<GroupsPage> {
                         return ListTile(
                           title: Text(g['name'] ?? '-'),
                           subtitle: Text('Totale: ${g['role']}, Devi: ${g['has_confirmed']}, Ti devono: ${g['is_enabled']}'), // TODO: da implementare
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(onPressed: () => _openGroupDetails(g), icon: Icon(Icons.more_vert)),
+                              Icon(Icons.chevron_right),
+                            ],
+                          ),
                           onTap: () {
-                            _openGroupDetails(g);
+                            _openGroupExpenses(g);
                           },
                         );
                       },

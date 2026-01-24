@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_page.dart';
+import 'package:monitoraggio_spese/widgets/components/expense_card_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 import '../services/expenses_service.dart';
 
@@ -15,15 +16,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final Logger log = Logger('HomePage');
   final ExpensesService service = ExpensesService();
+  final ScrollController _scrollController = ScrollController();
 
   late Future<List<Map<String, dynamic>>> expensesFuture;
   List<Map<String, dynamic>> allExpenses = [];
 
-  int currentPage = 0;
-  int pageSize = 50;
-  bool isLoading = false;
-  bool hasMore = true;
-  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 0;
+  int _pageSize = 50;
+  bool _isLoading = false;
+  bool _hasMore = true;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _filterExpenses({bool reset = false}) async {
+    // TODO: da implementare filtro spese
   }
 
   String _formatDateTime(String dateTimeStr) {
@@ -54,30 +56,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _loadExpenses({bool reset = false}) async {
-    if (isLoading) return;
+    if (_isLoading) return;
     if (mounted) {
       setState(() {
-        isLoading = true;
+        _isLoading = true;
       });
     }
     if (reset) {
-      currentPage = 0;
-      hasMore = true;
+      _currentPage = 0;
+      _hasMore = true;
       allExpenses.clear();
     }
-    expensesFuture = service.fetchLatestExpenses(pageIndex: currentPage, pageSize: pageSize);
+    expensesFuture = service.fetchLatestPersonalExpenses(pageIndex: _currentPage, pageSize: _pageSize);
     final result = await expensesFuture;
 
     if (mounted) {
       setState(() {
         if (reset) {
           allExpenses = result;
-        } else {
+        } 
+        else {
           allExpenses.addAll(result);
         }
-        isLoading = false;
-        hasMore = result.length == pageSize;
-        if (hasMore) currentPage++;
+        _isLoading = false;
+        _hasMore = result.length == _pageSize;
+        if (_hasMore) _currentPage++;
       });
     }
   }
@@ -97,7 +100,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || isLoading || !hasMore) return;
+    if (!_scrollController.hasClients || _isLoading || !_hasMore) return;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll - 100) {
@@ -135,6 +138,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            
             // Page Header "subtitle"
             const SizedBox(height: 8),
             Align(
@@ -148,13 +152,13 @@ class _HomePageState extends State<HomePage> {
             // Page Content
             Expanded(
               child:
-                isLoading 
+                _isLoading 
                 ? const LoadingScaffold(message: 'Caricamento spese...')
                 : allExpenses.isEmpty
                   ? const Center(child: Text('Nessuna spesa presente'))
                   : ListView.builder(
                       controller: _scrollController,
-                      itemCount: allExpenses.length + (isLoading ? 1 : 0),
+                      itemCount: allExpenses.length + (_isLoading ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index >= allExpenses.length) {
                           return const Padding(
@@ -169,44 +173,12 @@ class _HomePageState extends State<HomePage> {
                         final category = e['category'] ?? {};
                         final note = e['note']?.toString() ?? '';
 
-                        return Card(
-                          child: ExpansionTile(
-                            title: Row(
-                              children: [
-                                const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
-                                const SizedBox(width: 6),
-                                Text(merchant['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w500)),
-                                const SizedBox(width: 6),
-                                const Icon(Icons.category, size: 20, color: Colors.orange),
-                                const SizedBox(width: 6),
-                                Text(category['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                            subtitle: Text(formattedDateTime, style: const TextStyle(fontSize: 12)),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(width: 4),
-                                Text('€${totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                Icon(
-                                  Icons.expand_more,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ],
-                            ),
-                            children: [
-                              if (note.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(note),
-                                )
-                              else
-                                const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Text('Nessuna nota'),
-                                ),
-                            ],
-                          ),
+                        return ExpenseCardWidget(
+                          merchantName: merchant['name'] ?? '-',
+                          categoryName: category['name'] ?? '-',
+                          formattedDateTime: formattedDateTime,
+                          totalAmount: totalAmount,
+                          note: note,
                         );
                       },
                     ),
