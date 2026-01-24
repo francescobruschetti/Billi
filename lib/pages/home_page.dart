@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_page.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
@@ -12,6 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final Logger log = Logger('HomePage');
   final ExpensesService service = ExpensesService();
 
   late Future<List<Map<String, dynamic>>> expensesFuture;
@@ -46,7 +48,7 @@ class _HomePageState extends State<HomePage> {
       return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     } 
     catch (e) {
-      print('Error parsing date: $e');
+      log.severe('Error parsing date: $e');
       return dateTimeStr;
     }
   }

@@ -32,19 +32,23 @@ create table group_participants (
   constraint fk_group_participants_profiles foreign key (user_id) references profiles(id) on delete cascade
 );
 
+-- ENUM per split_rate
 create table group_expenses (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references groups(id) on delete cascade,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   merchant_id uuid references merchants(id),
   category_id uuid references categories(id),
-  paid_amount numeric(10,2) not null check (paid_amount >= 0),
+  paid_amount numeric(10,2) check (paid_amount >= 0),
   total_amount numeric(10,2) not null check (total_amount > 0),
-  split_rate numeric not null check (split_rate >= 0),
+  split_rate text,
   note text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  constraint fk_group_expenses_profiles foreign key (user_id) references profiles(id) on delete cascade
+  constraint fk_group_expenses_profiles foreign key (user_id) references profiles(id) on delete cascade,
+  constraint chk_paid_or_split_only check (
+    (paid_amount is not null and split_rate is null) or (paid_amount is null and split_rate is not null)
+  )
 );
 
 --------------------------------------------------------------------------

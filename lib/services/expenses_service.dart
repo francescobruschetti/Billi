@@ -1,12 +1,14 @@
+import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/expense_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ExpensesService {
+  final Logger log = Logger('ExpensesService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Stream<List<ExpenseModel>> subscribeExpenses() {
-    print("Subscribing to expenses stream");
+    log.fine("Subscribing to expenses stream");
     final userId = supabase.auth.currentUser!.id;
 
     return supabase
@@ -18,9 +20,11 @@ class ExpensesService {
             rows.map((row) => ExpenseModel.fromMap(row)).toList());
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> createGroup({
+  Future<ApiResponseModel<Map<String, dynamic>>> createGroupExpense({
     required String groupId,
     required double price,
+    String? splitRate,
+    double? paidAmount,
     String? merchant,
     String? categories,
     String? note,
@@ -29,22 +33,24 @@ class ExpensesService {
     final userId = supabase.auth.currentUser!.id;
     try {
       final result = await supabase.rpc('insert_group_expense_with_merchant_category', params: {
+        'p_group_id': groupId,
         'p_user_id': userId,
+        'p_paid_amount': paidAmount,
         'p_total_amount': price,
+        'p_split_rate': splitRate,
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,
-        'p_group_id': groupId,
       }).select().single();
       return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: result);
     } 
     catch (e) {
-      print("Errore salvataggio spesa: $e");
+      log.severe("Errore salvataggio spesa: $e");
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> createPersonal({
+  Future<ApiResponseModel<Map<String, dynamic>>> createPersonalExpense({
     required double price,
     String? merchant,
     String? categories,
@@ -61,8 +67,9 @@ class ExpensesService {
         'p_note': note,
       }).select().single();
       return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: result);
-    } catch (e) {
-      print("Errore salvataggio spesa: $e");
+    } 
+    catch (e) {
+      log.severe("Errore salvataggio spesa: $e");
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }
@@ -83,7 +90,7 @@ class ExpensesService {
     return rows;
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> updateGroup({
+  Future<ApiResponseModel<Map<String, dynamic>>> updateGroupExpense({
     required String groupId,
     required String expenseId, 
     required double price,
@@ -104,13 +111,13 @@ class ExpensesService {
     //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     // } 
     // catch (e) {
-    //   print("Errore creazione gruppo: $e");
+    //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
     return ApiResponseModel<Map<String, dynamic>>(success: false, message: "Not implemented yet", data: {});
   }
   
-  Future<ApiResponseModel<Map<String, dynamic>>> updatePersonal({
+  Future<ApiResponseModel<Map<String, dynamic>>> updatePersonalExpense({
     required String expenseId, 
     required double price,
     String? merchant, // TODO: da implementare
@@ -130,7 +137,7 @@ class ExpensesService {
     //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     // } 
     // catch (e) {
-    //   print("Errore creazione gruppo: $e");
+    //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
     return ApiResponseModel<Map<String, dynamic>>(success: false, message: "Not implemented yet", data: {});

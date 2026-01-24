@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:monitoraggio_spese/enums/expense_insert_mode_enum.dart';
+import 'package:monitoraggio_spese/enums/split_rate_mode_enum.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
 import 'package:monitoraggio_spese/services/groups_service.dart';
@@ -20,6 +22,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
   final double _defaultSizedBoxHeight = 6.0;
 
   late TextEditingController _priceController;
+  late TextEditingController _paidAmountController;
   late TextEditingController _splitRateController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
@@ -28,11 +31,11 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
   Map<String, dynamic>? _selectedGroup;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
-  bool _isSplitRateSectionVisible = false;
+  ExpenseInsertModeEnum? _expenseInsertMode;
   String? _errorMessage;
   String pageTitle = 'Inserisci Spesa';
   String? _selectedSplitRateValue;
-  String? _selectedSplitRateValueButton;
+  SplitRateModeEnum? _selectedSplitRateValueButton;
 
   late final bool isEdit;
 
@@ -40,11 +43,13 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
   void initState() {
     super.initState();
     _priceController = TextEditingController(text: '');
+    _paidAmountController = TextEditingController(text: '');
     _splitRateController = TextEditingController(text: '');
     _merchantController = TextEditingController(text: '');
     _categoriesController = TextEditingController(text: '');
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
+    _paidAmountController.addListener(_onFieldChanged);
     _splitRateController.addListener(_onFieldChanged);
 
     isEdit = widget.expenseId != null && widget.isEditAllowed;
@@ -59,8 +64,10 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
   @override
   void dispose() {
     _priceController.removeListener(_onFieldChanged);
+    _paidAmountController.removeListener(_onFieldChanged);
     _splitRateController.removeListener(_onFieldChanged);
     _priceController.dispose();
+    _paidAmountController.dispose();
     _splitRateController.dispose();
     _merchantController.dispose();
     _categoriesController.dispose();
@@ -83,15 +90,24 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     return double.tryParse(text) ?? 0.0;
   }
 
-  void _handleSplitRateValue(String value) {
+  void _handleExpenseInsertModeValue(ExpenseInsertModeEnum value) {
     setState(() {
+      _selectedSplitRateValueButton = null;
+      _selectedSplitRateValue = null;
+      _expenseInsertMode = value;
+    });
+  }
+
+  void _handleSplitRateValue(SplitRateModeEnum value) {
+    setState(() {
+      _paidAmountController.text = '';
       if (_selectedSplitRateValueButton == value) {
         _selectedSplitRateValueButton = null; // Deseleziona se già selezionato
       } 
       else {
         _selectedSplitRateValueButton = value;
       }
-      _selectedSplitRateValue = _selectedSplitRateValueButton;
+      _selectedSplitRateValue = _selectedSplitRateValueButton?.name;
       _onFieldChanged();
     });
   }
@@ -105,18 +121,12 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
 
   void _onFieldChanged() {
     setState(() {
-      _isSaveEnabled = (_selectedGroup != null && _selectedSplitRateValue != null) && _priceController.text.isNotEmpty;
+      _isSaveEnabled = (_selectedGroup != null && (_paidAmountController.text.isNotEmpty || _selectedSplitRateValue != null) && _priceController.text.isNotEmpty);
     });
   }
 
   void _pageTitleSetup() {
     pageTitle = isEdit ? 'Modifica Spesa di Gruppo' : 'Inserisci Spesa Gruppo';
-  }
-
-  void _toggleSplitRateSection() {
-    setState(() {
-      _isSplitRateSectionVisible = !_isSplitRateSectionVisible;
-    });
   }
 
   Future<void> _loadExistingExpense(String expenseId) async {
@@ -126,10 +136,10 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
 
     // TODO: da implementare caricamento spesa esistente
     // final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(expenseId);
-    // print("Existing users in group $expenseId: $groupDetailsResponse");
+    // log.fine("Existing users in group $expenseId: $groupDetailsResponse");
     
     // if (groupDetailsResponse.success) {
-    //   print("Group details: ${groupDetailsResponse.data}");
+    //   log.fine("Group details: ${groupDetailsResponse.data}");
     //   _nameController.text = groupDetailsResponse.data.name;
     //   _descriptionController.text = groupDetailsResponse.data.description ?? '';
     //   _linkController.text = groupDetailsResponse.data.link;
@@ -172,20 +182,21 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     );
 
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await ExpensesService().updateGroup(
+      apiResponseModel = await ExpensesService().updateGroupExpense(
         groupId: _selectedGroup!['id'],
         expenseId: widget.expenseId!,
         price: _formatPriceInput(),
-
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await ExpensesService().createGroup(
+      apiResponseModel = await ExpensesService().createGroupExpense(
         groupId: _selectedGroup!['id'],
         price: _formatPriceInput(),
+        splitRate: _selectedSplitRateValue,
+        paidAmount: double.tryParse(_paidAmountController.text.replaceAll(',', '.')),
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
@@ -253,7 +264,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                     )
                 ),
                 
-                // -- Prezzo
+                // -- Expense Price
                 Row(
                   children: [
                     Expanded(
@@ -264,7 +275,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                           FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
                         ],
                         decoration: const InputDecoration(
-                          labelText: 'Prezzo',
+                          labelText: 'Totale Spesa',
                           suffixIcon: Padding(
                             padding: EdgeInsets.only(right: 12.0),
                             child: Text('€', style: TextStyle(fontSize: 18)),
@@ -276,51 +287,75 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                   ],
                 ),
 
-                // -- Split Rate
+                // -- Split Rate vs Paid Amount
                 SizedBox(height: _defaultSizedBoxHeight),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _splitRateController,
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Suddivisione',
-                          suffixIcon: Padding(
-                            padding: EdgeInsets.only(right: 12.0),
-                            child: Text('%', style: TextStyle(fontSize: 18)),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: (_expenseInsertMode == ExpenseInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
+                            ),
+                            backgroundColor: const Color.fromARGB(255, 225, 250, 2),
+                            foregroundColor: Colors.black87,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                          // TODO: onPressed: (_expenseInsertMode != ExpenseInsertModeEnum.SPLIT_RATE) ? () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.FIX_PAID) : null,
+                          onPressed: () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.FIX_PAID),
+                          child: const Text('Specifica quota'),
                         ),
                       ),
-                    ),                    
-                    Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      child: IconButton(
-                        icon: const Icon(Icons.settings),
-                        color: Colors.black,
-                        iconSize: 28,
-                        padding: const EdgeInsets.all(8),
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(Colors.grey.shade200),
-                          shape: WidgetStateProperty.all(
-                            RoundedRectangleBorder(
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
+                              side: (_expenseInsertMode == ExpenseInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
                             ),
+                            backgroundColor: const Color.fromARGB(255, 11, 250, 238),
+                            foregroundColor: Colors.black87,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          elevation: WidgetStateProperty.all(0),
+                          // TODO: onPressed: (_expenseInsertMode != ExpenseInsertModeEnum.FIX_PAID) ? () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.SPLIT_RATE) : null,
+                          onPressed: () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.SPLIT_RATE),
+                          child: const Text('Dividi spesa'),
                         ),
-                        onPressed: () {
-                          _toggleSplitRateSection();
-                        },
                       ),
                     ),
                   ],
                 ),
-                if (_isSplitRateSectionVisible) ...[
+
+
+                if (_expenseInsertMode == ExpenseInsertModeEnum.FIX_PAID) ...[
+                  SizedBox(height: _defaultSizedBoxHeight),
+                  TextField(
+                    controller: _paidAmountController,
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
+                    ],
+                    decoration: const InputDecoration(
+                      labelText: 'Quota pagata',
+                      suffixIcon: Padding(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Text('€', style: TextStyle(fontSize: 18)),
+                      ),
+                      suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                    ),
+                  ),
+                ]
+                else if (_expenseInsertMode == ExpenseInsertModeEnum.SPLIT_RATE) ...[
+                  SizedBox(height: _defaultSizedBoxHeight),
                   
                   Text('Quanto paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
                   Row(
@@ -333,14 +368,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'fixed25%' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('fixed25%'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.ONE_QUARTER),
                             child: const Text('25%'),
                           ),
                         ),
@@ -352,14 +387,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'fixed50%' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('fixed50%'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.HALF),
                             child: const Text('50%'),
                           ),
                         ),
@@ -371,14 +406,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'fixed75%' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('fixed75%'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.THREE_QUARTERS),
                             child: const Text('75%'),
                           ),
                         ),
@@ -391,14 +426,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'fixed100%' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('fixed100%'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.ZERO),
                             child: const Text('Hai anticipato tu'),
                           ),
                         ),
@@ -431,14 +466,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'quote2' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('quote2'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.FIXED_2),
                             child: const Text('2'),
                           ),
                         ),
@@ -450,14 +485,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'quote3' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('quote3'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.FIXED_3),
                             child: const Text('3'),
                           ),
                         ),
@@ -469,14 +504,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: (_selectedSplitRateValueButton == 'quote4' ? BorderSide(color: Colors.black) : BorderSide.none),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: Colors.grey.shade200,
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            onPressed: () => _handleSplitRateValue('quote4'),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.FIXED_4),
                             child: const Text('4'),
                           ),
                         ),

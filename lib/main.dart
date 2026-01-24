@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitoraggio_spese/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
 import 'pages/login_logout_signup/login_page.dart';
@@ -13,6 +14,7 @@ void main() async {
     anonKey: 'sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd',
   );
 
+  setupLogging(); // Initialize logging
   runApp(const MonitoraggioSpeseApp());
 }
 
@@ -39,7 +41,7 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = Supabase.instance.client.auth.currentSession;
-    print("Current session: $session");
+    log.fine("Current session: $session");
     if (session == null) {
       return const LoginPage();
     }

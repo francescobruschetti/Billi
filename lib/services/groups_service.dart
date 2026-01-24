@@ -1,8 +1,10 @@
+import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/group_details_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupsService {
+  final Logger log = Logger('GroupsService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Future<ApiResponseModel<Map<String, dynamic>>> createGroup({ required String name, String? description }) async {
@@ -14,15 +16,13 @@ class GroupsService {
       return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: res);
     } 
     catch (e) {
-      print("Errore creazione gruppo: $e");
+      log.severe("Errore creazione gruppo: $e");
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchAllGroupsForUser() async {
     final res = await supabase.rpc('get_user_groups');
-    print("Fetched groups: $res");
-
     return (res as List)
         .map((g) => g as Map<String, dynamic>)
         .toList();
@@ -40,7 +40,7 @@ class GroupsService {
       return ApiResponseModel<GroupDetailsModel>(success: true, message: null, data: GroupDetailsModel.fromMap(res));
     } 
     catch (e) {
-      print("Errore getGroupDetailsAndParticipants: $e");
+      log.severe("Errore getGroupDetailsAndParticipants: $e");
       return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
     }
   }
@@ -65,7 +65,7 @@ class GroupsService {
       return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     } 
     catch (e) {
-      print("Errore creazione gruppo: $e");
+      log.severe("Errore creazione gruppo: $e");
       return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     }
   }

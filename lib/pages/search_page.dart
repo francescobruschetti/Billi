@@ -18,7 +18,6 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     expensesStream = service.subscribeExpenses();
-    print("Initialized expenses stream");
   }
 
   @override
@@ -57,8 +56,6 @@ class _SearchPageState extends State<SearchPage> {
                 }
 
                 final expenses = snapshot.data!;
-                print("Expenses count: ${expenses.length}");
-
                 return ListView.builder(
                   itemCount: expenses.length,
                   itemBuilder: (context, index) {

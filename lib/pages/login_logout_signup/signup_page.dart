@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:logging/logging.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -9,6 +10,8 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {  
+  final Logger log = Logger('SignupPage');
+  
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -67,7 +70,7 @@ class _SignupPageState extends State<SignupPage> {
       }
     } 
     on AuthException catch (e) {
-      print("Registration error: ${e.message}");
+      log.severe("Registration error: ${e.message}");
       setState(() => _error = e.message);
     } 
     finally {

@@ -96,7 +96,7 @@ class _ExpensePageState extends State<ExpensePage> {
       success: false, message: "Errore durante il salvataggio dei dati", data: {}
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await ExpensesService().updatePersonal(
+      apiResponseModel = await ExpensesService().updatePersonalExpense(
         expenseId: widget.expenseId!,
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
@@ -105,7 +105,7 @@ class _ExpensePageState extends State<ExpensePage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await ExpensesService().createPersonal(
+      apiResponseModel = await ExpensesService().createPersonalExpense(
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),

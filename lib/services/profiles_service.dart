@@ -1,6 +1,8 @@
+import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilesService {
+  final Logger log = Logger('ProfilesService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Future<List<dynamic>> getUserByEmailOrUsername(String key) async {
@@ -8,7 +10,7 @@ class ProfilesService {
       'p_email': key,
       'p_username': key,
     });
-    print("Fetched user by email or username '$key': $res");
+    log.fine("Fetched user by email or username '$key': $res");
 
     return res;
   }

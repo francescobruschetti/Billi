@@ -1,5 +1,4 @@
 import 'package:monitoraggio_spese/models/group_participant_model.dart';
-import 'package:monitoraggio_spese/models/profile_model.dart';
 
 class GroupDetailsModel {
   final String id;
@@ -23,7 +22,7 @@ class GroupDetailsModel {
   });
 
   factory GroupDetailsModel.fromMap(Map<String, dynamic> map) {
-    if (map.isEmpty) {
+    if (map.isEmpty) { // TODO: gestire meglio questo caso
       throw Exception("Empty map provided to GroupDetailsModel.fromMap");
     }
     return GroupDetailsModel(

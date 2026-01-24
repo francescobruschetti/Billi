@@ -202,7 +202,7 @@ create or replace function insert_group_expense_with_merchant_category(
   p_user_id uuid,
   p_paid_amount numeric,
   p_total_amount numeric,
-  p_split_rate numeric,
+  p_split_rate text,
   p_merchant_name text,
   p_category_name text,
   p_note text
@@ -212,7 +212,7 @@ returns table (
   user_id uuid, -- id utente
   paid_amount numeric,
   total_amount numeric,
-  split_rate numeric,
+  split_rate text,
   merchant_id uuid,
   category_id uuid,
   note text,
@@ -251,6 +251,6 @@ begin
 end;
 $$ language plpgsql security definer;
 grant execute on function public.insert_group_expense_with_merchant_category(
-  uuid, uuid, numeric, numeric, numeric, text, text, text
+  uuid, uuid, numeric, numeric, text, text, text, text
 ) to authenticated;
 --------------------------------------------------------------------------
