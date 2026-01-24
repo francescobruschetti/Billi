@@ -31,6 +31,14 @@ class MonitoraggioSpeseApp extends StatelessWidget {
         '/logout': (context) => const LogoutPage(),
       },
       home: AuthGate(),
+
+      // Setup ThemeData con ColorScheme personalizzato
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue, // Colore principale
+          secondary: Colors.orange
+        ),
+      ),
     );
   }
 }

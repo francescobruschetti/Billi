@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:monitoraggio_spese/enums/time_filter_enum.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_page.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
+import 'package:monitoraggio_spese/widgets/components/custom_button_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/expense_card_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:monitoraggio_spese/widgets/components/search_field_widget.dart';
+import 'package:monitoraggio_spese/widgets/components/time_filter_widget.dart';
 
 class GroupExpensesPage extends StatefulWidget {
   final String groupId; // null = creazione, non null = modifica
@@ -25,10 +29,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   List<Map<String, dynamic>> allExpenses = [];
 
   int _currentPage = 0;
-  int _pageSize = 50;
+  final int _pageSize = 50;
   bool _isLoadingContent = false;
   bool _isLoadingPage = false;
   bool _hasMore = true;
+  String _searchText = '';
 
   @override
   void initState() {
@@ -48,6 +53,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     // TODO: da implementare filtro spese
   }
 
+  void _filterTimeExpenses({required TimeFilterEnum filter}) async {
+    log.info('Filtro Time selezionato: ${filter.value}');
+    // TODO: da implementare filtro spese
+  }
+
  String _formatDateTime(String dateTimeStr) {
     try {
       final dateTime = DateTime.parse(dateTimeStr);
@@ -60,10 +70,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   }
 
   void _loadExpenses({bool reset = false}) async {
-    if (_isLoadingPage) return;
+    if (_isLoadingPage || _isLoadingContent) return;
     if (mounted) {
       setState(() {
-        _isLoadingPage = true;
+        if (reset) {
+          _isLoadingPage = true;
+        } 
+        else {
+          _isLoadingContent = true;
+        }
       });
     }
     if (reset) {
@@ -78,19 +93,20 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       setState(() {
         if (reset) {
           allExpenses = result;
+          _isLoadingPage = false;
         } 
         else {
           allExpenses.addAll(result);
+          _isLoadingContent = false;
         }
-        _isLoadingPage = false;
         _hasMore = result.length == _pageSize;
         if (_hasMore) _currentPage++;
       });
     }
   }
 
-  void _navigateToExpensePage({required bool isPersonalExpense, required bool isEditAllowed}) async {
-    var page = isPersonalExpense ? ExpensePage(isEditAllowed: isEditAllowed) : ExpenseGroupPage(isEditAllowed: isEditAllowed);
+  void _navigateToGroupExpensesPage({required String groupId, required bool isEditAllowed}) async {
+    var page = ExpenseGroupPage(groupId: groupId, isEditAllowed: isEditAllowed);
 
     await Navigator.push(
       context,
@@ -107,7 +123,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     if (!_scrollController.hasClients || _isLoadingPage || !_hasMore) return;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    if (currentScroll >= maxScroll - 100) {
+    if (currentScroll >= maxScroll) {
       _loadExpenses();
     }
   }
@@ -168,13 +184,10 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 ),
                 
                 // Page Header "subtitle"
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'TODO: aggiungere selezione periodo: oggi, questa settimana, questo mese, questo anno, personalizzato',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
+                const SizedBox(height: 4),
+                TimeFilterWidget(
+                  timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
+                  onPressed: (filter) => _filterTimeExpenses(filter: filter),
                 ),
               
                 // Page Content
@@ -183,33 +196,42 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     ? const LoadingScaffold(message: 'Caricamento spese...')
                     : allExpenses.isEmpty
                       ? const Center(child: Text('Nessuna spesa presente'))
-                      : ListView.builder(
-                          controller: _scrollController,
-                          itemCount: allExpenses.length + (_isLoadingContent ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index >= allExpenses.length) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(child: Text('Carico altre spese...')),
-                              );
+                      : NotificationListener<ScrollNotification>(
+                          onNotification: (scrollNotification) {
+                            if (scrollNotification is ScrollEndNotification) {
+                              _onScroll();
                             }
-                            final e = allExpenses[index];
-                            final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
-                            final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
-                            final merchant = e['merchant'] ?? {};
-                            final category = e['category'] ?? {};
-                            final note = e['note']?.toString() ?? '';
-
-                            return ExpenseCardWidget(
-                              merchantName: merchant['name'] ?? '-',
-                              categoryName: category['name'] ?? '-',
-                              formattedDateTime: formattedDateTime,
-                              totalAmount: totalAmount,
-                              note: note,
-                            );
+                            return false;
                           },
-                        ),
-            
+                          child:
+                            ListView.builder(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: allExpenses.length + (_isLoadingContent ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index >= allExpenses.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    child: Center(child: Text('Carico altre spese...')),
+                                  );
+                                }
+                                final e = allExpenses[index];
+                                final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
+                                final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
+                                final merchant = e['merchant'] ?? {};
+                                final category = e['category'] ?? {};
+                                final note = e['note']?.toString() ?? '';
+
+                                return ExpenseCardWidget(
+                                  merchantName: merchant['name'] ?? '-',
+                                  categoryName: category['name'] ?? '-',
+                                  formattedDateTime: formattedDateTime,
+                                  totalAmount: totalAmount,
+                                  note: note,
+                                );
+                              },
+                            ),
+                          ),
                 ),
                 
                 // Page footer
@@ -217,32 +239,31 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          _navigateToExpensePage(isPersonalExpense: true, isEditAllowed: true);
+                      flex: 9,
+                      child: SearchFieldWidget(
+                        text: 'Cerca spesa...',
+                        icon: Icons.search,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchText = value;
+                          });
                         },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.add),
-                            const SizedBox(width: 8),
-                            const Text('Spesa Personale'),
-                          ],
-                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _navigateToExpensePage(isPersonalExpense: false, isEditAllowed: true);
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.group_add_outlined),
-                            const SizedBox(width: 8),
-                            const Text('Spesa Condivisa'),
-                          ],
+                      flex: 1,
+                      child:
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          foregroundColor: Colors.white,
+                          shape: const CircleBorder(),
                         ),
+                        onPressed: () async {
+                          _navigateToGroupExpensesPage(groupId: widget.groupId, isEditAllowed: true);
+                        },
                       ),
                     ),
                   ],

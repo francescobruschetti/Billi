@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
-import '../pages/profile_page.dart';
 
 
 class MainScaffold extends StatefulWidget {
@@ -17,11 +16,11 @@ class _MainScaffoldState extends State<MainScaffold> {
   final _pages = const [ // Note: queste sono le pagine che verranno mostrate nel body del main_scaffold
     HomePage(),
     GroupsPage(),
-    ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
       appBar: AppBar(
@@ -50,27 +49,66 @@ class _MainScaffoldState extends State<MainScaffold> {
         ),
       ),
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
-        items: const [ // Note: queste sono le voci del bottom navigation bar. Devono corrispondere alle pagine definite in 'final _pages'
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).colorScheme.primary, width: 10),
+            borderRadius: BorderRadius.circular(16),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Gruppi',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              type: BottomNavigationBarType.fixed,
+              onTap: (index) {
+                setState(() => _currentIndex = index);
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group),
+                  label: 'Gruppi',
+                )
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profilo',
-          ),
-        ],
+        ),
       ),
+      // v1:
+      // bottomNavigationBar: Padding(
+      //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      //   child: DecoratedBox(
+      //     decoration: BoxDecoration(
+      //       border: Border.all(color: Colors.black, width: 3),
+      //       borderRadius: BorderRadius.circular(16),
+      //     ),
+      //     child: ClipRRect(
+      //       borderRadius: BorderRadius.circular(16),
+      //       child: BottomNavigationBar(
+      //         currentIndex: _currentIndex,
+      //         type: BottomNavigationBarType.fixed,
+      //         backgroundColor: Colors.red,
+      //         onTap: (index) {
+      //           setState(() => _currentIndex = index);
+      //         },
+      //         items: const [
+      //           BottomNavigationBarItem(
+      //             icon: Icon(Icons.home),
+      //             label: 'Home',
+      //           ),
+      //           BottomNavigationBarItem(
+      //             icon: Icon(Icons.group),
+      //             label: 'Gruppi',
+      //           )
+      //         ],
+      //       ),
+      //     ),
+      //   ),
+      //),
     );
   }
 }

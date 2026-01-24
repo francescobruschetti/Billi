@@ -26,7 +26,7 @@ class ExpenseCardWidget extends StatelessWidget {
             const SizedBox(width: 6),
             Text(merchantName, style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(width: 6),
-            const Icon(Icons.category, size: 20, color: Colors.orange),
+            const Icon(Icons.sell, size: 20, color: Colors.orange),
             const SizedBox(width: 6),
             Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w500)),
           ],

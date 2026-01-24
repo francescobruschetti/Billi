@@ -3,6 +3,7 @@ import 'package:monitoraggio_spese/pages/group/group_expenses.dart';
 import 'package:monitoraggio_spese/services/groups_service.dart';
 import 'package:monitoraggio_spese/pages/group/group_details.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:monitoraggio_spese/widgets/components/search_field_widget.dart';
 
 class GroupsPage extends StatefulWidget {
   const GroupsPage({super.key});
@@ -16,8 +17,8 @@ class _GroupsPageState extends State<GroupsPage> {
   late Future<List<Map<String, dynamic>>> groupsFuture;
   List<Map<String, dynamic>> allGroups = [];
   
-  String searchText = '';
-  bool isLoading = true;
+  String _searchText = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _GroupsPageState extends State<GroupsPage> {
   void _loadGroups() async {
     if (mounted) {
       setState(() {
-        isLoading = true;
+        _isLoading = true;
       });
     }
     groupsFuture = GroupsService().fetchAllGroupsForUser();
@@ -46,7 +47,7 @@ class _GroupsPageState extends State<GroupsPage> {
     if (mounted) {
       setState(() {
         allGroups = result;
-        isLoading = false;
+        _isLoading = false;
       });
     }
   }
@@ -66,7 +67,7 @@ class _GroupsPageState extends State<GroupsPage> {
   @override
   Widget build(BuildContext context) {  
     final filteredGroups = allGroups.where((g) =>
-      (g['name'] ?? '').toString().toLowerCase().contains(searchText.toLowerCase())
+      (g['name'] ?? '').toString().toLowerCase().contains(_searchText.toLowerCase())
     ).toList();
 
     return SingleChildScrollView(
@@ -78,18 +79,15 @@ class _GroupsPageState extends State<GroupsPage> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Cerca gruppo...',
-                      border: OutlineInputBorder(),
-                      isDense: true,
+                  child: SearchFieldWidget(
+                      text: 'Cerca gruppo...',
+                      icon: Icons.search,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchText = value;
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        searchText = value;
-                      });
-                    },
-                  ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -106,7 +104,7 @@ class _GroupsPageState extends State<GroupsPage> {
               ],
             ),
           ),
-          if (isLoading) // Loading data
+          if (_isLoading) // Loading data
             const LoadingScaffold(message: 'Caricamento gruppi...')
           else if (allGroups.isEmpty) // No groups found
             const SizedBox(

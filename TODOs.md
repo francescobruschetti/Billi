@@ -32,3 +32,5 @@
 3. gli utenti "member" di un gruppo non possono rimuovere gli atrli utenti + impostare correttamente la UI
 4. gli utenti "creator" e "admin" possono elevare i membri ad "admin"
 5. solo l'utente "creator" può togliere il ruolo "admin" agli altri
+
+6. Quando arrivo in fondo alla lista, il titol si evidenzia di grigio

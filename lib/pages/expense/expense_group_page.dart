@@ -9,10 +9,11 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class ExpenseGroupPage extends StatefulWidget {
+  final String? groupId;
   final String? expenseId;
   final bool isEditAllowed;
 
-  const ExpenseGroupPage({super.key, this.expenseId, this.isEditAllowed = false});
+  const ExpenseGroupPage({super.key, this.groupId, this.expenseId, this.isEditAllowed = false});
 
   @override
   State<ExpenseGroupPage> createState() => _ExpenseGroupPageState();
