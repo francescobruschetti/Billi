@@ -89,17 +89,17 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       } 
       else {
         setState(() {
-          res.forEach((user) {
+          for (var user in res) {
             if (_existingUsers.any((u) => u.id == user['id'])) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Utente ${user['username'] ?? user['email'] ?? user['id']} già presente nel gruppo')),
               );
-              return; // Salta utenti già presenti nel gruppo
+              continue; // Salta utenti già presenti nel gruppo
             }
             if (!_selectedUsers.any((u) => u['id'] == user['id'])) {
               _selectedUsers.add(user);
             }
-          });
+          }
         });
       }
     } 

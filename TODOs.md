@@ -34,3 +34,10 @@
 5. solo l'utente "creator" può togliere il ruolo "admin" agli altri
 
 6. Quando arrivo in fondo alla lista, il titol si evidenzia di grigio
+
+
+----------------------------
+
+# Useful:
+1. [low spacing](https://stackoverflow.com/a/53142073)
+2. [icons](https://api.flutter.dev/flutter/material/Icons/sell-constant.html)

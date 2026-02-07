@@ -185,14 +185,13 @@ class _HomePageState extends State<HomePage> {
                             final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
                             final merchant = e['merchant'] ?? {};
                             final category = e['category'] ?? {};
-                            final note = e['note']?.toString() ?? '';
 
                             return ExpenseCardWidget(
                               merchantName: merchant['name'] ?? '-',
                               categoryName: category['name'] ?? '-',
                               formattedDateTime: formattedDateTime,
                               totalAmount: totalAmount,
-                              note: note,
+                              note: e['note'],
                             );
                           },
                         ),

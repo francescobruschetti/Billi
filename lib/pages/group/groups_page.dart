@@ -52,15 +52,9 @@ class _GroupsPageState extends State<GroupsPage> {
     }
   }
 
-  void _openGroupDetails(Map<String, dynamic> groupDetails) {
+  void _openPage(StatefulWidget widget) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupDetails['id'], isEditAllowed: true)),
-    );
-  }
-
-  void _openGroupExpenses(Map<String, dynamic> groupDetails) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => GroupExpensesPage(groupId: groupDetails['id'], isEditAllowed: true)),
+      MaterialPageRoute(builder: (context) => widget),
     );
   }
 
@@ -128,12 +122,12 @@ class _GroupsPageState extends State<GroupsPage> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(onPressed: () => _openGroupDetails(g), icon: Icon(Icons.more_vert)),
+                              IconButton(onPressed: () => _openPage(GroupDetailsPage(groupId: g['id'], isEditAllowed: true)), icon: Icon(Icons.more_vert)),
                               Icon(Icons.chevron_right),
                             ],
                           ),
                           onTap: () {
-                            _openGroupExpenses(g);
+                            _openPage(GroupExpensesPage(groupId: g['id'], isEditAllowed: true));
                           },
                         );
                       },

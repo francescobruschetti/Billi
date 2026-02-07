@@ -15,7 +15,7 @@ class TimeFilterWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // Calcola la larghezza minima per ogni bottone
     final minButtonWidth = 100.0;
-    final totalMinWidth = minButtonWidth * (timeFilters.length + 1);
+    final totalMinWidth = minButtonWidth * (timeFilters.length);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return SingleChildScrollView(

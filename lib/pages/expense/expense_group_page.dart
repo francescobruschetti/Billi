@@ -420,6 +420,25 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                         ),
                       ),
                       Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? BorderSide(color: Colors.black) : BorderSide.none),
+                              ),
+                              backgroundColor: Colors.grey.shade200,
+                              foregroundColor: Colors.black87,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            ),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.EQUALLY),
+                            child: const Text('Equally'),
+                          ),
+                        ),
+                      ),
+                      Expanded(
                         flex: 2, // Bottone più largo per il 100%
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
@@ -460,6 +479,25 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? BorderSide(color: Colors.black) : BorderSide.none),
+                              ),
+                              backgroundColor: Colors.grey.shade200,
+                              foregroundColor: Colors.black87,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            ),
+                            onPressed: () => _handleSplitRateValue(SplitRateModeEnum.FIXED_1),
+                            child: const Text('1'),
+                          ),
+                        ),
+                      ),
                       Expanded(
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
