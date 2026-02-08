@@ -18,12 +18,6 @@
 3. Multi-currency
 4. Recupero/Reset passwrod
 
-# Style
-1. Darkmode
-
-# Widget per ios e android
-1. TODO
-
 ---------------------------
 
 # BUG

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:monitoraggio_spese/models/profile_model.dart';
+import 'package:monitoraggio_spese/widgets/components/custom_icon_widget.dart';
 
 class ExpenseCardWidget extends StatelessWidget {
   final String merchantName;
   final String categoryName;
   final String formattedDateTime;
   final double totalAmount;
-  final Map<String, dynamic>? user;
+  final ProfileModel? profileModel;
   final String? note;
   final String? splitRate;
   final double? paidAmount;
@@ -17,7 +19,7 @@ class ExpenseCardWidget extends StatelessWidget {
     required this.formattedDateTime,
     required this.totalAmount,
     this.note,
-    this.user,
+    this.profileModel,
     this.paidAmount,
     this.splitRate,
   });
@@ -35,7 +37,7 @@ class ExpenseCardWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // --- Expense entry
-                Image.asset('images/icons/sell.PNG', width: 20, height: 20, color: Colors.orange),
+                CustomIconWidget(assetPath: 'images/icons/sell.PNG', color: Colors.orange),
                 const SizedBox(width: 4),
                 Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
@@ -48,13 +50,13 @@ class ExpenseCardWidget extends StatelessWidget {
                 Text(merchantName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
-            if (user != null) 
+            if (profileModel != null) 
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.person, size: 20, color: Colors.green),
                   const SizedBox(width: 4),
-                  Text(user!['name'] ?? user!['username'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w500)),
+                  Text(profileModel!.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                 ],
               ),
           ],

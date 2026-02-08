@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
+import 'package:monitoraggio_spese/widgets/components/error_alert_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class ExpensePage extends StatefulWidget {
@@ -193,28 +194,7 @@ class _ExpensePageState extends State<ExpensePage> {
 
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(top: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      border: Border.all(color: Colors.red, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ErrorAlertWidget(errorMessage: _errorMessage!),
                 ],
                 
                 // Save/Cancel buttons

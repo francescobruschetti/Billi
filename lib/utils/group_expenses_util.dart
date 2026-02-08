@@ -1,12 +1,14 @@
 import 'package:logging/logging.dart';
+import 'package:monitoraggio_spese/models/group_expense_model.dart';
 import 'package:monitoraggio_spese/models/group_participant_model.dart';
 import 'package:monitoraggio_spese/models/group_participant_summary_model.dart';
 
 class GroupExpensesUtil {
   static final Logger log = Logger('GroupExpensesUtil');
 
-  static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({required List<Map<String, dynamic>> expenses, required List<GroupParticipantModel> groupParticipants}) {    
+  static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({required List<GroupExpenseModel> expenses, required List<GroupParticipantModel> groupParticipants}) {    
     Map<String, GroupParticipantSummaryModel> summary = {};
+
     if (expenses.isEmpty) {
       log.info("No expenses found for group. Returning empty summary.");
       return summary;
@@ -16,67 +18,90 @@ class GroupExpensesUtil {
       return summary;
     }
     
-    // Initialized participants summary with group participants (in case some participants don't have expenses yet)
+    // Step 1:
+    initParticipantsSummary(summary, groupParticipants);
+
+    // Step 2:
+    double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, expenses);
+    double averageExpensePerUser = totalAmount / groupParticipants.length;
+    log.fine("Total amount for group: $totalAmount. Average expense per user: $averageExpensePerUser.");
+
+    // Step 3:
+    computeToPayAndToReceiveForParticipants(summary, averageExpensePerUser: averageExpensePerUser);
+    return summary;
+  }
+
+  // Initialized participants summary with group participants (in case some participants don't have expenses yet)
+  static void initParticipantsSummary(Map<String, GroupParticipantSummaryModel> summary, List<GroupParticipantModel> groupParticipants) {
     for (GroupParticipantModel participant in groupParticipants) {
       summary[participant.userId] = GroupParticipantSummaryModel.basic(
         userId: participant.userId,
         profile: participant.profile
       );
     }
+  }
 
-    // Loop over all expenses and compute how much each participant has paid and owes
+  // Compute how much each participant has anticipated to the group and its share of those expenses
+  static double computeTotalAmountAndUpdateSummaryActivePayment(Map<String, GroupParticipantSummaryModel> summary, List<GroupExpenseModel> expenses) {
+    double totalAmount = 0;
     for (var expense in expenses) {
-      final userId = expense['user_id'];
-      if (userId == null) {
-        log.warning("Expense ${expense['id']} has no user ID. Skipping.");
-        continue;
-      }
+      final profileModel = expense.profileModel;
+      final userId = profileModel.id;
+      final paidAmountItself = expense.paidAmount ?? 0;
+      final paidAmountGroup = expense.totalAmount;
+      final splitRate = expense.splitRate;
 
-      final paidAmount = double.tryParse(expense['paid_amount']?.toString() ?? '0') ?? 0;
-      final totalAmount = double.tryParse(expense['total_amount']?.toString() ?? '0') ?? 0;
-      final splitRate = expense['split_rate'];
+      if (!summary.containsKey(userId)) {
+        log.fine("Expense ${expense.id} has user_id $userId which is not in group participants yet.");
+        summary[userId] = GroupParticipantSummaryModel.basic(
+          userId: userId,
+          profile: profileModel,
+        );
+      }
 
       if (splitRate != null) {
         // TODO: da implementare
-        log.fine("Expense ${expense['id']} has a split rate defined. Split rate handling is not implemented yet, defaulting to equal split.");
+        log.fine("Expense ${expense.id} has a split rate defined.");
+        // switch (splitRate.runtimeType) {
+        //   case String:
+        //     log.warning("Expense ${expense.id} has split rate as String. Expected Map. Defaulting to equal split.");
+        //     break;
+        //   case Map<String, dynamic>:
+        //     log.warning("Expense ${expense.id} has split rate as Map. Split rate handling is not implemented yet, defaulting to equal split.");
+        //     break;
+        //   default:
+        //     log.warning("Expense ${expense.id} has split rate of unexpected type ${splitRate.runtimeType}. Defaulting to equal split.");
+        // }
       }
       else {
-        log.fine("Expense ${expense['id']} has no split rate. Using equal split for ${groupParticipants.length} participants.");
+        log.fine("Expense ${expense.id} has NO split rate.");
+        summary[userId]?.increasePaidAmountGroup(paidAmountGroup);
+        summary[userId]?.increasePaidAmountItself(paidAmountItself);
+        summary[userId]?.increaseToReceive(paidAmountGroup - paidAmountItself);
       }
-
-
-      // // Se lo split rate è presente, usalo per calcolare quanto deve pagare ogni partecipante
-      // // Altrimenti, dividi semplicemente per il numero di partecipanti
-      // double owedAmount = 0;
-      // if (splitRate != null) {
-      //   // try { // TODO: da implementare
-      //   //   final Map<String, dynamic> splitRatesMap = Map<String, dynamic>.from(splitRate);
-      //   //   final userSplitRate = double.tryParse(splitRatesMap[userId]?.toString() ?? '0') ?? 0;
-      //   //   owedAmount = totalAmount * userSplitRate;
-      //   // } 
-      //   // catch (e) {
-      //   //   log.warning("Error parsing split rate for expense ${expense['id']}: $e. Defaulting to equal split.");
-      //   //   owedAmount = totalAmount / max(1, numberOfParticipants);
-      //   // }
-      // } 
-      // else {
-      //   owedAmount = totalAmount / max(1, numberOfParticipants);
-      // }
-
-      // if (summary.containsKey(userId)) {
-      //   summary[userId]!.increaseAlreadyPaid(paidAmount);
-      //   summary[userId]!.increaseToPay(owedAmount);
-      // } 
-      // else {
-      //   // TODO: gestire meglio questo caso, in teoria non dovrebbe mai accadere perché inizializziamo la mappa con tutti i partecipanti del gruppo, ma è meglio essere sicuri
-      //   // summary[userId] = GroupParticipantSummaryModel(
-      //   //   userId: userId,
-      //   //   profile: _groupDetails?.groupParticipants.firstWhere((p) => p.userId == userId, orElse: () => ProfileModel.empty()) ?? ProfileModel.empty(),
-      //   //   alreadyPaid: paidAmount,
-      //   //   toPay: owedAmount,
-      //   // );
-      // }
+      totalAmount += paidAmountGroup;
     }
-    return summary;
+
+    return totalAmount;
   }
+
+  static void computeToPayAndToReceiveForParticipants(Map<String, GroupParticipantSummaryModel> summary, {required final double averageExpensePerUser}) {
+    // Compute how much each participant should pay or receive to balance the expenses
+    for (var entry in summary.entries) {
+      final userId = entry.key;
+      final participantSummary = entry.value;
+
+      final toPay = averageExpensePerUser - participantSummary.paidAmountGroup;
+      if (toPay < 0) {
+        participantSummary.updateToReceive = -toPay;
+        participantSummary.updateToPay = 0;
+      }
+      else {
+        participantSummary.updateToReceive = 0;
+        participantSummary.updateToPay = toPay;
+      }
+      log.fine("Participant $userId summary: paidAmountGroup=${participantSummary.paidAmountGroup}, paidAmountItself=${participantSummary.paidAmountItself}, toReceive=${participantSummary.toReceive}, toPay=${participantSummary.toPay}.");
+    }
+  }
+
 }

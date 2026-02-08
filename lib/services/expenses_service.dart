@@ -2,6 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/models/api_response_model.dart';
 import 'package:monitoraggio_spese/models/expense_model.dart';
 import 'package:monitoraggio_spese/models/group_details_model.dart';
+import 'package:monitoraggio_spese/models/group_expense_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ExpensesService {
@@ -92,24 +93,31 @@ class ExpensesService {
     return rows;
   }
 
-  Future<List<Map<String, dynamic>>> fetchLatestGroupExpenses({required String groupId, required int pageIndex, int pageSize = 50}) async {
-    final from = pageIndex * pageSize;
-    final to = from + pageSize - 1;
+  Future<ApiResponseModel<List<GroupExpenseModel>>> fetchLatestGroupExpenses({required String groupId, required int pageIndex, int pageSize = 50}) async {
+    
+    try {
+      final from = pageIndex * pageSize;
+      final to = from + pageSize - 1;
 
-    final rows = await supabase
-      .from('group_expenses')
-      .select('*, group:groups(name), merchant:merchants(*), category:categories(*), user:profiles(username, name)')
-      .eq('group_id', groupId)
-      .order('created_at', ascending: false)
-      .range(from, to);
+      final expenses = await supabase
+        .from('group_expenses')
+        .select('*, merchant:merchants(*), category:categories(*), profile:profiles(*)')
+        .eq('group_id', groupId)
+        .order('created_at', ascending: false)
+        .range(from, to);
 
-    return rows; // TODO: convertire in modello?
+      return ApiResponseModel<List<GroupExpenseModel>>(success: true, message: null, data: GroupExpenseModel.fromList(expenses));
+    } 
+    catch (e) {
+      log.severe("Error fetching group expenses: $e");
+      return ApiResponseModel<List<GroupExpenseModel>>(success: false, message: e.toString(), data: []);
+    }
   }
 
   Future<ApiResponseModel<GroupDetailsModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
     
     try {
-      // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), user:profiles(id, username, name))
+      // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
         .from('groups')
         .select('''

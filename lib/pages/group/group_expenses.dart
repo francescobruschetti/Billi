@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/enums/time_filter_enum.dart';
 import 'package:monitoraggio_spese/models/group_details_model.dart';
+import 'package:monitoraggio_spese/models/group_expense_model.dart';
 import 'package:monitoraggio_spese/models/group_participant_summary_model.dart';
 import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
 import 'package:monitoraggio_spese/pages/group/group_details.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
 import 'package:monitoraggio_spese/utils/group_expenses_util.dart';
+import 'package:monitoraggio_spese/widgets/components/custom_icon_widget.dart';
+import 'package:monitoraggio_spese/widgets/components/error_alert_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/expense_card_widget.dart';
 import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 import 'package:monitoraggio_spese/widgets/components/search_field_widget.dart';
@@ -30,9 +33,9 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   final ScrollController _scrollController = ScrollController();
   final String userId = Supabase.instance.client.auth.currentUser!.id;
 
-  List<Map<String, dynamic>> _allExpenses = []; // TODO: convertire in modello?
-  GroupDetailsModel? _groupDetails;
   Map<String, GroupParticipantSummaryModel> _participantsSummary = {};
+  List<GroupExpenseModel> _groupExpenses = [];
+  GroupDetailsModel? _groupDetails;
 
   int _currentPage = 0;
 
@@ -43,6 +46,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   bool _hasMore = true;
   String _searchText = '';
   String _groupName = '-';
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -60,17 +64,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     super.dispose();
   }
 
-  void _handleUsersSummary() {
+  void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate expenses e group details hanno caricato i dati necessari
     setState(() {
-      log.finer("Computing users summary for group participants...");
       _isComputingUsersSummary = true;
     });
 
-    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _allExpenses, groupParticipants: _groupDetails?.groupParticipants ?? []);
+    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, groupParticipants: _groupDetails?.groupParticipants ?? []);
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
-      log.finer("Finished computing users summary for group participants.");
       _isComputingUsersSummary = false;
     });
   }
@@ -99,6 +101,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     if (_isLoadingPage || _isLoadingContent) return;
     if (mounted) {
       setState(() {
+        _errorMessage = null;
         if (reset) {
           _isLoadingPage = true;
         } 
@@ -110,26 +113,34 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     if (reset) {
       _currentPage = 0;
       _hasMore = true;
-      _allExpenses.clear();
+      _groupExpenses.clear();
     }
 
-    final expenses = await service.fetchLatestGroupExpenses(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
-    if (mounted) {
+    final apiResponseModel = await service.fetchLatestGroupExpenses(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
+    if (!apiResponseModel.success) {
       setState(() {
-        if (reset) {
-          _allExpenses = expenses;
-          _isLoadingPage = false;
-        } 
-        else {
-          _allExpenses.addAll(expenses);
-          _isLoadingContent = false;
-        }        
-        _handleUsersSummary();
-        _hasMore = expenses.length == _pageSize;
-        if (_hasMore) {
-          _currentPage++;
-        }
+        _errorMessage = 'Errore durante il caricamento';
+        _isLoadingPage = false;
       });
+    }
+    else {
+      if (mounted) {
+        setState(() {
+          if (reset) {
+            _groupExpenses = apiResponseModel.data;
+            _isLoadingPage = false;
+          } 
+          else {
+            _groupExpenses.addAll(apiResponseModel.data);
+            _isLoadingContent = false;
+          }
+          _handleUsersSummary();
+          _hasMore = apiResponseModel.data.length == _pageSize;
+          if (_hasMore) {
+            _currentPage++;
+          }
+        });
+      }
     }
   }
 
@@ -137,17 +148,17 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     final details = await service.fetchGroupParticipants(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
 
     if (mounted) {
-      if (details.success) {
-        log.info('Group details loaded successfully');
-      } 
-      else {
-        log.warning('Failed to load group details: ${details.message}');
+      if (!details.success) {
+        setState(() {
+          _errorMessage = 'Errore durante il caricamento dei dettagli del gruppo';
+        });
       }
-
-      setState(() {
-        _groupDetails = details.success ? details.data : null;
-        _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
-      });
+      else {
+        setState(() {
+          _groupDetails = details.success ? details.data : null;
+          _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
+        });
+      }
     }
   }
 
@@ -193,7 +204,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             ),
             const SizedBox(width: 5),
             IconButton(
-              icon: Image.asset('images/icons/settings.PNG', width: 20, height: 20, color: Colors.black),
+              icon: CustomIconWidget(assetPath: 'images/icons/settings.PNG'),
               tooltip: 'Impostazioni Gruppo',
               onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
             ),
@@ -217,7 +228,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   children: [
                     Expanded(
                       child: Text(
-                          'Totale spese (${_allExpenses.length}): ${_allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}€',
+                          'Totale spese (${_groupExpenses.length}): ${_groupExpenses.fold<double>(0, (sum, e) => sum + e.totalAmount).toStringAsFixed(2)}€',
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                     ),
@@ -235,142 +246,148 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   ],
                 ),
                 
-                // Page Header "subtitle"
-                const SizedBox(height: 4),
-                TimeFilterWidget(
-                  timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                  onPressed: (filter) => _filterTimeExpenses(filter: filter),
-                ),
-
-                // How much user owes or is owed
-                const SizedBox(height: 4),
-                Card(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                    borderRadius: BorderRadius.circular(12),
+                // Alert errore
+                if (_errorMessage != null) ...[
+                  ErrorAlertWidget(errorMessage: _errorMessage!),
+                ]
+                else ...[
+                  // Page Header "subtitle"
+                  const SizedBox(height: 4),
+                  TimeFilterWidget(
+                    timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
+                    onPressed: (filter) => _filterTimeExpenses(filter: filter),
                   ),
-                  child: ExpansionTile(
-                    title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    children: [
-                      SizedBox(
-                        height: 100, // imposta l’altezza desiderata
-                        child: _isComputingUsersSummary
-                          ? const LoadingScaffold(message: 'Caricamento dettagli...')
-                          : _participantsSummary.isEmpty
-                            ? const Center(child: Text('Nessun utente presente'))
-                            : ListView.builder(
-                                itemCount: _participantsSummary.length,
-                                itemBuilder: (context, index) {
-                                  final e = _participantsSummary.values.elementAt(index);
 
-                                  return Card(
-                                    shape: RoundedRectangleBorder(
-                                      side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.0),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    child: Row(
-                                        children: [
-                                          // TODO: da implementare
-                                          // const SizedBox(width: 8),
-                                          // Text(e.profile.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                          // const SizedBox(width: 12),  
-                                          // Text("Paid: ${e.alreadyPaid.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                          // const SizedBox(width: 8), 
-                                          // Text("To Pay: ${e.toPay.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                          // const SizedBox(width: 8), 
-                                          // Text("To Receive: ${e.toReceive.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                        ]
-                                    ),
+                  // How much user owes or is owed
+                  const SizedBox(height: 4),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ExpansionTile(
+                      title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
+                      children: [
+                        SizedBox(
+                          height: 100, // imposta l’altezza desiderata
+                          child: _isComputingUsersSummary
+                            ? const LoadingScaffold(message: 'Caricamento dettagli...')
+                            : _participantsSummary.isEmpty
+                              ? const Center(child: Text('Nessun utente presente'))
+                              : ListView.builder(
+                                  itemCount: _participantsSummary.length,
+                                  itemBuilder: (context, index) {
+                                    final e = _participantsSummary.values.elementAt(index);
+
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.0),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      child: Row(
+                                          children: [
+                                            Text("NOT IMPLEMENTED YET")
+                                            // TODO: da implementare
+                                            // const SizedBox(width: 8),
+                                            // Text(e.profile.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                            // const SizedBox(width: 12),  
+                                            // Text("Paid: ${e.alreadyPaid.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
+                                            // const SizedBox(width: 8), 
+                                            // Text("To Pay: ${e.toPay.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
+                                            // const SizedBox(width: 8), 
+                                            // Text("To Receive: ${e.toReceive.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
+                                          ]
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Page Content
+                  Expanded(
+                    child: _isLoadingContent
+                      ? const LoadingScaffold(message: 'Caricamento spese...')
+                      : _groupExpenses.isEmpty
+                        ? const Center(child: Text('Nessuna spesa presente'))
+                        : NotificationListener<ScrollNotification>(
+                            onNotification: (scrollNotification) {
+                              if (scrollNotification is ScrollEndNotification) {
+                                _onScroll();
+                              }
+                              return false;
+                            },
+                            child:
+                              ListView.builder(
+                                controller: _scrollController,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: _groupExpenses.length + (_isLoadingContent ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >= _groupExpenses.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 16),
+                                      child: Center(child: Text('Carico altre spese...')),
+                                    );
+                                  }
+                                  final e = _groupExpenses[index];
+                                  final formattedDateTime = _formatDateTime(e.updatedAt.toString());
+                                  final totalAmount = e.totalAmount;
+                                  final merchant = e.merchant;
+                                  final category = e.category;
+
+                                  return ExpenseCardWidget(
+                                    merchantName: merchant.name,
+                                    categoryName: category.name,
+                                    formattedDateTime: formattedDateTime,
+                                    totalAmount: totalAmount,
+                                    note: e.note,
+                                    profileModel: e.profileModel,
+                                    paidAmount: e.paidAmount,
+                                    splitRate: e.splitRate,
                                   );
                                 },
                               ),
+                            ),
+                  ),
+                
+                  // Page footer
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 9,
+                        child: SearchFieldWidget(
+                          text: 'Cerca spesa...',
+                          icon: Icons.search,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchText = value;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 1,
+                        child:
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                            foregroundColor: Colors.white,
+                            shape: const CircleBorder(),
+                          ),
+                          onPressed: () async {
+                            _navigateToGroupExpensesPage(groupId: widget.groupId, isEditAllowed: true);
+                          },
+                        ),
                       ),
                     ],
                   ),
-                ),
-                
-                // Page Content
-                Expanded(
-                  child: _isLoadingContent
-                    ? const LoadingScaffold(message: 'Caricamento spese...')
-                    : _allExpenses.isEmpty
-                      ? const Center(child: Text('Nessuna spesa presente'))
-                      : NotificationListener<ScrollNotification>(
-                          onNotification: (scrollNotification) {
-                            if (scrollNotification is ScrollEndNotification) {
-                              _onScroll();
-                            }
-                            return false;
-                          },
-                          child:
-                            ListView.builder(
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: _allExpenses.length + (_isLoadingContent ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= _allExpenses.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 16),
-                                    child: Center(child: Text('Carico altre spese...')),
-                                  );
-                                }
-                                final e = _allExpenses[index];
-                                final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
-                                final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
-                                final merchant = e['merchant'] ?? {};
-                                final category = e['category'] ?? {};
-
-                                return ExpenseCardWidget(
-                                  merchantName: merchant['name'] ?? '-',
-                                  categoryName: category['name'] ?? '-',
-                                  formattedDateTime: formattedDateTime,
-                                  totalAmount: totalAmount,
-                                  note: e['note'],
-                                  user: e['user'],
-                                  paidAmount: e['paid_amount'],
-                                  splitRate: e['split_rate'],
-                                );
-                              },
-                            ),
-                          ),
-                ),
-                
-                // Page footer
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 9,
-                      child: SearchFieldWidget(
-                        text: 'Cerca spesa...',
-                        icon: Icons.search,
-                        onChanged: (value) {
-                          setState(() {
-                            _searchText = value;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 1,
-                      child:
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.secondary,
-                          foregroundColor: Colors.white,
-                          shape: const CircleBorder(),
-                        ),
-                        onPressed: () async {
-                          _navigateToGroupExpensesPage(groupId: widget.groupId, isEditAllowed: true);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              
+                ],
               ],
             ),
           ),
