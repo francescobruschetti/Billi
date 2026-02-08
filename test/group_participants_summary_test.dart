@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monitoraggio_spese/utils/group_expenses_util.dart';
 
 void main() {
   test('computeParticipantsSummary calcola correttamente', () {

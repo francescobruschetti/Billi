@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:monitoraggio_spese/models/group_participant_model.dart';
 import 'package:monitoraggio_spese/models/group_participant_summary_model.dart';
