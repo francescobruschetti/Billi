@@ -90431,7 +90431,7 @@ if(q>=s)r.afQ()},
 abB(a){var s=this.c
 s.toString
 A.d9(s,!1).hs(A.uo(new A.aqs(a),null,t.z))},
-L(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=A.oD(l,A.cd(A.b([A.cu(A.bl("Spese: "+m.CW,l,l,l,l,l,l),1),B.lP,A.fV(l,!1,l,l,l,l,l,l,l,l,A.aEV("images/icons/settings.PNG",B.l,20,20),l,l,l,l,new A.aqu(m),l,l,l,l,l,"Impostazioni Gruppo",l)],k),B.x,B.cL,B.I,0))
+L(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=A.oD(l,A.cd(A.b([A.cu(A.bl("Spese: "+m.CW,l,l,l,l,l,l),1),B.lP,A.fV(l,!1,l,l,l,l,l,l,l,l,A.aEV("images/icons/settings.PNG",B.l,30,30),l,l,l,l,new A.aqu(m),l,l,l,l,l,"Impostazioni Gruppo",l)],k),B.x,B.cL,B.I,0))
 if(m.ax)k=A.fN(A.eg(B.pl,B.x,B.bw,B.I),l,l)
 else{s=m.x
 s=A.b([A.cd(A.b([A.cu(A.bl("Totale spese ("+s.length+"): "+B.d.ab(B.b.kG(s,0,new A.aqv()),2)+"\u20ac",l,l,l,A.T(a).ok.f,l,l),1),B.lP,A.fV(l,!1,l,l,l,l,l,l,l,l,B.kM,l,l,l,l,new A.aqw(m),l,l,l,l,l,"Aggiorna",l),A.fV(l,!1,l,l,l,l,l,l,l,l,B.oQ,l,l,l,l,new A.aqx(m),l,l,l,l,l,"Filtra",l)],k),B.x,B.cL,B.I,0)],k)
@@ -91258,7 +91258,7 @@ A.zo.prototype={
 L(a){var s=null,r=A.a0M(B.cM,2),q=A.cR(8)
 return A.cZ(s,A.cd(A.b([A.jV(B.oI,B.cM,s,s),B.c5,A.cu(A.bl(this.c,s,s,s,B.m0,s,s),1)],t.p),B.x,B.M,B.I,0),B.r,s,new A.e2(B.ha,s,r,q,s,s,B.b2),s,s,B.k_,B.k0,s,s,1/0)}}
 A.Ly.prototype={
-L(a){var s,r,q,p,o,n,m,l,k=this,j=null,i=t.p,h=A.b([A.cd(A.b([A.aEV("images/icons/sell.PNG",B.vr,20,20),B.iF,A.bl(k.d,j,j,j,B.iL,j,j)],i),B.x,B.M,B.aR,0),A.cd(A.b([B.HC,B.iF,A.bl(k.c,j,j,j,B.iL,j,j)],i),B.x,B.M,B.aR,0)],i),g=k.r
+L(a){var s,r,q,p,o,n,m,l,k=this,j=null,i=t.p,h=A.b([A.cd(A.b([A.aEV("images/icons/sell.PNG",B.vr,30,30),B.iF,A.bl(k.d,j,j,j,B.iL,j,j)],i),B.x,B.M,B.aR,0),A.cd(A.b([B.HC,B.iF,A.bl(k.c,j,j,j,B.iL,j,j)],i),B.x,B.M,B.aR,0)],i),g=k.r
 if(g!=null)h.push(A.cd(A.b([B.HD,B.iF,A.bl(g.b,j,j,j,B.iL,j,j)],i),B.x,B.M,B.aR,0))
 h=A.alr(h,B.Bb,2,4)
 g=A.bl(k.e,j,j,j,B.Wg,j,j)
