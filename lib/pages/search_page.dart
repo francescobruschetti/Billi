@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:monitoraggio_spese/models/expense_model.dart';
 import 'package:monitoraggio_spese/services/expenses_service.dart';
+import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -17,7 +18,6 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     expensesStream = service.subscribeExpenses();
-    print("Initialized expenses stream");
   }
 
   @override
@@ -52,12 +52,10 @@ class _SearchPageState extends State<SearchPage> {
               stream: expensesStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: LoadingScaffold(message: 'Carico...'));
                 }
 
                 final expenses = snapshot.data!;
-                print("Expenses count: ${expenses.length}");
-
                 return ListView.builder(
                   itemCount: expenses.length,
                   itemBuilder: (context, index) {
@@ -66,7 +64,7 @@ class _SearchPageState extends State<SearchPage> {
                       child: ListTile(
                         title: Text(e.title),
                         subtitle:
-                            Text('${e.merchant ?? ''} · ${e.category ?? ''}'),
+                            Text('${e.merchant ?? ''} · ${e.categories ?? ''}'),
                         trailing:
                             Text('\$${e.amount.toStringAsFixed(2)}'),
                       ),

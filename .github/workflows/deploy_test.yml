@@ -1,38 +1,40 @@
-name: Deploy Flutter Web (test)
+# # TODO: not working
 
-on:
-  push:
-    branches:
-      - test
+# name: Deploy Flutter Web (test)
 
-permissions:
-  contents: write
+# on:
+#   push:
+#     branches:
+#       - test
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+# permissions:
+#   contents: write
 
-    steps:
-      # Checkout repo
-      - uses: actions/checkout@v4
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
 
-      # Setup Flutter
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-          channel: 'stable'
+#     steps:
+#       # Checkout repo
+#       - uses: actions/checkout@v4
 
-      # Enable web
-      - run: flutter config --enable-web
+#       # Setup Flutter
+#       - uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: 'stable'
+#           channel: 'stable'
 
-      # Install dependencies
-      - run: flutter pub get
+#       # Enable web
+#       - run: flutter config --enable-web
 
-      # Build web
-      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+#       # Install dependencies
+#       - run: flutter pub get
 
-      # Deploy to gh-pages
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web
+#       # Build web
+#       - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+#       # Deploy to gh-pages
+#       - uses: peaceiris/actions-gh-pages@v4
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: build/web

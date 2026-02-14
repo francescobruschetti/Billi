@@ -12,7 +12,31 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
+  bool _isFormValid = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_onFormChanged);
+    _passwordController.addListener(_onFormChanged);
+  }
+
+  @override
+  void dispose() {
+    _emailController.removeListener(_onFormChanged);
+    _passwordController.removeListener(_onFormChanged);
+
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onFormChanged() {
+    setState(() {
+      _isFormValid = _emailController.text.trim().isNotEmpty && _passwordController.text.trim().isNotEmpty;
+    });
+  }
 
   Future<void> _login() async {
     setState(() {
@@ -57,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
+              onSubmitted: (_) => _login(), // Permette di inviare il form premendo "Invio"
             ),
             const SizedBox(height: 24),
             if (_error != null)
@@ -64,10 +89,8 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : _login,
-                child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Login'),
+                onPressed: (_loading || !_isFormValid) ? null : _login,
+                child: _loading ? const CircularProgressIndicator() : const Text('Login'),
               ),
             ),
             TextButton(
