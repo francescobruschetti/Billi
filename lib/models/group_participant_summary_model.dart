@@ -1,3 +1,4 @@
+import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/profile_model.dart';
 
 class GroupParticipantSummaryModel {
@@ -5,18 +6,22 @@ class GroupParticipantSummaryModel {
   final ProfileModel profile;
   double paidAmountGroup; // Physically spent by the participant
   double paidAmountItself; // Physically spent for itself
-  double toReceive; // Amount that participant shall receive from others
-  double toPay; // Amount that participant shall pay to others
-  double expectedToPay; // FOR FUTURE USE: Amount that participant should pay based on how much it contributed to the expenses
+  double toReceiveNet; // Net Amount that participant shall pay to others
+  double toReceiveGross; // Gross Amount that participant shall receive from others
+  double expectedtoReceiveNet; // FOR FUTURE USE: Amount that participant should pay based on how much it contributed to the expenses
+  List<GroupExpenseSummaryBalanceMovementModel> movements = []; // List of all movements this user has to execute to balance the expenses (to pay other participants)
+  List<GroupExpenseSummaryBalanceMovementModel> balanceMovements = []; // List of all movements this user has to execute to balance the expenses (to receive from other participants)
 
   GroupParticipantSummaryModel({
     required this.userId,
     required this.profile,
-    required this.paidAmountGroup,
+    required this.paidAmountGroup, 
     required this.paidAmountItself,
-    required this.toPay,
-    required this.toReceive,
-    required this.expectedToPay,
+    required this.toReceiveNet,
+    required this.toReceiveGross,
+    required this.expectedtoReceiveNet,
+    required this.movements,
+    required this.balanceMovements,
   });
   
   GroupParticipantSummaryModel.basic({
@@ -25,9 +30,25 @@ class GroupParticipantSummaryModel {
   }) : 
     paidAmountGroup = 0.0,
     paidAmountItself = 0.0,
-    toPay = 0.0,
-    toReceive = 0.0,
-    expectedToPay = 0.0;
+    toReceiveNet = 0.0,
+    toReceiveGross = 0.0,
+    expectedtoReceiveNet = 0.0,
+    movements = [],
+    balanceMovements = [];
+
+  GroupParticipantSummaryModel duplicate() {
+    return GroupParticipantSummaryModel(
+      userId: userId,
+      profile: profile,
+      paidAmountGroup: paidAmountGroup,
+      paidAmountItself: paidAmountItself,
+      toReceiveNet: toReceiveNet,
+      toReceiveGross: toReceiveGross,
+      expectedtoReceiveNet: expectedtoReceiveNet,
+      movements: List<GroupExpenseSummaryBalanceMovementModel>.from(movements),
+      balanceMovements: List<GroupExpenseSummaryBalanceMovementModel>.from(balanceMovements)
+    );
+  }
 
   // --- Setters
   set updatePaidAmountGroup(double amount) {
@@ -38,16 +59,16 @@ class GroupParticipantSummaryModel {
     paidAmountItself = amount;
   }
 
-  set updateToPay(double amount) {
-    toPay = amount;
+  set updatetoReceiveNet(double amount) {
+    toReceiveNet = amount;
   }
 
-  set updateToReceive(double amount) {
-    toReceive = amount;
+  set updatetoReceiveGross(double amount) {
+    toReceiveGross = amount;
   }
 
-  set updateExpectedToPay(double amount) {
-    expectedToPay = amount;
+  set updateExpectedtoReceiveNet(double amount) {
+    expectedtoReceiveNet = amount;
   }
 
   // --- Methods to increment values
@@ -59,15 +80,15 @@ class GroupParticipantSummaryModel {
     paidAmountItself += amount;
   }
 
-  void increaseToPay(double amount) {
-    toPay += amount;
+  void increasetoReceiveNet(double amount) {
+    toReceiveNet += amount;
   }
 
-  void increaseToReceive(double amount) {
-    toReceive += amount;
+  void increasetoReceiveGross(double amount) {
+    toReceiveGross += amount;
   }
-  
-  void increaseExpectedToPay(double amount) {
-    expectedToPay += amount;
+
+  void increaseExpectedtoReceiveNet(double amount) {
+    expectedtoReceiveNet += amount;
   }
 }

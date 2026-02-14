@@ -204,7 +204,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             ),
             const SizedBox(width: 5),
             IconButton(
-              icon: CustomIconWidget(assetPath: 'images/icons/settings.PNG'),
+              icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG'),
               tooltip: 'Impostazioni Gruppo',
               onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
             ),
@@ -269,39 +269,33 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                       title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
                       children: [
                         SizedBox(
-                          height: 100, // imposta l’altezza desiderata
+                          height: 100,
                           child: _isComputingUsersSummary
                             ? const LoadingScaffold(message: 'Caricamento dettagli...')
                             : _participantsSummary.isEmpty
                               ? const Center(child: Text('Nessun utente presente'))
-                              : ListView.builder(
-                                  itemCount: _participantsSummary.length,
-                                  itemBuilder: (context, index) {
-                                    final e = _participantsSummary.values.elementAt(index);
-
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                        side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.0),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      child: Row(
-                                          children: [
-                                            Text("NOT IMPLEMENTED YET")
-                                            // TODO: da implementare
-                                            // const SizedBox(width: 8),
-                                            // Text(e.profile.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                            // const SizedBox(width: 12),  
-                                            // Text("Paid: ${e.alreadyPaid.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                            // const SizedBox(width: 8), 
-                                            // Text("To Pay: ${e.toPay.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                            // const SizedBox(width: 8), 
-                                            // Text("To Receive: ${e.toReceive.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                          ]
-                                      ),
-                                    );
-                                  },
-                                ),
+                              : SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      columns: [
+                                        DataColumn(label: Text('Nome')),
+                                        DataColumn(label: Text('Versati')),
+                                        DataColumn(label: Text('Spesi')),
+                                        DataColumn(label: Text('Da Incassare (lordi)')),
+                                        DataColumn(label: Text('Da Incassare (netti)')),
+                                      ],
+                                      rows: _participantsSummary.values.map((e) => DataRow(cells: [
+                                        DataCell(Text(e.profile.name)),
+                                        DataCell(Text(e.paidAmountGroup.toStringAsFixed(2))),
+                                        DataCell(Text(e.paidAmountItself.toStringAsFixed(2))),
+                                        DataCell(Text(e.toReceiveGross.toStringAsFixed(2))),
+                                        DataCell(Text(e.toReceiveNet.toStringAsFixed(2))),
+                                      ])).toList(),
+                                    ),
+                                  ),
+                                )
                         ),
                       ],
                     ),

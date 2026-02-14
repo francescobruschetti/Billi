@@ -37,7 +37,7 @@ class ExpenseCardWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // --- Expense entry
-                CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', color: Colors.orange),
+                CustomIconWidget(assetPath: 'assets/images/icons/sell-filled.PNG', color: Colors.orange),
                 const SizedBox(width: 4),
                 Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
