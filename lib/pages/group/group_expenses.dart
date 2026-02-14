@@ -2,7 +2,6 @@
 import 'package:Billy/pages/group/components/dialog_expenses_balance_widget.dart';
 import 'package:Billy/pages/group/components/dialog_expenses_details_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
-import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -18,7 +17,6 @@ import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/expense_card_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
-import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupExpensesPage extends StatefulWidget {
@@ -57,8 +55,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    _loadGroupDetails();
-    _loadExpenses(reset: true);
+    _loadData();
   }
 
   @override
@@ -101,7 +98,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       _isComputingUsersSummary = true;
     });
 
-    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, groupParticipants: _groupDetails?.groupParticipants ?? []);
+    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, participants: _groupDetails?.participants ?? []);
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
@@ -109,7 +106,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     });
   }
 
-  void _loadExpenses({bool reset = false}) async {
+  void _loadData({bool reset = false}) async {
     if (_isLoadingPage || _isLoadingContent) return;
     if (mounted) {
       setState(() {
@@ -128,7 +125,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       _groupExpenses.clear();
     }
 
-    final apiResponseModel = await service.fetchLatestGroupExpenses(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
+    final apiResponseModel = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
     if (!apiResponseModel.success) {
       setState(() {
         _errorMessage = 'Errore durante il caricamento';
@@ -139,36 +136,22 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       if (mounted) {
         setState(() {
           if (reset) {
-            _groupExpenses = apiResponseModel.data;
+            _groupExpenses = apiResponseModel.data.expenses;
+
+            _groupDetails = apiResponseModel.data;
+            _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
+
             _isLoadingPage = false;
           } 
           else {
-            _groupExpenses.addAll(apiResponseModel.data);
+            _groupExpenses.addAll(apiResponseModel.data.expenses);
             _isLoadingContent = false;
           }
           _handleUsersSummary();
-          _hasMore = apiResponseModel.data.length == _pageSize;
+          _hasMore = apiResponseModel.data.expenses.length == _pageSize;
           if (_hasMore) {
             _currentPage++;
           }
-        });
-      }
-    }
-  }
-
-  void _loadGroupDetails() async {
-    final details = await service.fetchGroupParticipants(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
-
-    if (mounted) {
-      if (!details.success) {
-        setState(() {
-          _errorMessage = 'Errore durante il caricamento dei dettagli del gruppo';
-        });
-      }
-      else {
-        setState(() {
-          _groupDetails = details.success ? details.data : null;
-          _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
         });
       }
     }
@@ -183,7 +166,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     )
     .then((result) {
       if (result == true) {
-        _loadExpenses(reset: true);
+        _loadData(reset: true);
       }
     });
   }
@@ -193,7 +176,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll) {
-      _loadExpenses();
+      _loadData();
     }
   }
 
@@ -272,7 +255,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     IconButton(
                       icon: const Icon(Icons.refresh),
                       tooltip: 'Aggiorna',
-                      onPressed: () => _loadExpenses(reset: true),
+                      onPressed: () => _loadData(reset: true),
                     ),
                     IconButton(
                       icon: const Icon(Icons.filter_list),
@@ -302,11 +285,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: CustomButtonWidget(text: "Utenti: ${_groupDetails?.groupParticipants.length ?? 0}", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
+                        child: CustomButtonWidget(text: "Utenti: ${_groupDetails?.participants.length ?? 0}", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: CustomButtonWidget(text: "Saldo: ${_computeBalanceTransactionsCount()}", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
+                        child: CustomButtonWidget(text: "Da saldare: ${_computeBalanceTransactionsCount()}", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
                       ),
                     ],
                   ),
@@ -319,7 +302,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   //     borderRadius: BorderRadius.circular(12),
                   //   ),
                   //   child: ExpansionTile(
-                  //     title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
+                  //     title: Text("Riepilogo utenti (${_groupDetails?.participants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
                   //     children: [
                   //       SizedBox(
                   //         height: 100,

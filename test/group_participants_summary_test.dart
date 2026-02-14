@@ -49,7 +49,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, groupParticipants: groupParticipants);
+    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -144,7 +144,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, groupParticipants: groupParticipants);
+    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -248,7 +248,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, groupParticipants: groupParticipants);
+    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -378,7 +378,7 @@ void main() {
       GroupParticipantModel(userId: 'profile4', profile: profile4)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, groupParticipants: groupParticipants);
+    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 4);

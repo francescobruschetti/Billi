@@ -10,7 +10,7 @@ class GroupExpensesUtil {
 
   static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({
     required List<GroupExpenseModel> expenses, 
-    required List<GroupParticipantModel> groupParticipants
+    required List<GroupParticipantModel> participants
   }) 
   {    
     Map<String, GroupParticipantSummaryModel> summary = {};
@@ -19,13 +19,13 @@ class GroupExpensesUtil {
       log.info("No expenses found for group. Returning empty summary.");
       return summary;
     }
-    if (groupParticipants.isEmpty) {
+    if (participants.isEmpty) {
       log.warning("Number of participants is zero or negative. Defaulting to 1 to avoid division by zero.");
       return summary;
     }
     
     // Step 1 - Initialize participants summary
-    initParticipantsSummary(summary, groupParticipants);
+    initParticipantsSummary(summary, participants);
 
     // Step 2 - Compute total amount and update summary with active payments
     double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, expenses);
@@ -43,8 +43,8 @@ class GroupExpensesUtil {
   }
 
   // Initialized participants summary with group participants (in case some participants don't have expenses yet)
-  static void initParticipantsSummary(Map<String, GroupParticipantSummaryModel> summary, List<GroupParticipantModel> groupParticipants) {
-    for (GroupParticipantModel participant in groupParticipants) {
+  static void initParticipantsSummary(Map<String, GroupParticipantSummaryModel> summary, List<GroupParticipantModel> participants) {
+    for (GroupParticipantModel participant in participants) {
       summary[participant.userId] = GroupParticipantSummaryModel.basic(
         userId: participant.userId,
         profile: participant.profile

@@ -131,7 +131,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         _descriptionController.text = groupDetailsResponse.data.description ?? '';
         _linkController.text = groupDetailsResponse.data.link;
         
-        final userProfiles = groupDetailsResponse.data.groupParticipants.map((p) => p.profile).toList();
+        final userProfiles = groupDetailsResponse.data.participants.map((p) => p.profile).toList();
         setState(() {
           _existingUsers.clear();
           _existingUsers.addAll(userProfiles);

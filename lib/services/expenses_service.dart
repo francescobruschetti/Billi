@@ -93,6 +93,7 @@ class ExpensesService {
     return rows;
   }
 
+  // TODO: NOT used anymore
   Future<ApiResponseModel<List<GroupExpenseModel>>> fetchLatestGroupExpenses({required String groupId, required int pageIndex, int pageSize = 50}) async {
     
     try {
@@ -114,8 +115,35 @@ class ExpensesService {
     }
   }
 
+  Future<ApiResponseModel<GroupDetailsModel>> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
+    try {
+      // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
+      final result = await supabase
+        .from('groups')
+        .select('''
+          id,
+          name,
+          description,
+          link,
+          user_id,
+          created_at,
+          updated_at,
+          group_participants:group_participants(user_id, profiles:profiles(*)),
+          group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(*))
+        ''')
+        .eq('id', groupId)
+        .single();
+
+      return ApiResponseModel<GroupDetailsModel>(success: true, message: null, data: GroupDetailsModel.fromMap(result));
+    }
+    catch (e) {
+      log.severe("Error fetching group details: $e");
+      return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
+    }
+  }
+
+  // TODO: NOT used anymore
   Future<ApiResponseModel<GroupDetailsModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
-    
     try {
       // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -140,7 +168,6 @@ class ExpensesService {
       return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
     }
   }
-
 
   Future<ApiResponseModel<Map<String, dynamic>>> updateGroupExpense({
     required String groupId,

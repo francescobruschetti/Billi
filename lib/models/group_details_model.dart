@@ -1,3 +1,4 @@
+import 'package:Billy/models/group_expense_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 
 class GroupDetailsModel {
@@ -8,7 +9,8 @@ class GroupDetailsModel {
   final String userId;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<GroupParticipantModel> groupParticipants;
+  final List<GroupParticipantModel> participants;
+  final List<GroupExpenseModel> expenses;
 
   GroupDetailsModel({
     required this.id,
@@ -18,7 +20,8 @@ class GroupDetailsModel {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
-    required this.groupParticipants,
+    required this.participants,
+    required this.expenses,
   });
 
   factory GroupDetailsModel.fromMap(Map<String, dynamic> map) {
@@ -33,8 +36,11 @@ class GroupDetailsModel {
       userId: map['user_id'],
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : DateTime.fromMillisecondsSinceEpoch(0),
-      groupParticipants: (map['group_participants'] as List? ?? [])
+      participants: (map['group_participants'] as List? ?? [])
         .map((e) => GroupParticipantModel.fromMap(e as Map<String, dynamic>))
+        .toList(),
+      expenses: (map['group_expenses'] as List? ?? [])
+        .map((e) => GroupExpenseModel.fromMap(e as Map<String, dynamic>))
         .toList(),
     );
   }
