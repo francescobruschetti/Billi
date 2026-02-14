@@ -24,7 +24,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     return Scaffold(
       resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
       appBar: AppBar(
-        title: const Text('Monitoraggio Spese'),
+        title: const Text('Billy - Monitoraggio Spese'),
         actions: [ ],
       ),
       drawer: Drawer(

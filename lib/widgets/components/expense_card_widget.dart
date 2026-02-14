@@ -37,7 +37,7 @@ class ExpenseCardWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // --- Expense entry
-                CustomIconWidget(assetPath: 'images/icons/sell.PNG', color: Colors.orange),
+                CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', color: Colors.orange),
                 const SizedBox(width: 4),
                 Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
@@ -45,7 +45,7 @@ class ExpenseCardWidget extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
+                CustomIconWidget(assetPath: 'assets/images/icons/shopping_cart.PNG', color: Colors.blueGrey),
                 const SizedBox(width: 4),
                 Text(merchantName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
