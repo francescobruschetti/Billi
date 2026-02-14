@@ -1,4 +1,8 @@
 
+import 'package:Billy/pages/group/components/dialog_expenses_balance_widget.dart';
+import 'package:Billy/pages/group/components/dialog_expenses_details_widget.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -64,17 +68,12 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     super.dispose();
   }
 
-  void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate expenses e group details hanno caricato i dati necessari
-    setState(() {
-      _isComputingUsersSummary = true;
-    });
-
-    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, groupParticipants: _groupDetails?.groupParticipants ?? []);
-
-    setState(() {
-      _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
-      _isComputingUsersSummary = false;
-    });
+  int _computeBalanceTransactionsCount() {
+    int count = 0;
+    for (var summary in _participantsSummary.values) {
+      count += summary.balanceMovements.length;
+    }
+    return count;
   }
 
   void _filterExpenses({bool reset = false}) async {
@@ -95,6 +94,19 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       log.severe('Error parsing date: $e');
       return dateTimeStr;
     }
+  }
+
+  void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate expenses e group details hanno caricato i dati necessari
+    setState(() {
+      _isComputingUsersSummary = true;
+    });
+
+    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, groupParticipants: _groupDetails?.groupParticipants ?? []);
+
+    setState(() {
+      _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
+      _isComputingUsersSummary = false;
+    });
   }
 
   void _loadExpenses({bool reset = false}) async {
@@ -191,6 +203,30 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     );
   }
 
+  void _openSummaryDetailsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DialogExpensesDetailsWidget(
+          title: 'Riepilogo partecipante',
+          participantsSummary: _participantsSummary,
+        );
+      },
+    );
+  }
+
+  void _openSummaryTransactionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DialogExpensesBalanceWidget(
+          title: 'Riepilogo saldo',
+          participantsSummary: _participantsSummary,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {    
     return Scaffold(
@@ -251,55 +287,80 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   ErrorAlertWidget(errorMessage: _errorMessage!),
                 ]
                 else ...[
+                  // TODO: NOT USED FOR NOW, DA IMPLEMENTARE FILTRO PER DATA
                   // Page Header "subtitle"
-                  const SizedBox(height: 4),
-                  TimeFilterWidget(
-                    timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                    onPressed: (filter) => _filterTimeExpenses(filter: filter),
-                  ),
+                  // const SizedBox(height: 4),
+                  // TimeFilterWidget(
+                  //   timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
+                  //   onPressed: (filter) => _filterTimeExpenses(filter: filter),
+                  // ),
 
                   // How much user owes or is owed
+                  // v2:                  
                   const SizedBox(height: 4),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ExpansionTile(
-                      title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
-                      children: [
-                        SizedBox(
-                          height: 100,
-                          child: _isComputingUsersSummary
-                            ? const LoadingScaffold(message: 'Caricamento dettagli...')
-                            : _participantsSummary.isEmpty
-                              ? const Center(child: Text('Nessun utente presente'))
-                              : SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: DataTable(
-                                      columns: [
-                                        DataColumn(label: Text('Nome')),
-                                        DataColumn(label: Text('Versati')),
-                                        DataColumn(label: Text('Spesi')),
-                                        DataColumn(label: Text('Da Incassare (lordi)')),
-                                        DataColumn(label: Text('Da Incassare (netti)')),
-                                      ],
-                                      rows: _participantsSummary.values.map((e) => DataRow(cells: [
-                                        DataCell(Text(e.profile.name)),
-                                        DataCell(Text(e.paidAmountGroup.toStringAsFixed(2))),
-                                        DataCell(Text(e.paidAmountItself.toStringAsFixed(2))),
-                                        DataCell(Text(e.toReceiveGross.toStringAsFixed(2))),
-                                        DataCell(Text(e.toReceiveNet.toStringAsFixed(2))),
-                                      ])).toList(),
-                                    ),
-                                  ),
-                                )
-                        ),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: CustomButtonWidget(text: "Utenti: ${_groupDetails?.groupParticipants.length ?? 0}", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: CustomButtonWidget(text: "Saldo: ${_computeBalanceTransactionsCount()}", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
+                      ),
+                    ],
                   ),
+
+                  // // v1: 
+                  // const SizedBox(height: 4),
+                  // Card(
+                  //   shape: RoundedRectangleBorder(
+                  //     side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //   ),
+                  //   child: ExpansionTile(
+                  //     title: Text("Riepilogo utenti (${_groupDetails?.groupParticipants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
+                  //     children: [
+                  //       SizedBox(
+                  //         height: 100,
+                  //         child: _isComputingUsersSummary
+                  //           ? const LoadingScaffold(message: 'Caricamento dettagli...')
+                  //           : _participantsSummary.isEmpty
+                  //             ? const Center(child: Text('Nessun utente presente'))
+                  //             : SingleChildScrollView(
+                  //                 scrollDirection: Axis.horizontal,
+                  //                 child: SingleChildScrollView(
+                  //                   scrollDirection: Axis.vertical,
+                  //                   child: DataTable(
+                  //                     columns: [
+                  //                       DataColumn(label: Text('Nome')),
+                  //                       DataColumn(label: Text('Versati')),
+                  //                       DataColumn(label: Text('Spesi')),
+                  //                       DataColumn(label: Text('Da Incassare (lordi)')),
+                  //                       DataColumn(label: Text('Da Incassare (netti)')),
+                  //                       DataColumn(label: Text('Azioni')),
+                  //                     ],
+                  //                     rows: _participantsSummary.values.map((e) => DataRow(cells: [
+                  //                       DataCell(Text(e.profile.name)),
+                  //                       DataCell(Text(e.paidAmountGroup.toStringAsFixed(2))),
+                  //                       DataCell(Text(e.paidAmountItself.toStringAsFixed(2))),
+                  //                       DataCell(Text(e.toReceiveGross.toStringAsFixed(2))),
+                  //                       DataCell(Text(e.toReceiveNet.toStringAsFixed(2))),
+                  //                       DataCell(
+                  //                         IconButton(
+                  //                           icon: const Icon(Icons.info_outline),
+                  //                           tooltip: 'Dettagli',
+                  //                           onPressed: () => _openSummaryDialog(),
+                  //                         ),
+                  //                       ),
+                  //                     ])).toList(),
+                  //                   ),
+                  //                 ),
+                  //               )
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   
                   // Page Content
                   Expanded(
