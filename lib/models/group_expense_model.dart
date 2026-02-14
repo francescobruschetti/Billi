@@ -1,6 +1,6 @@
-import 'package:monitoraggio_spese/models/category_model.dart';
-import 'package:monitoraggio_spese/models/merchant_model.dart';
-import 'package:monitoraggio_spese/models/profile_model.dart';
+import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/merchant_model.dart';
+import 'package:Billy/models/profile_model.dart';
 
 class GroupExpenseModel {
   final String id;

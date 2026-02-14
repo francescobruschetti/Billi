@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:monitoraggio_spese/models/api_response_model.dart';
-import 'package:monitoraggio_spese/services/expenses_service.dart';
-import 'package:monitoraggio_spese/widgets/components/error_alert_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:Billy/models/api_response_model.dart';
+import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/widgets/components/error_alert_widget.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class ExpensePage extends StatefulWidget {
   final String? expenseId;

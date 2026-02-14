@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:monitoraggio_spese/enums/expense_insert_mode_enum.dart';
-import 'package:monitoraggio_spese/enums/split_rate_mode_enum.dart';
-import 'package:monitoraggio_spese/models/api_response_model.dart';
-import 'package:monitoraggio_spese/services/expenses_service.dart';
-import 'package:monitoraggio_spese/services/groups_service.dart';
+import 'package:Billy/enums/expense_insert_mode_enum.dart';
+import 'package:Billy/enums/split_rate_mode_enum.dart';
+import 'package:Billy/models/api_response_model.dart';
+import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/services/groups_service.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class ExpenseGroupPage extends StatefulWidget {
   final String? groupId;

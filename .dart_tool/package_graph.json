@@ -1,10 +1,10 @@
 {
   "roots": [
-    "monitoraggio_spese"
+    "Billy"
   ],
   "packages": [
     {
-      "name": "monitoraggio_spese",
+      "name": "Billy",
       "version": "1.0.0+1",
       "dependencies": [
         "cupertino_icons",

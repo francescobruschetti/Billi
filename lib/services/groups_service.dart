@@ -1,6 +1,6 @@
 import 'package:logging/logging.dart';
-import 'package:monitoraggio_spese/models/api_response_model.dart';
-import 'package:monitoraggio_spese/models/group_details_model.dart';
+import 'package:Billy/models/api_response_model.dart';
+import 'package:Billy/models/group_details_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupsService {

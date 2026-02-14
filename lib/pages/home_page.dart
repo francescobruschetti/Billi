@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:monitoraggio_spese/enums/time_filter_enum.dart';
-import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
-import 'package:monitoraggio_spese/pages/expense/expense_page.dart';
-import 'package:monitoraggio_spese/widgets/components/custom_button_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/expense_card_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
-import 'package:monitoraggio_spese/widgets/components/time_filter_widget.dart';
+import 'package:Billy/enums/time_filter_enum.dart';
+import 'package:Billy/pages/expense/expense_group_page.dart';
+import 'package:Billy/pages/expense/expense_page.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/expense_card_widget.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
+import 'package:Billy/widgets/components/time_filter_widget.dart';
 import '../services/expenses_service.dart';
 
 class HomePage extends StatefulWidget {

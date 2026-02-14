@@ -1,4 +1,4 @@
-import 'package:monitoraggio_spese/models/profile_model.dart';
+import 'package:Billy/models/profile_model.dart';
 
 class GroupParticipantSummaryModel {
   final String userId;

@@ -1,4 +1,4 @@
-import 'package:monitoraggio_spese/models/group_participant_model.dart';
+import 'package:Billy/models/group_participant_model.dart';
 
 class GroupDetailsModel {
   final String id;

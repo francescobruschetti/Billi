@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:flutter/foundation.dart';
 
-final Logger log = Logger('MonitoraggioSpese');
+final Logger log = Logger('Billy');
 
 void setupLogging({Level? overrideLevel}) {
   Logger.root.level = overrideLevel ?? 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/models/expense_model.dart';
-import 'package:monitoraggio_spese/services/expenses_service.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:Billy/models/expense_model.dart';
+import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/logger.dart';
+import 'package:Billy/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
 import 'pages/login_logout_signup/login_page.dart';
@@ -15,11 +15,11 @@ void main() async {
   );
 
   setupLogging(); // Initialize logging
-  runApp(const MonitoraggioSpeseApp());
+  runApp(const BillyApp());
 }
 
-class MonitoraggioSpeseApp extends StatelessWidget {
-  const MonitoraggioSpeseApp({super.key});
+class BillyApp extends StatelessWidget {
+  const BillyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

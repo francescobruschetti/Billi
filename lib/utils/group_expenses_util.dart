@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
-import 'package:monitoraggio_spese/models/group_expense_model.dart';
-import 'package:monitoraggio_spese/models/group_participant_model.dart';
-import 'package:monitoraggio_spese/models/group_participant_summary_model.dart';
+import 'package:Billy/models/group_expense_model.dart';
+import 'package:Billy/models/group_participant_model.dart';
+import 'package:Billy/models/group_participant_summary_model.dart';
 
 class GroupExpensesUtil {
   static final Logger log = Logger('GroupExpensesUtil');

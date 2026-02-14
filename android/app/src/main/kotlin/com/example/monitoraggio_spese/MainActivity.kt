@@ -1,4 +1,4 @@
-package com.example.monitoraggio_spese
+package com.example.Billy
 
 import io.flutter.embedding.android.FlutterActivity
 

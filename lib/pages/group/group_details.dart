@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-import 'package:monitoraggio_spese/models/api_response_model.dart';
-import 'package:monitoraggio_spese/models/profile_model.dart';
-import 'package:monitoraggio_spese/services/groups_service.dart';
-import 'package:monitoraggio_spese/services/profiles_service.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
+import 'package:Billy/models/api_response_model.dart';
+import 'package:Billy/models/profile_model.dart';
+import 'package:Billy/services/groups_service.dart';
+import 'package:Billy/services/profiles_service.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   final String? groupId; // null = creazione, non null = modifica

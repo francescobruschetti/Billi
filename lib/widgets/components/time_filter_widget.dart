@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/enums/time_filter_enum.dart';
+import 'package:Billy/enums/time_filter_enum.dart';
 
 class TimeFilterWidget extends StatelessWidget {
   final List<TimeFilterEnum> timeFilters;

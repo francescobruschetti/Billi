@@ -1,20 +1,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:monitoraggio_spese/enums/time_filter_enum.dart';
-import 'package:monitoraggio_spese/models/group_details_model.dart';
-import 'package:monitoraggio_spese/models/group_expense_model.dart';
-import 'package:monitoraggio_spese/models/group_participant_summary_model.dart';
-import 'package:monitoraggio_spese/pages/expense/expense_group_page.dart';
-import 'package:monitoraggio_spese/pages/group/group_details.dart';
-import 'package:monitoraggio_spese/services/expenses_service.dart';
-import 'package:monitoraggio_spese/utils/group_expenses_util.dart';
-import 'package:monitoraggio_spese/widgets/components/custom_icon_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/error_alert_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/expense_card_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
-import 'package:monitoraggio_spese/widgets/components/search_field_widget.dart';
-import 'package:monitoraggio_spese/widgets/components/time_filter_widget.dart';
+import 'package:Billy/enums/time_filter_enum.dart';
+import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group_expense_model.dart';
+import 'package:Billy/models/group_participant_summary_model.dart';
+import 'package:Billy/pages/expense/expense_group_page.dart';
+import 'package:Billy/pages/group/group_details.dart';
+import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/utils/group_expenses_util.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/error_alert_widget.dart';
+import 'package:Billy/widgets/components/expense_card_widget.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
+import 'package:Billy/widgets/components/search_field_widget.dart';
+import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupExpensesPage extends StatefulWidget {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/pages/group/group_expenses.dart';
-import 'package:monitoraggio_spese/services/groups_service.dart';
-import 'package:monitoraggio_spese/pages/group/group_details.dart';
-import 'package:monitoraggio_spese/widgets/components/loading_scaffold.dart';
-import 'package:monitoraggio_spese/widgets/components/search_field_widget.dart';
+import 'package:Billy/pages/group/group_expenses.dart';
+import 'package:Billy/services/groups_service.dart';
+import 'package:Billy/pages/group/group_details.dart';
+import 'package:Billy/widgets/components/loading_scaffold.dart';
+import 'package:Billy/widgets/components/search_field_widget.dart';
 
 class GroupsPage extends StatefulWidget {
   const GroupsPage({super.key});

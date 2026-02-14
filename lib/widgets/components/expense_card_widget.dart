@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:monitoraggio_spese/models/profile_model.dart';
-import 'package:monitoraggio_spese/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/models/profile_model.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 
 class ExpenseCardWidget extends StatelessWidget {
   final String merchantName;
@@ -45,7 +45,7 @@ class ExpenseCardWidget extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CustomIconWidget(assetPath: 'assets/images/icons/shopping_cart.PNG', color: Colors.blueGrey),
+                const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
                 const SizedBox(width: 4),
                 Text(merchantName, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
