@@ -49,13 +49,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   String _searchText = '';
   String _groupName = '-';
   String? _errorMessage;
+  int _groupParticipantsCnt = 0;
+  int _groupExpensesBalanceCnt = 0;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    _loadData();
+    _loadData(reset: true);
   }
 
   @override
@@ -125,33 +127,48 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       _groupExpenses.clear();
     }
 
-    final apiResponseModel = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
-    if (!apiResponseModel.success) {
-      setState(() {
-        _errorMessage = 'Errore durante il caricamento';
-        _isLoadingPage = false;
-      });
-    }
-    else {
+    try {
+      final apiResponseModel = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
+      if (!apiResponseModel.success) {
+        setState(() {
+          _errorMessage = 'Errore durante il caricamento';
+          _isLoadingPage = false;
+        });
+      }
+      else {
+        if (mounted) {
+          setState(() {
+            if (reset) {
+              _groupExpenses = apiResponseModel.data.expenses;
+
+              _groupDetails = apiResponseModel.data;
+              _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
+              _isLoadingPage = false;
+            } 
+            else {
+              _groupExpenses.addAll(apiResponseModel.data.expenses);
+              _isLoadingContent = false;
+            }
+            _handleUsersSummary();
+            _groupParticipantsCnt = _groupDetails?.participants.length ?? 0;
+            _groupExpensesBalanceCnt = _computeBalanceTransactionsCount();
+            
+            log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupExpensesBalanceCnt: $_groupExpensesBalanceCnt');
+            _hasMore = apiResponseModel.data.expenses.length == _pageSize;            
+            if (_hasMore) {
+              _currentPage++;
+            }
+          });
+        }
+      }
+    } 
+    catch (e) {
+      log.severe('Error loading group expenses data: $e');
       if (mounted) {
         setState(() {
-          if (reset) {
-            _groupExpenses = apiResponseModel.data.expenses;
-
-            _groupDetails = apiResponseModel.data;
-            _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
-
-            _isLoadingPage = false;
-          } 
-          else {
-            _groupExpenses.addAll(apiResponseModel.data.expenses);
-            _isLoadingContent = false;
-          }
-          _handleUsersSummary();
-          _hasMore = apiResponseModel.data.expenses.length == _pageSize;
-          if (_hasMore) {
-            _currentPage++;
-          }
+          _errorMessage = 'Errore durante il caricamento dei dati';
+          _isLoadingPage = false;
+          _isLoadingContent = false;
         });
       }
     }
@@ -285,11 +302,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: CustomButtonWidget(text: "Utenti: ${_groupDetails?.participants.length ?? 0}", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
+                        child: CustomButtonWidget(text: "Utenti: $_groupParticipantsCnt", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: CustomButtonWidget(text: "Da saldare: ${_computeBalanceTransactionsCount()}", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
+                        child: CustomButtonWidget(text: "Da saldare: $_groupExpensesBalanceCnt", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
                       ),
                     ],
                   ),
@@ -377,8 +394,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                                   final category = e.category;
 
                                   return ExpenseCardWidget(
-                                    merchantName: merchant.name,
-                                    categoryName: category.name,
+                                    merchantName: merchant?.name ?? '-',
+                                    categoryName: category?.name ?? '-',
                                     formattedDateTime: formattedDateTime,
                                     totalAmount: totalAmount,
                                     note: e.note,

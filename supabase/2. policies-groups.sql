@@ -32,6 +32,17 @@ using (
   user_id = auth.uid()
 );
 
+create policy "Participants can select their groups"
+on groups
+for select
+using (
+  EXISTS (
+    SELECT 1 FROM group_participants
+    WHERE group_participants.group_id = groups.id
+      AND group_participants.user_id = auth.uid()
+  )
+);
+
 -- Policy ottimizzata: ogni partecipante e il creator vedono tutti i membri del gruppo
 drop policy if exists "User can view participants of own groups" on group_participants;
 create policy "User can view participants of own groups"
@@ -72,19 +83,15 @@ using (
   AND role <> 'creator'
 );
 
--- Policy ottimizzata: ogni partecipante può vedere i membri del gruppo
-drop policy if exists "User can view participants of own groups" on group_participants;
-create policy "User can view participants of own groups"
+-- Policy: each participant can see other participants of their groups (including themselves)
+drop policy if exists "Participants can view members of their groups" on group_participants;
+create policy "Participants can view members of their groups"
 on group_participants
 for select
 using (
-  exists (
-    select 1 from group_participants gp
-    where gp.group_id = group_participants.group_id
-      and gp.user_id = auth.uid()
-      and gp.is_enabled = true
-  )
+  public.is_user_in_group(group_participants.group_id)
 );
+
 
 drop policy if exists "Only creator can add participants" on group_participants;
 create policy "Only creator can add participants"

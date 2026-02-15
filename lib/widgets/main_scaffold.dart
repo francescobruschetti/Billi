@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
@@ -20,8 +21,8 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
+      // debug UI: backgroundColor: Colors.pink[200],
       resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
       appBar: AppBar(
         title: const Text('Billy - Monitoraggio Spese'),
@@ -50,10 +51,10 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.primary, width: 10),
+            border: Border.all(color: Theme.of(context).colorScheme.primary, width: AppConstants.rowVerticalPadding),
             borderRadius: BorderRadius.circular(16),
           ),
           child: ClipRRect(
@@ -61,13 +62,14 @@ class _MainScaffoldState extends State<MainScaffold> {
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               type: BottomNavigationBarType.fixed,
+              // debug UI: backgroundColor: Colors.orange[200],
               onTap: (index) {
                 setState(() => _currentIndex = index);
               },
               items: const [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
+                  icon: Icon(Icons.person),
+                  label: 'Personale',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),

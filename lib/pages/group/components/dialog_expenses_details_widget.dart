@@ -4,6 +4,9 @@ import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 
 class DialogExpensesDetailsWidget extends StatelessWidget {
+  static final ScrollController _verticalController = ScrollController();
+  static final ScrollController _horizontalController = ScrollController();
+  
   final String? title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
@@ -17,14 +20,20 @@ class DialogExpensesDetailsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DialogWidget(
       title: 'Riepilogo partecipante',
-      
       customContent: SizedBox(
         child: Scrollbar(
+          controller: _verticalController,
           thumbVisibility: true,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
+          child: Scrollbar(
+            controller: _horizontalController,
+            thumbVisibility: true,
+            notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+              controller: _verticalController,
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                controller: _horizontalController,
+                scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columns: [
                     DataColumn(label: Text('Nome')),
@@ -41,6 +50,7 @@ class DialogExpensesDetailsWidget extends StatelessWidget {
                     DataCell(Text(e.toReceiveNet.toStringAsFixed(2), style: TextStyle(fontWeight: FontWeight.bold))),
                   ])).toList(),
                 ),
+              ),
             ),
           ),
         ),

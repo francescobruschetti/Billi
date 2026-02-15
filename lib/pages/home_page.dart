@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -119,12 +120,16 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {    
     return Scaffold(
+      // debug UI: backgroundColor: Colors.orange,
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(top: AppConstants.rowVerticalPadding, left: AppConstants.rowHorizontalPadding, right: AppConstants.rowHorizontalPadding, bottom: AppConstants.rowVerticalPadding),
         child: Column(
           children: [
             // Page Header
-            Row(
+            Container(
+              // debug UI: color: Colors.green,
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+              child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
@@ -146,14 +151,18 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            
-            // Page Header "subtitle"
-            const SizedBox(height: 4),
-            TimeFilterWidget(
-              timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-              onPressed: (filter) => _filterTimeExpenses(filter: filter),
             ),
-            
+
+            // Page Header "subtitle"
+            Container(
+              // debug UI: color: Colors.red,
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+              child: TimeFilterWidget(
+                timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
+                onPressed: (filter) => _filterTimeExpenses(filter: filter),
+              ),
+            ),
+
             // Page Content
             Expanded(
               child:
@@ -199,33 +208,37 @@ class _HomePageState extends State<HomePage> {
             ),
           
             // Page footer
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: 
-                  CustomButtonWidget(
-                    onPressed: () async {
-                      _navigateToExpensePage(isPersonalExpense: true, isEditAllowed: true);
-                    },
-                    text: 'Spesa Personale',
-                    icon: Icons.add,
+            const SizedBox(height: AppConstants.rowVerticalPadding),
+            Container(
+              // debug UI: color: Colors.red,
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: 
+                      CustomButtonWidget(
+                        onPressed: () async {
+                          _navigateToExpensePage(isPersonalExpense: true, isEditAllowed: true);
+                        },
+                        text: 'Spesa Personale',
+                        icon: Icons.add,
+                      ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomButtonWidget(
-                      onPressed: () async {
-                      _navigateToExpensePage(isPersonalExpense: false, isEditAllowed: true);
-                    },
-                    text: 'Spesa Condivisa',
-                    icon: Icons.group_add_outlined,
+                  const SizedBox(width: AppConstants.sizedBoxWidth),
+                  Expanded(
+                    child: CustomButtonWidget(
+                        onPressed: () async {
+                        _navigateToExpensePage(isPersonalExpense: false, isEditAllowed: true);
+                      },
+                      text: 'Spesa Condivisa',
+                      icon: Icons.group_add_outlined,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
-        ),
+        )
       ),
     );
   }

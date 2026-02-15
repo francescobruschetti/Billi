@@ -41,6 +41,25 @@ grant execute on function public.get_user_groups() to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
+-- Check if user is participant of a group
+create or replace function public.is_user_in_group(p_group_id uuid)
+returns boolean
+language sql
+security definer
+as $$
+  select exists (
+    select 1
+    from group_participants gp
+    where gp.group_id = p_group_id
+      and gp.user_id = auth.uid()
+      and gp.is_enabled = true
+  );
+$$;
+
+grant execute on function public.is_user_in_group(uuid) to authenticated;
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
 -- Funzione custom per ottenere tutti i membri del gruppo solo se abilitato
 create or replace function get_group_members(p_group_id uuid)
 returns table (

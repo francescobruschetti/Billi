@@ -97,6 +97,19 @@ on categories
 for delete
 using (user_id = auth.uid());
 
+drop policy if exists "Group participants can view categories linked to their group expenses" on categories;
+create policy "Group participants can view categories linked to their group expenses"
+on categories
+for select
+using (
+  EXISTS (
+    SELECT 1 FROM group_expenses
+    JOIN group_participants ON group_expenses.group_id = group_participants.group_id
+    WHERE group_expenses.category_id = categories.id
+      AND group_participants.user_id = auth.uid()
+  )
+);
+
 --------------------------------------------------------------------------
 -- Merchants table
 drop policy if exists "Authenticated users can create merchants" on merchants;
@@ -123,6 +136,19 @@ create policy "Only creator can delete merchants"
 on merchants
 for delete
 using (user_id = auth.uid());
+
+drop policy if exists "Group participants can view merchants linked to their group expenses" on merchants;
+create policy "Group participants can view merchants linked to their group expenses"
+on merchants
+for select
+using (
+  EXISTS (
+    SELECT 1 FROM group_expenses
+    JOIN group_participants ON group_expenses.group_id = group_participants.group_id
+    WHERE group_expenses.merchant_id = merchants.id
+      AND group_participants.user_id = auth.uid()
+  )
+);
 
 --------------------------------------------------------------------------
 -- Auto-update updated_at
