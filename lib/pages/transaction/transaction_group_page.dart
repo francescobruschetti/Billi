@@ -1,11 +1,11 @@
 import 'package:Billy/enums/transaction_insert_mode_enum.dart';
-import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/services/groups_service.dart';
+import 'package:Billy/services/group_service.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
@@ -137,7 +137,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
     });
 
     // TODO: da implementare caricamento spesa esistente
-    // final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(transactionId);
+    // final groupDetailsResponse = await GroupService().getGroupDetailsAndParticipants(transactionId);
     // log.fine("Existing users in group $transactionId: $groupDetailsResponse");
     
     // if (groupDetailsResponse.success) {
@@ -166,7 +166,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
   }
 
   Future<void> _loadUserGroups() async {
-    final groups = await GroupsService().fetchAllGroupsForUser();
+    final groups = await GroupService().fetchAllGroupsForUser();
     if (mounted) {
       setState(() {
         _userGroups = groups;
@@ -188,7 +188,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
     );
 
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await TransactionsService().updateGroupTransaction(
+      apiResponseModel = await TransactionService().updateGroupTransaction(
         groupId: _selectedGroup!['id'],
         transactionId: widget.transactionId!,
         price: _formatPriceInput(),
@@ -198,7 +198,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await TransactionsService().createGroupTransaction(
+      apiResponseModel = await TransactionService().createGroupTransaction(
         groupId: _selectedGroup!['id'],
         price: _formatPriceInput(),
         splitRate: _selectedSplitRateValue,

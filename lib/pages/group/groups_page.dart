@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:Billy/pages/group/group_transactions.dart';
-import 'package:Billy/services/groups_service.dart';
+import 'package:Billy/services/group_service.dart';
 import 'package:Billy/pages/group/group_details.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
@@ -41,7 +41,7 @@ class _GroupsPageState extends State<GroupsPage> {
         _isLoading = true;
       });
     }
-    groupsFuture = GroupsService().fetchAllGroupsForUser();
+    groupsFuture = GroupService().fetchAllGroupsForUser();
     final result = await groupsFuture;
 
     if (mounted) {
@@ -59,7 +59,7 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {  
+  Widget build(BuildContext context) {
     final filteredGroups = allGroups.where((g) =>
       (g['name'] ?? '').toString().toLowerCase().contains(_searchText.toLowerCase())
     ).toList();

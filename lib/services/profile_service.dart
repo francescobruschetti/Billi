@@ -1,8 +1,8 @@
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProfilesService {
-  final Logger log = Logger('ProfilesService');
+class ProfileService {
+  final Logger log = Logger('ProfileService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Future<List<dynamic>> getUserByEmailOrUsername(String key) async {

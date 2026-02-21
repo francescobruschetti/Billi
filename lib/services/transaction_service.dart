@@ -1,13 +1,13 @@
 import 'package:logging/logging.dart';
 import 'package:Billy/models/api_response_model.dart';
 import 'package:Billy/models/transaction_model.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group_model.dart';
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class TransactionsService {
+class TransactionService {
 
-  final Logger log = Logger('TransactionsService');
+  final Logger log = Logger('TransactionService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Stream<List<TransactionModel>> subscribeTransactions() {
@@ -115,7 +115,7 @@ class TransactionsService {
     }
   }
 
-  Future<ApiResponseModel<GroupDetailsModel>> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<ApiResponseModel<GroupModel>> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -134,16 +134,16 @@ class TransactionsService {
         .eq('id', groupId)
         .single();
 
-      return ApiResponseModel<GroupDetailsModel>(success: true, message: null, data: GroupDetailsModel.fromMap(result));
+      return ApiResponseModel<GroupModel>(success: true, message: null, data: GroupModel.fromMap(result));
     }
     catch (e) {
       log.severe("Error fetching group details: $e");
-      return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
+      return ApiResponseModel<GroupModel>(success: false, message: e.toString(), data: GroupModel.fromMap({}));
     }
   }
 
   // TODO: NOT used anymore
-  Future<ApiResponseModel<GroupDetailsModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<ApiResponseModel<GroupModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -161,11 +161,11 @@ class TransactionsService {
         .eq('id', groupId)
         .single();
 
-      return ApiResponseModel<GroupDetailsModel>(success: true, message: null, data: GroupDetailsModel.fromMap(result));
+      return ApiResponseModel<GroupModel>(success: true, message: null, data: GroupModel.fromMap(result));
     } 
     catch (e) {
       log.severe("Error fetching group participants: $e");
-      return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
+      return ApiResponseModel<GroupModel>(success: false, message: e.toString(), data: GroupModel.fromMap({}));
     }
   }
 

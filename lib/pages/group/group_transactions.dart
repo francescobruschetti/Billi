@@ -6,12 +6,12 @@ import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group_model.dart';
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/pages/transaction/transaction_group_page.dart';
 import 'package:Billy/pages/group/group_details.dart';
-import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
@@ -32,13 +32,13 @@ class GroupTransactionsPage extends StatefulWidget {
 
 class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   final Logger log = Logger('GroupTransactionsPage');
-  final TransactionsService service = TransactionsService();
+  final TransactionService service = TransactionService();
   final ScrollController _scrollController = ScrollController();
   final String userId = Supabase.instance.client.auth.currentUser!.id;
 
   Map<String, GroupParticipantSummaryModel> _participantsSummary = {};
   List<GroupTransactionModel> _groupTransactions = [];
-  GroupDetailsModel? _groupDetails;
+  GroupModel? _groupDetails;
 
   int _currentPage = 0;
 

@@ -1,7 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
-import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -9,7 +8,7 @@ import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
-import '../services/transactions_service.dart';
+import '../services/transaction_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Logger log = Logger('HomePage');
-  final TransactionsService service = TransactionsService();
+  final TransactionService service = TransactionService();
   final ScrollController _scrollController = ScrollController();
 
   late Future<List<Map<String, dynamic>>> transactionsFuture;

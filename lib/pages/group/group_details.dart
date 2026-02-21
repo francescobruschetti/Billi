@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/models/api_response_model.dart';
 import 'package:Billy/models/profile_model.dart';
-import 'package:Billy/services/groups_service.dart';
-import 'package:Billy/services/profiles_service.dart';
+import 'package:Billy/services/group_service.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class GroupDetailsPage extends StatefulWidget {
@@ -83,7 +83,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     }
 
     try {
-      final res = await ProfilesService().getUserByEmailOrUsername(key);
+      final res = await ProfileService().getUserByEmailOrUsername(key);
       log.fine("User search result: $res");
       if (mounted) {
         if (res.isEmpty) {
@@ -135,7 +135,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     }
 
     try {
-      final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(groupId);
+      final groupDetailsResponse = await GroupService().getGroupDetailsAndParticipants(groupId);
       log.fine("Existing users in group $groupId: $groupDetailsResponse");
       if (mounted) {
         if (groupDetailsResponse.success) {
@@ -186,7 +186,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
       message = "Dati aggiornati correttamente";
-      apiResponseModel = await GroupsService().updateGroup(
+      apiResponseModel = await GroupService().updateGroup(
         id: widget.groupId!,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
@@ -196,7 +196,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     } 
     else { // Logica di creazione nuovo gruppo
       message = "Gruppo creato con successo";
-      apiResponseModel = await GroupsService().createGroup(
+      apiResponseModel = await GroupService().createGroup(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
       );

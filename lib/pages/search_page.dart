@@ -1,7 +1,7 @@
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/models/transaction_model.dart';
-import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
@@ -12,7 +12,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final TransactionsService service = TransactionsService();
+  final TransactionService service = TransactionService();
   late Stream<List<TransactionModel>> transactionsStream;
   
   @override

@@ -1,11 +1,13 @@
 import 'package:logging/logging.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class GroupsService {
-  final Logger log = Logger('GroupsService');
+class GroupService {
+  final Logger log = Logger('GroupService');
   final SupabaseClient supabase = Supabase.instance.client;
+
+  // TODO: replace all Map<String, dynamic> with proper models
 
   Future<ApiResponseModel<Map<String, dynamic>>> createGroup({ required String name, String? description }) async {
     try {
@@ -21,6 +23,23 @@ class GroupsService {
     }
   }
 
+  // TODO: created to test and implement group_provider.dart
+  Future<GroupModel> createGroupProvider(String name) async {
+    try {
+      final response = await supabase
+        .from('groups')
+        .insert({'name': name})
+        .select()
+        .single();
+
+      return GroupModel.fromMap(response);
+    } 
+    catch (e) {
+      log.severe("Errore creazione gruppo: $e");
+      return GroupModel.fromMap({});
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchAllGroupsForUser() async {
     final res = await supabase.rpc('get_user_groups');
     return (res as List)
@@ -28,7 +47,22 @@ class GroupsService {
         .toList();
   }
 
-  Future<ApiResponseModel<GroupDetailsModel>> getGroupDetailsAndParticipants(String groupId) async {
+  // TODO: created to test and implement group_provider.dart
+  Future<List<GroupModel>> fetchGroupsProvider() async {
+    try {
+    final res = await supabase.rpc('get_user_groups');
+    return (res as List)
+        .map((g) => GroupModel.fromMap(g as Map<String, dynamic>))
+        .toList();
+    }
+    catch (e) {
+      log.severe("Errore fetchGroups: $e");
+      return [];
+    }
+
+  }
+
+  Future<ApiResponseModel<GroupModel>> getGroupDetailsAndParticipants(String groupId) async {
     try {
       // Prendi dettagli gruppo e partecipanti (join con profiles)
       final res = await supabase
@@ -37,11 +71,11 @@ class GroupsService {
         .eq('id', groupId)
         .single();
 
-      return ApiResponseModel<GroupDetailsModel>(success: true, message: null, data: GroupDetailsModel.fromMap(res));
+      return ApiResponseModel<GroupModel>(success: true, message: null, data: GroupModel.fromMap(res));
     } 
     catch (e) {
       log.severe("Errore getGroupDetailsAndParticipants: $e");
-      return ApiResponseModel<GroupDetailsModel>(success: false, message: e.toString(), data: GroupDetailsModel.fromMap({}));
+      return ApiResponseModel<GroupModel>(success: false, message: e.toString(), data: GroupModel.fromMap({}));
     }
   }
 

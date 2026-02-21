@@ -3,7 +3,7 @@ import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
@@ -115,7 +115,7 @@ class _TransactionPageState extends State<TransactionPage> {
       success: false, message: "Errore durante il salvataggio dei dati", data: {}
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await TransactionsService().updatePersonalTransaction(
+      apiResponseModel = await TransactionService().updatePersonalTransaction(
         transactionId: widget.transactionId!,
         price: _formatPriceInput(),
         merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
@@ -124,7 +124,7 @@ class _TransactionPageState extends State<TransactionPage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await TransactionsService().createPersonalTransaction(
+      apiResponseModel = await TransactionService().createPersonalTransaction(
         price: _formatPriceInput(),
         merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
         categories: _categoriesController.text.trim(),

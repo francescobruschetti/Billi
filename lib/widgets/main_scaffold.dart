@@ -1,4 +1,5 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/pages/group/group_page_provder.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
@@ -14,9 +15,10 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  final _pages = const [ // Note: queste sono le pagine che verranno mostrate nel body del main_scaffold
+  final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
     GroupsPage(),
+    GroupsPageProvider()
   ];
 
   @override
@@ -74,43 +76,16 @@ class _MainScaffoldState extends State<MainScaffold> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),
                   label: 'Gruppi',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group),
+                  label: 'GruppiProvider',
                 )
               ],
             ),
           ),
         ),
       ),
-      // v1:
-      // bottomNavigationBar: Padding(
-      //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      //   child: DecoratedBox(
-      //     decoration: BoxDecoration(
-      //       border: Border.all(color: Colors.black, width: 3),
-      //       borderRadius: BorderRadius.circular(16),
-      //     ),
-      //     child: ClipRRect(
-      //       borderRadius: BorderRadius.circular(16),
-      //       child: BottomNavigationBar(
-      //         currentIndex: _currentIndex,
-      //         type: BottomNavigationBarType.fixed,
-      //         backgroundColor: Colors.red,
-      //         onTap: (index) {
-      //           setState(() => _currentIndex = index);
-      //         },
-      //         items: const [
-      //           BottomNavigationBarItem(
-      //             icon: Icon(Icons.home),
-      //             label: 'Home',
-      //           ),
-      //           BottomNavigationBarItem(
-      //             icon: Icon(Icons.group),
-      //             label: 'Gruppi',
-      //           )
-      //         ],
-      //       ),
-      //     ),
-      //   ),
-      //),
     );
   }
 }

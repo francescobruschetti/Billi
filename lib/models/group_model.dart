@@ -1,7 +1,7 @@
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 
-class GroupDetailsModel {
+class GroupModel {
   final String id;
   final String name;
   final String? description;
@@ -12,7 +12,7 @@ class GroupDetailsModel {
   final List<GroupParticipantModel> participants;
   final List<GroupTransactionModel> transactions;
 
-  GroupDetailsModel({
+  GroupModel({
     required this.id,
     required this.name,
     required this.link,
@@ -24,11 +24,11 @@ class GroupDetailsModel {
     required this.transactions,
   });
 
-  factory GroupDetailsModel.fromMap(Map<String, dynamic> map) {
+  factory GroupModel.fromMap(Map<String, dynamic> map) {
     if (map.isEmpty) { // TODO: gestire meglio questo caso
-      throw Exception("Empty map provided to GroupDetailsModel.fromMap");
+      throw Exception("Empty map provided to GroupModel.fromMap");
     }
-    return GroupDetailsModel(
+    return GroupModel(
       id: map['id'],
       name: map['name'],
       link: map['link'],
