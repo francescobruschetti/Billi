@@ -1,7 +1,7 @@
 -- PRINCIPIO CHIAVE (importantissimo)
 -- Per evitare infinite recursion e problemi futuri:
 -- 🔑 Una policy può leggere SOLO una tabella “più semplice”
--- groups → group_participants → group_expenses
+-- groups → group_participants → group_transactions
 -- (mai il contrario)
 
 --------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 --------------------------------------------------------------------------
 grant select, insert, update, delete on table groups to authenticated;
 grant select, insert, update, delete on table group_participants to authenticated;
-grant select, insert, update, delete on table group_expenses to authenticated;
+grant select, insert, update, delete on table group_transactions to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
@@ -92,7 +92,6 @@ using (
   public.is_user_in_group(group_participants.group_id)
 );
 
-
 drop policy if exists "Only creator can add participants" on group_participants;
 create policy "Only creator can add participants"
 on group_participants
@@ -110,39 +109,39 @@ with check (
 );
 
 --------------------------------------------------------------------------
--- Group Expenses table
-drop policy if exists "User can view expenses" on group_expenses;
-create policy "User can view expenses"
-on group_expenses
+-- Group Transactions table
+drop policy if exists "User can view transactions" on group_transactions;
+create policy "User can view transactions"
+on group_transactions
 for select
 using (
   exists (
     select 1 from group_participants gp
-    where gp.group_id = group_expenses.group_id
+    where gp.group_id = group_transactions.group_id
       and gp.user_id = auth.uid()
       and gp.is_enabled = true
   )
 );
 
-create policy "Participants can insert expenses"
-on group_expenses
+create policy "Participants can insert transactions"
+on group_transactions
 for insert
 with check (
   exists (
     select 1 from group_participants gp
-    where gp.group_id = group_expenses.group_id
+    where gp.group_id = group_transactions.group_id
       and gp.user_id = auth.uid()
       and gp.is_enabled = true
   )
 );
 
-create policy "Only creator can update expenses"
-on group_expenses
+create policy "Only creator can update transactions"
+on group_transactions
 for update
 using (user_id = auth.uid());
 
-create policy "Only creator can delete expenses"
-on group_expenses
+create policy "Only creator can delete transactions"
+on group_transactions
 for delete
 using (user_id = auth.uid());
 
@@ -164,7 +163,7 @@ create trigger trg_update_group_participants
 before update on group_participants
 for each row execute function update_timestamp();
 
-create trigger trg_update_group_expenses
-before update on group_expenses
+create trigger trg_update_group_transactions
+before update on group_transactions
 for each row execute function update_timestamp();
 

@@ -1,22 +1,22 @@
 import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
+import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/utils/number_util.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/group_expense_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
 
-class GroupExpensesUtil {
-  static final Logger log = Logger('GroupExpensesUtil');
+class GroupTransactionsUtil {
+  static final Logger log = Logger('GroupTransactionsUtil');
 
   static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({
-    required List<GroupExpenseModel> expenses, 
+    required List<GroupTransactionModel> transactions, 
     required List<GroupParticipantModel> participants
   }) 
   {    
     Map<String, GroupParticipantSummaryModel> summary = {};
 
-    if (expenses.isEmpty) {
-      log.info("No expenses found for group. Returning empty summary.");
+    if (transactions.isEmpty) {
+      log.info("No transactions found for group. Returning empty summary.");
       return summary;
     }
     if (participants.isEmpty) {
@@ -28,21 +28,21 @@ class GroupExpensesUtil {
     initParticipantsSummary(summary, participants);
 
     // Step 2 - Compute total amount and update summary with active payments
-    double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, expenses);
+    double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, transactions);
     log.fine("Total amount for group: $totalAmount. Number of participants: ${summary.length}.");
 
-    // Step 3 - Compute user's movements to balance the expenses
-    computeParticipantsMovementsToBalanceExpenses(summary: summary);
+    // Step 3 - Compute user's movements to balance the transactions
+    computeParticipantsMovementsToBalanceTransactions(summary: summary);
     log.fine("Summary: $summary.");
 
-    // Step 4 - Combine movements and compute minimum transactions to balance the expenses
+    // Step 4 - Combine movements and compute minimum transactions to balance the transactions
     List<GroupParticipantSummaryModel> finalMovements = getSortedSummaryListByToReceiveNet(summary);
     computeParticipantsFinalMovements(finalMovements, summary);
 
     return summary;
   }
 
-  // Initialized participants summary with group participants (in case some participants don't have expenses yet)
+  // Initialized participants summary with group participants (in case some participants don't have transactions yet)
   static void initParticipantsSummary(Map<String, GroupParticipantSummaryModel> summary, List<GroupParticipantModel> participants) {
     for (GroupParticipantModel participant in participants) {
       summary[participant.userId] = GroupParticipantSummaryModel.basic(
@@ -52,21 +52,21 @@ class GroupExpensesUtil {
     }
   }
 
-  // Compute how much each participant has anticipated to the group and its share of those expenses
+  // Compute how much each participant has anticipated to the group and its share of those transactions
   static double computeTotalAmountAndUpdateSummaryActivePayment(
       Map<String, GroupParticipantSummaryModel> summary,
-      List<GroupExpenseModel> expenses)
+      List<GroupTransactionModel> transactions)
    {
     double totalAmount = 0;
-    for (var expense in expenses) {
-      final profileModel = expense.profileModel;
+    for (var transaction in transactions) {
+      final profileModel = transaction.profileModel;
       final userId = profileModel.id;
-      final paidAmountItself = expense.paidAmount ?? 0;
-      final paidAmountGroup = expense.totalAmount;
-      final splitRate = expense.splitRate;
+      final paidAmountItself = transaction.paidAmount ?? 0;
+      final paidAmountGroup = transaction.totalAmount;
+      final splitRate = transaction.splitRate;
 
       if (!summary.containsKey(userId)) {
-        log.fine("Expense ${expense.id} has user_id $userId which is not in group participants yet.");
+        log.fine("Transaction ${transaction.id} has user_id $userId which is not in group participants yet.");
         summary[userId] = GroupParticipantSummaryModel.basic(
           userId: userId,
           profile: profileModel,
@@ -75,20 +75,20 @@ class GroupExpensesUtil {
 
       if (splitRate != null) {
         // TODO: da implementare
-        log.fine("Expense ${expense.id} has a split rate defined.");
+        log.fine("Transaction ${transaction.id} has a split rate defined.");
         // switch (splitRate.runtimeType) {
         //   case String:
-        //     log.warning("Expense ${expense.id} has split rate as String. Expected Map. Defaulting to equal split.");
+        //     log.warning("Transaction ${transaction.id} has split rate as String. Expected Map. Defaulting to equal split.");
         //     break;
         //   case Map<String, dynamic>:
-        //     log.warning("Expense ${expense.id} has split rate as Map. Split rate handling is not implemented yet, defaulting to equal split.");
+        //     log.warning("Transaction ${transaction.id} has split rate as Map. Split rate handling is not implemented yet, defaulting to equal split.");
         //     break;
         //   default:
-        //     log.warning("Expense ${expense.id} has split rate of unexpected type ${splitRate.runtimeType}. Defaulting to equal split.");
+        //     log.warning("Transaction ${transaction.id} has split rate of unexpected type ${splitRate.runtimeType}. Defaulting to equal split.");
         // }
       }
       else {
-        log.fine("Expense ${expense.id} has NO split rate.");
+        log.fine("Transaction ${transaction.id} has NO split rate.");
         summary[userId]?.increasePaidAmountGroup(paidAmountGroup);
         summary[userId]?.increasePaidAmountItself(paidAmountItself);
         summary[userId]?.increasetoReceiveGross(paidAmountGroup - paidAmountItself);
@@ -99,8 +99,8 @@ class GroupExpensesUtil {
     return totalAmount;
   }
 
-  // Compute how much each participant ows or should receive to balance the expenses, based on how much they paid
-  static void computeParticipantsMovementsToBalanceExpenses({required Map<String, GroupParticipantSummaryModel> summary}) {
+  // Compute how much each participant ows or should receive to balance the transactions, based on how much they paid
+  static void computeParticipantsMovementsToBalanceTransactions({required Map<String, GroupParticipantSummaryModel> summary}) {
     for (GroupParticipantSummaryModel userSummary in summary.values) {
       double toReceiveNet = 0;
       double movementAmount = 0;
@@ -112,7 +112,7 @@ class GroupExpensesUtil {
         movementAmount = NumberUtil.roundToTwoDecimals(value: (otherUserSummary.toReceiveGross / (summary.length - 1)));
         toReceiveNet += movementAmount;
         userSummary.movements.add(
-          GroupExpenseSummaryBalanceMovementModel(
+          GroupTransactionSummaryBalanceMovementModel(
             otherUserId: otherUserSummary.userId,
             amount: movementAmount,
             isToPay: true
@@ -124,7 +124,7 @@ class GroupExpensesUtil {
     }
   }
 
-  // Compute final movements to balance the expenses, combining the movements of each participant and optimizing the transactions
+  // Compute final movements to balance the transactions, combining the movements of each participant and optimizing the transactions
   static void computeParticipantsFinalMovements(List<GroupParticipantSummaryModel> balanceMovements, Map<String, GroupParticipantSummaryModel> summary) {
     for (int i = 0; i < balanceMovements.length; i++) {
       GroupParticipantSummaryModel currentUser = balanceMovements[i];
@@ -135,7 +135,7 @@ class GroupExpensesUtil {
       double diff = NumberUtil.roundToTwoDecimals(value: currentUser.toReceiveNet + lastUser.toReceiveNet);
       if (diff < 0) {
         summary[currentUser.userId]?.balanceMovements.add(
-          GroupExpenseSummaryBalanceMovementModel(
+          GroupTransactionSummaryBalanceMovementModel(
             otherUserId: lastUser.userId,
             amount: lastUser.toReceiveNet.abs(),
             isToPay: true
@@ -146,7 +146,7 @@ class GroupExpensesUtil {
       }
       else {
         summary[currentUser.userId]?.balanceMovements.add(
-          GroupExpenseSummaryBalanceMovementModel(
+          GroupTransactionSummaryBalanceMovementModel(
             otherUserId: lastUser.userId,
             amount: (diff == 0) ? lastUser.toReceiveNet.abs() : currentUser.toReceiveNet.abs(),
             isToPay: true
@@ -168,7 +168,7 @@ class GroupExpensesUtil {
       }
     }
 
-    log.fine("Final movements to balance expenses: $summary.");
+    log.fine("Final movements to balance transactions: $summary.");
   }
 
   // Restituisce una lista ordinata dei partecipanti in base a toReceiveNet (decrescente di default)

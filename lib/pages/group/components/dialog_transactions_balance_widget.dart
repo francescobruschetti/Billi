@@ -3,11 +3,11 @@ import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 
-class DialogExpensesBalanceWidget extends StatelessWidget {
+class DialogTransactionsBalanceWidget extends StatelessWidget {
   final String? title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
-  const DialogExpensesBalanceWidget({
+  const DialogTransactionsBalanceWidget({
     super.key,
     this.title,
     required this.participantsSummary,

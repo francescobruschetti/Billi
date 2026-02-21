@@ -1,6 +1,7 @@
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:Billy/models/expense_model.dart';
-import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/models/transaction_model.dart';
+import 'package:Billy/services/transactions_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
@@ -11,13 +12,13 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final ExpensesService service = ExpensesService();
-  late Stream<List<ExpenseModel>> expensesStream;
+  final TransactionsService service = TransactionsService();
+  late Stream<List<TransactionModel>> transactionsStream;
   
   @override
   void initState() {
     super.initState();
-    expensesStream = service.subscribeExpenses();
+    transactionsStream = service.subscribeTransactions();
   }
 
   @override
@@ -25,11 +26,11 @@ class _SearchPageState extends State<SearchPage> {
     return Center(
       child: Column(
         children: [
-          StreamBuilder<List<ExpenseModel>>(
-            stream: expensesStream,
+          StreamBuilder<List<TransactionModel>>(
+            stream: transactionsStream,
             builder: (context, snapshot) {
-              final expenses = snapshot.data ?? [];
-              final total = expenses.fold<double>(
+              final transactions = snapshot.data ?? [];
+              final total = transactions.fold<double>(
                 0,
                 (sum, e) => sum + e.amount,
               );
@@ -38,7 +39,7 @@ class _SearchPageState extends State<SearchPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your expenses are: \$${total.toStringAsFixed(2)}',
+                    'Your transactions are: \$${total.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 16),
@@ -48,18 +49,18 @@ class _SearchPageState extends State<SearchPage> {
           ),
 
           Expanded(
-            child: StreamBuilder<List<ExpenseModel>>(
-              stream: expensesStream,
+            child: StreamBuilder<List<TransactionModel>>(
+              stream: transactionsStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: LoadingScaffold(message: 'Carico...'));
                 }
 
-                final expenses = snapshot.data!;
+                final transactions = snapshot.data!;
                 return ListView.builder(
-                  itemCount: expenses.length,
+                  itemCount: transactions.length,
                   itemBuilder: (context, index) {
-                    final e = expenses[index];
+                    final e = transactions[index];
                     return Card(
                       child: ListTile(
                         title: Text(e.title),
@@ -82,7 +83,9 @@ class _SearchPageState extends State<SearchPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Operazione annullata')),
+                      CustomSnackkBarWidget( 
+                        text: 'Operazione annullata',
+                      ).build(context),
                     );
                   },
                   child: const Text('Mostra SnackBar'),

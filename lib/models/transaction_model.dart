@@ -1,4 +1,4 @@
-class ExpenseModel {
+class TransactionModel {
   final String id;
   final String title;
   final double amount;
@@ -6,7 +6,7 @@ class ExpenseModel {
   final String? categories;
   final DateTime createdAt;
 
-  ExpenseModel({
+  TransactionModel({
     required this.id,
     required this.title,
     required this.amount,
@@ -15,8 +15,8 @@ class ExpenseModel {
     required this.createdAt,
   });
 
-  factory ExpenseModel.fromMap(Map<String, dynamic> map) {
-    return ExpenseModel(
+  factory TransactionModel.fromMap(Map<String, dynamic> map) {
+    return TransactionModel(
       id: map['id'],
       title: map['title'],
       amount: (map['amount'] as num).toDouble(),

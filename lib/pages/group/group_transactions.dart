@@ -1,42 +1,43 @@
 
-import 'package:Billy/pages/group/components/dialog_expenses_balance_widget.dart';
-import 'package:Billy/pages/group/components/dialog_expenses_details_widget.dart';
+import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/pages/group/components/dialog_transactions_balance_widget.dart';
+import 'package:Billy/pages/group/components/dialog_transactions_details_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
-import 'package:Billy/models/group_expense_model.dart';
+import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
-import 'package:Billy/pages/expense/expense_group_page.dart';
+import 'package:Billy/pages/transaction/transaction_group_page.dart';
 import 'package:Billy/pages/group/group_details.dart';
-import 'package:Billy/services/expenses_service.dart';
-import 'package:Billy/utils/group_expenses_util.dart';
+import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
-import 'package:Billy/widgets/components/expense_card_widget.dart';
+import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class GroupExpensesPage extends StatefulWidget {
+class GroupTransactionsPage extends StatefulWidget {
   final String groupId; // null = creazione, non null = modifica
   final bool isEditAllowed;
 
-  const GroupExpensesPage({super.key, required this.groupId, this.isEditAllowed = false});
+  const GroupTransactionsPage({super.key, required this.groupId, this.isEditAllowed = false});
 
   @override
-  State<GroupExpensesPage> createState() => _GroupExpensesPageState();
+  State<GroupTransactionsPage> createState() => _GroupTransactionsPageState();
 }
 
-class _GroupExpensesPageState extends State<GroupExpensesPage> {
-  final Logger log = Logger('GroupExpensesPage');
-  final ExpensesService service = ExpensesService();
+class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
+  final Logger log = Logger('GroupTransactionsPage');
+  final TransactionsService service = TransactionsService();
   final ScrollController _scrollController = ScrollController();
   final String userId = Supabase.instance.client.auth.currentUser!.id;
 
   Map<String, GroupParticipantSummaryModel> _participantsSummary = {};
-  List<GroupExpenseModel> _groupExpenses = [];
+  List<GroupTransactionModel> _groupTransactions = [];
   GroupDetailsModel? _groupDetails;
 
   int _currentPage = 0;
@@ -50,7 +51,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   String _groupName = '-';
   String? _errorMessage;
   int _groupParticipantsCnt = 0;
-  int _groupExpensesBalanceCnt = 0;
+  int _groupTransactionsBalanceCnt = 0;
 
   @override
   void initState() {
@@ -67,6 +68,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     super.dispose();
   }
 
+  double _computeBalance() {
+    double res = _groupTransactions.fold<double>(0, (sum, e) {
+      final amount = e.totalAmount;
+      final type = e.transactionType;
+      return type == TransactionTypeEnum.INCOME ? sum + amount : sum - amount;
+    });
+    return double.parse(res.toStringAsFixed(2));
+  }
+
   int _computeBalanceTransactionsCount() {
     int count = 0;
     for (var summary in _participantsSummary.values) {
@@ -75,11 +85,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     return count;
   }
 
-  void _filterExpenses({bool reset = false}) async {
+  void _filterTransactions({bool reset = false}) async {
     // TODO: d_participantsSummarya implementare filtro spese
   }
 
-  void _filterTimeExpenses({required TimeFilterEnum filter}) async {
+  void _filterTimeTransactions({required TimeFilterEnum filter}) async {
     log.info('Filtro Time selezionato: ${filter.value}');
     // TODO: da implementare filtro spese
   }
@@ -95,12 +105,12 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     }
   }
 
-  void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate expenses e group details hanno caricato i dati necessari
+  void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate transactions e group details hanno caricato i dati necessari
     setState(() {
       _isComputingUsersSummary = true;
     });
 
-    _participantsSummary = GroupExpensesUtil.computeParticipantsSummary(expenses: _groupExpenses, participants: _groupDetails?.participants ?? []);
+    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails?.participants ?? []);
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
@@ -124,7 +134,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     if (reset) {
       _currentPage = 0;
       _hasMore = true;
-      _groupExpenses.clear();
+      _groupTransactions.clear();
     }
 
     try {
@@ -139,22 +149,22 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         if (mounted) {
           setState(() {
             if (reset) {
-              _groupExpenses = apiResponseModel.data.expenses;
+              _groupTransactions = apiResponseModel.data.transactions;
 
               _groupDetails = apiResponseModel.data;
               _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
               _isLoadingPage = false;
             } 
             else {
-              _groupExpenses.addAll(apiResponseModel.data.expenses);
+              _groupTransactions.addAll(apiResponseModel.data.transactions);
               _isLoadingContent = false;
             }
             _handleUsersSummary();
             _groupParticipantsCnt = _groupDetails?.participants.length ?? 0;
-            _groupExpensesBalanceCnt = _computeBalanceTransactionsCount();
+            _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
             
-            log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupExpensesBalanceCnt: $_groupExpensesBalanceCnt');
-            _hasMore = apiResponseModel.data.expenses.length == _pageSize;            
+            log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupTransactionsBalanceCnt: $_groupTransactionsBalanceCnt');
+            _hasMore = apiResponseModel.data.transactions.length == _pageSize;            
             if (_hasMore) {
               _currentPage++;
             }
@@ -163,7 +173,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       }
     } 
     catch (e) {
-      log.severe('Error loading group expenses data: $e');
+      log.severe('Error loading group transactions data: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'Errore durante il caricamento dei dati';
@@ -174,8 +184,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     }
   }
 
-  void _navigateToGroupExpensesPage({required String groupId, required bool isEditAllowed}) async {
-    var page = ExpenseGroupPage(groupId: groupId, isEditAllowed: isEditAllowed);
+  void _navigateToGroupTransactionsPage({required String groupId, required bool isEditAllowed}) async {
+    var page = TransactionGroupPage(groupId: groupId, isEditAllowed: isEditAllowed);
 
     await Navigator.push(
       context,
@@ -207,8 +217,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return DialogExpensesDetailsWidget(
-          title: 'Riepilogo partecipante',
+        return DialogTransactionsDetailsWidget(
+          title: 'Riepilogo partecipanti',
           participantsSummary: _participantsSummary,
         );
       },
@@ -219,7 +229,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return DialogExpensesBalanceWidget(
+        return DialogTransactionsBalanceWidget(
           title: 'Riepilogo saldo',
           participantsSummary: _participantsSummary,
         );
@@ -263,8 +273,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
-                          'Totale spese (${_groupExpenses.length}): ${_groupExpenses.fold<double>(0, (sum, e) => sum + e.totalAmount).toStringAsFixed(2)}€',
+                      child: SelectableText(
+                          'Totale spese (${_groupTransactions.length}): ${_computeBalance()}€',
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                     ),
@@ -277,7 +287,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     IconButton(
                       icon: const Icon(Icons.filter_list),
                       tooltip: 'Filtra',
-                      onPressed: () => _filterExpenses(reset: true),
+                      onPressed: () => _filterTransactions(reset: true),
                     ),
                   ],
                 ),
@@ -292,7 +302,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   // const SizedBox(height: 4),
                   // TimeFilterWidget(
                   //   timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                  //   onPressed: (filter) => _filterTimeExpenses(filter: filter),
+                  //   onPressed: (filter) => _filterTimeTransactions(filter: filter),
                   // ),
 
                   // How much user owes or is owed
@@ -306,7 +316,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: CustomButtonWidget(text: "Da saldare: $_groupExpensesBalanceCnt", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
+                        child: CustomButtonWidget(text: "Da saldare: $_groupTransactionsBalanceCnt", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
                       ),
                     ],
                   ),
@@ -366,7 +376,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   Expanded(
                     child: _isLoadingContent
                       ? const LoadingScaffold(message: 'Caricamento spese...')
-                      : _groupExpenses.isEmpty
+                      : _groupTransactions.isEmpty
                         ? const Center(child: Text('Nessuna spesa presente'))
                         : NotificationListener<ScrollNotification>(
                             onNotification: (scrollNotification) {
@@ -379,25 +389,27 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                               ListView.builder(
                                 controller: _scrollController,
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _groupExpenses.length + (_isLoadingContent ? 1 : 0),
+                                itemCount: _groupTransactions.length + (_isLoadingContent ? 1 : 0),
                                 itemBuilder: (context, index) {
-                                  if (index >= _groupExpenses.length) {
+                                  if (index >= _groupTransactions.length) {
                                     return const Padding(
                                       padding: EdgeInsets.symmetric(vertical: 16),
                                       child: Center(child: Text('Carico altre spese...')),
                                     );
                                   }
-                                  final e = _groupExpenses[index];
+                                  final e = _groupTransactions[index];
                                   final formattedDateTime = _formatDateTime(e.updatedAt.toString());
                                   final totalAmount = e.totalAmount;
                                   final merchant = e.merchant;
                                   final category = e.category;
 
-                                  return ExpenseCardWidget(
-                                    merchantName: merchant?.name ?? '-',
-                                    categoryName: category?.name ?? '-',
+                                  return TransactionCardWidget(
+                                    isGroupTransaction: true,
+                                    merchantName: merchant?.name,
+                                    categoryName: category?.name,
                                     formattedDateTime: formattedDateTime,
                                     totalAmount: totalAmount,
+                                    transactionType: e.transactionType,
                                     note: e.note,
                                     profileModel: e.profileModel,
                                     paidAmount: e.paidAmount,
@@ -436,7 +448,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                             shape: const CircleBorder(),
                           ),
                           onPressed: () async {
-                            _navigateToGroupExpensesPage(groupId: widget.groupId, isEditAllowed: true);
+                            _navigateToGroupTransactionsPage(groupId: widget.groupId, isEditAllowed: true);
                           },
                         ),
                       ),

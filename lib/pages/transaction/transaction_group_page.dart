@@ -1,25 +1,26 @@
+import 'package:Billy/enums/transaction_insert_mode_enum.dart';
+import 'package:Billy/services/transactions_service.dart';
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Billy/enums/expense_insert_mode_enum.dart';
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/services/expenses_service.dart';
 import 'package:Billy/services/groups_service.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
-class ExpenseGroupPage extends StatefulWidget {
+class TransactionGroupPage extends StatefulWidget {
   final String? groupId;
-  final String? expenseId;
+  final String? transactionId;
   final bool isEditAllowed;
 
-  const ExpenseGroupPage({super.key, this.groupId, this.expenseId, this.isEditAllowed = false});
+  const TransactionGroupPage({super.key, this.groupId, this.transactionId, this.isEditAllowed = false});
 
   @override
-  State<ExpenseGroupPage> createState() => _ExpenseGroupPageState();
+  State<TransactionGroupPage> createState() => _TransactionGroupPageState();
 }
 
-class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
+class _TransactionGroupPageState extends State<TransactionGroupPage> {
   final double _defaultSizedBoxHeight = 6.0;
 
   late TextEditingController _priceController;
@@ -32,7 +33,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
   Map<String, dynamic>? _selectedGroup;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
-  ExpenseInsertModeEnum? _expenseInsertMode;
+  TransactionInsertModeEnum? _transactionInsertMode;
   String? _errorMessage;
   String pageTitle = 'Inserisci Spesa';
   String? _selectedSplitRateValue;
@@ -53,12 +54,12 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     _paidAmountController.addListener(_onFieldChanged);
     _splitRateController.addListener(_onFieldChanged);
 
-    isEdit = widget.expenseId != null && widget.isEditAllowed;
+    isEdit = widget.transactionId != null && widget.isEditAllowed;
     _pageTitleSetup();
     _loadUserGroups();
 
-    if (widget.expenseId != null) {
-      _loadExistingExpense(widget.expenseId!);
+    if (widget.transactionId != null) {
+      _loadExistingTransaction(widget.transactionId!);
     }
   }
   
@@ -91,11 +92,11 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     return double.tryParse(text) ?? 0.0;
   }
 
-  void _handleExpenseInsertModeValue(ExpenseInsertModeEnum value) {
+  void _handleTransactionInsertModeValue(TransactionInsertModeEnum value) {
     setState(() {
       _selectedSplitRateValueButton = null;
       _selectedSplitRateValue = null;
-      _expenseInsertMode = value;
+      _transactionInsertMode = value;
     });
   }
 
@@ -130,14 +131,14 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     pageTitle = isEdit ? 'Modifica Spesa di Gruppo' : 'Inserisci Spesa Gruppo';
   }
 
-  Future<void> _loadExistingExpense(String expenseId) async {
+  Future<void> _loadExistingTransaction(String transactionId) async {
     setState(() {
       _isLoading = true;
     });
 
     // TODO: da implementare caricamento spesa esistente
-    // final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(expenseId);
-    // log.fine("Existing users in group $expenseId: $groupDetailsResponse");
+    // final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(transactionId);
+    // log.fine("Existing users in group $transactionId: $groupDetailsResponse");
     
     // if (groupDetailsResponse.success) {
     //   log.fine("Group details: ${groupDetailsResponse.data}");
@@ -157,9 +158,11 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     //   });
     // }
 
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadUserGroups() async {
@@ -171,11 +174,13 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     }
   }
   
-  Future<void> _saveExpense() async {
-    setState(() {
-      _errorMessage = null;
-      _isSaveEnabled = false;
-    });
+  Future<void> _saveTransaction() async {
+    if (mounted) {
+      setState(() {
+        _errorMessage = null;
+        _isSaveEnabled = false;
+      });
+    }
 
     String message = isEdit ? "Dati aggiornati" : "Dati salvati";
     ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
@@ -183,9 +188,9 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     );
 
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await ExpensesService().updateGroupExpense(
+      apiResponseModel = await TransactionsService().updateGroupTransaction(
         groupId: _selectedGroup!['id'],
-        expenseId: widget.expenseId!,
+        transactionId: widget.transactionId!,
         price: _formatPriceInput(),
         merchant: _merchantController.text.trim(),
         categories: _categoriesController.text.trim(),
@@ -193,7 +198,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await ExpensesService().createGroupExpense(
+      apiResponseModel = await TransactionsService().createGroupTransaction(
         groupId: _selectedGroup!['id'],
         price: _formatPriceInput(),
         splitRate: _selectedSplitRateValue,
@@ -205,16 +210,22 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
     }
     
     if (apiResponseModel.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-      Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackkBarWidget( 
+            text: message,
+          ).build(context),
+        );
+        Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
+      }
     }
     else {
-      setState(() {
-        _errorMessage = 'Errore durante il salvataggio';
-        _isSaveEnabled = true;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante il salvataggio';
+          _isSaveEnabled = true;
+        });
+      }
     }
   }
 
@@ -265,7 +276,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                     )
                 ),
                 
-                // -- Expense Price
+                // -- Transaction Price
                 Row(
                   children: [
                     Expanded(
@@ -300,15 +311,15 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
-                              side: (_expenseInsertMode == ExpenseInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
+                              side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
                             ),
                             backgroundColor: const Color.fromARGB(255, 225, 250, 2),
                             foregroundColor: Colors.black87,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          // TODO: onPressed: (_expenseInsertMode != ExpenseInsertModeEnum.SPLIT_RATE) ? () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.FIX_PAID) : null,
-                          onPressed: () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.FIX_PAID),
+                          // TODO: onPressed: (_transactionInsertMode != TransactionInsertModeEnum.SPLIT_RATE) ? () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID) : null,
+                          onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
                           child: const Text('Specifica quota'),
                         ),
                       ),
@@ -320,15 +331,15 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
-                              side: (_expenseInsertMode == ExpenseInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
+                              side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
                             ),
                             backgroundColor: const Color.fromARGB(255, 11, 250, 238),
                             foregroundColor: Colors.black87,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          // TODO: onPressed: (_expenseInsertMode != ExpenseInsertModeEnum.FIX_PAID) ? () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.SPLIT_RATE) : null,
-                          onPressed: () => _handleExpenseInsertModeValue(ExpenseInsertModeEnum.SPLIT_RATE),
+                          // TODO: onPressed: (_transactionInsertMode != TransactionInsertModeEnum.FIX_PAID) ? () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE) : null,
+                          onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
                           child: const Text('Dividi spesa'),
                         ),
                       ),
@@ -337,7 +348,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                 ),
 
 
-                if (_expenseInsertMode == ExpenseInsertModeEnum.FIX_PAID) ...[
+                if (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID) ...[
                   SizedBox(height: _defaultSizedBoxHeight),
                   TextField(
                     controller: _paidAmountController,
@@ -355,7 +366,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                     ),
                   ),
                 ]
-                else if (_expenseInsertMode == ExpenseInsertModeEnum.SPLIT_RATE) ...[
+                else if (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE) ...[
                   SizedBox(height: _defaultSizedBoxHeight),
                   
                   Text('Quanto paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -629,7 +640,7 @@ class _ExpenseGroupPageState extends State<ExpenseGroupPage> {
                   children: [
                     ElevatedButton(
                       onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
-                        _saveExpense();
+                        _saveTransaction();
                       } : null, // Disabilita il pulsante se il nome è vuoto
                       child: const Text('Salva'),
                     ),

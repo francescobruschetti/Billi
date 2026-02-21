@@ -39,6 +39,12 @@ dependencies:
   logging: ^1.1.0
   json_annotation: ^4.8.1
 
+  # TODO: Add localization support  
+  # # Multilanguage support
+  # flutter_localizations:
+  #   sdk: flutter
+  # intl: ^0.20.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -57,7 +63,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -93,3 +98,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+

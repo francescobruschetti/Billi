@@ -15,38 +15,31 @@ create table merchants (
   updated_at timestamp with time zone default now()
 );
 
-create table expenses (
+create table transactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id),
   merchant_id uuid references merchants(id),
   category_id uuid references categories(id),
   note text,
-  total_amount numeric(10,2) not null check (total_amount > 0),
+  total_amount numeric(10,2) not null check (total_amount >= 0),
+  transaction_type transaction_type not null default 'expense',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
-);
 
-create table incomes (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users(id),
-  category_id uuid references categories(id),
-  note text not null,
-  total_amount numeric(10,2) not null check (total_amount > 0),
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
+  -- Constraint to ensure that merchant_id is only required for expenses
+  -- constraint merchant_only_for_expense check (
+  --   (transaction_type = 'expense' and merchant_id is not null) 
+  --   or
+  --   (transaction_type = 'income' and merchant_id is null)
+  -- )
 );
 
 --------------------------------------------------------------------------
--- Indexs
-create index idx_expenses_user on expenses(user_id);
-create index idx_expenses_category on expenses(category_id);
-create index idx_expenses_merchant on expenses(merchant_id);
-create index idx_incomes_user on incomes(user_id);
-create index idx_incomes_category on incomes(category_id);
+-- Indexes
+create index idx_transactions_user on transactions(user_id);
 
 --------------------------------------------------------------------------
 -- Row Level Security (RLS)
-alter table expenses enable row level security;
-alter table incomes enable row level security;
+alter table transactions enable row level security;
 alter table categories enable row level security;
 alter table merchants enable row level security;

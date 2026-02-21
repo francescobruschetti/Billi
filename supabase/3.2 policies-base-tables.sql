@@ -1,7 +1,7 @@
 -- PRINCIPIO CHIAVE (importantissimo)
 -- Per evitare infinite recursion e problemi futuri:
 -- 🔑 Una policy può leggere SOLO una tabella “più semplice”
--- groups → group_participants → group_expenses
+-- groups → group_participants → group_transactions
 -- (mai il contrario)
 
 --------------------------------------------------------------------------
@@ -12,61 +12,33 @@
 --------------------------------------------------------------------------
 grant select, insert, update, delete on table categories to authenticated;
 grant select, insert, update, delete on table merchants to authenticated;
-grant select, insert, update, delete on table expenses to authenticated;
-grant select, insert, update, delete on table incomes to authenticated;
+grant select, insert, update, delete on table transactions to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
--- Expenses table
-drop policy if exists "Authenticated users can create expenses" on expenses;
-create policy "Authenticated users can create expenses"
-on expenses
+-- Transactions table
+drop policy if exists "Authenticated users can create transactions" on transactions;
+create policy "Authenticated users can create transactions"
+on transactions
 for insert
 with check (
   auth.uid() = user_id
 );
 
-create policy "Creator can view own expenses"
-on expenses
+create policy "Creator can view own transactions"
+on transactions
 for select
 using (
   user_id = auth.uid()
 );
 
-create policy "Only creator can update expenses"
-on expenses
+create policy "Only creator can update transactions"
+on transactions
 for update
 using (user_id = auth.uid());
 
-create policy "Only creator can delete expenses"
-on expenses
-for delete
-using (user_id = auth.uid());
-
---------------------------------------------------------------------------
--- Incomes table
-drop policy if exists "Authenticated users can create incomes" on incomes;
-create policy "Authenticated users can create incomes"
-on incomes
-for insert
-with check (
-  auth.uid() = user_id
-);
-
-create policy "Creator can view own incomes"
-on incomes
-for select
-using (
-  user_id = auth.uid()
-);
-
-create policy "Only creator can update incomes"
-on incomes
-for update
-using (user_id = auth.uid());
-
-create policy "Only creator can delete incomes"
-on incomes
+create policy "Only creator can delete transactions"
+on transactions
 for delete
 using (user_id = auth.uid());
 
@@ -97,15 +69,15 @@ on categories
 for delete
 using (user_id = auth.uid());
 
-drop policy if exists "Group participants can view categories linked to their group expenses" on categories;
-create policy "Group participants can view categories linked to their group expenses"
+drop policy if exists "Group participants can view categories linked to their group transactions" on categories;
+create policy "Group participants can view categories linked to their group transactions"
 on categories
 for select
 using (
   EXISTS (
-    SELECT 1 FROM group_expenses
-    JOIN group_participants ON group_expenses.group_id = group_participants.group_id
-    WHERE group_expenses.category_id = categories.id
+    SELECT 1 FROM group_transactions
+    JOIN group_participants ON group_transactions.group_id = group_participants.group_id
+    WHERE group_transactions.category_id = categories.id
       AND group_participants.user_id = auth.uid()
   )
 );
@@ -137,15 +109,15 @@ on merchants
 for delete
 using (user_id = auth.uid());
 
-drop policy if exists "Group participants can view merchants linked to their group expenses" on merchants;
-create policy "Group participants can view merchants linked to their group expenses"
+drop policy if exists "Group participants can view merchants linked to their group transactions" on merchants;
+create policy "Group participants can view merchants linked to their group transactions"
 on merchants
 for select
 using (
   EXISTS (
-    SELECT 1 FROM group_expenses
-    JOIN group_participants ON group_expenses.group_id = group_participants.group_id
-    WHERE group_expenses.merchant_id = merchants.id
+    SELECT 1 FROM group_transactions
+    JOIN group_participants ON group_transactions.group_id = group_participants.group_id
+    WHERE group_transactions.merchant_id = merchants.id
       AND group_participants.user_id = auth.uid()
   )
 );
@@ -160,31 +132,29 @@ begin
 end;
 $$ language plpgsql;
 
-create trigger trg_update_expenses
-before update on expenses
-for each row execute function update_timestamp();
-
-create trigger trg_update_incomes
-before update on incomes
+create trigger trg_update_transactions
+before update on transactions
 for each row execute function update_timestamp();
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
--- Trigger Insert Expense with default category and merchant
-create or replace function insert_expense_with_merchant_category(
+-- Trigger Insert Transaction with default category and merchant
+create or replace function insert_transaction_with_merchant_category(
   p_user_id uuid,
   p_total_amount numeric,
   p_merchant_name text,
   p_category_name text,
-  p_note text
+  p_note text,
+  p_transaction_type transaction_type
 )
 returns table (
-  expense_id uuid, -- id expense
+  transaction_id uuid, -- id transaction
   user_id uuid, -- id utente
   total_amount numeric,
   merchant_id uuid,
   category_id uuid,
   note text,
+  transaction_type transaction_type,
   created_at timestamptz
 ) as $$
 declare
@@ -197,33 +167,34 @@ begin
     insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
   end if;
 
-  -- -- Category
+  -- Category
   select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) limit 1;
   if v_category_id is null then
     insert into categories (name, user_id) values (p_category_name, p_user_id) returning id into v_category_id;
   end if;
 
-  -- -- Expense
+  -- Transaction
   return query
-  insert into expenses (user_id, total_amount, merchant_id, category_id, note)
-  values (p_user_id, p_total_amount, v_merchant_id, v_category_id, p_note)
+  insert into transactions (user_id, total_amount, merchant_id, category_id, note, transaction_type)
+  values (p_user_id, p_total_amount, v_merchant_id, v_category_id, p_note, p_transaction_type)
   returning
-    expenses.id as expense_id,
-    expenses.user_id  as user_id,
-    expenses.total_amount as total_amount,
-    expenses.merchant_id as merchant_id,
-    expenses.category_id as category_id,
-    expenses.note        as note,
-    expenses.created_at  as created_at;
+    transactions.id as transaction_id,
+    transactions.user_id  as user_id,
+    transactions.total_amount as total_amount,
+    transactions.merchant_id as merchant_id,
+    transactions.category_id as category_id,
+    transactions.note as note,
+    transactions.transaction_type as transaction_type,
+    transactions.created_at  as created_at;
 
 end;
 $$ language plpgsql security definer;
-grant execute on function public.insert_expense_with_merchant_category(uuid, numeric, text, text, text) to authenticated;
+grant execute on function public.insert_transaction_with_merchant_category(uuid, numeric, text, text, text, transaction_type) to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
--- Trigger Insert Group Expenses with default category and merchant
-create or replace function insert_group_expense_with_merchant_category(
+-- Trigger Insert Group Transactions with default category and merchant
+create or replace function insert_group_transaction_with_merchant_category(
   p_group_id uuid,
   p_user_id uuid,
   p_paid_amount numeric,
@@ -231,10 +202,11 @@ create or replace function insert_group_expense_with_merchant_category(
   p_split_rate text,
   p_merchant_name text,
   p_category_name text,
-  p_note text
+  p_note text,
+  p_transaction_type transaction_type
 )
 returns table (
-  expense_id uuid, -- id expense
+  transaction_id uuid, -- id transaction
   user_id uuid, -- id utente
   paid_amount numeric,
   total_amount numeric,
@@ -242,6 +214,7 @@ returns table (
   merchant_id uuid,
   category_id uuid,
   note text,
+  transaction_type transaction_type,
   created_at timestamptz
 ) as $$
 declare
@@ -254,29 +227,30 @@ begin
     insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
   end if;
 
-  -- -- Category
+  -- Category
   select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) limit 1;
   if v_category_id is null then
     insert into categories (name, user_id) values (p_category_name, p_user_id) returning id into v_category_id;
   end if;
 
-  -- -- Expense
+  -- Transaction
   return query
-  insert into group_expenses (user_id, paid_amount, total_amount, split_rate, merchant_id, category_id, note, group_id)
-  values (p_user_id, p_paid_amount, p_total_amount, p_split_rate, v_merchant_id, v_category_id, p_note, p_group_id)
+  insert into group_transactions (user_id, paid_amount, total_amount, split_rate, merchant_id, category_id, note, transaction_type, group_id)
+  values (p_user_id, p_paid_amount, p_total_amount, p_split_rate, v_merchant_id, v_category_id, p_note, p_transaction_type, p_group_id)
   returning
-    group_expenses.id as expense_id,
-    group_expenses.user_id  as user_id,
-    group_expenses.paid_amount as paid_amount,
-    group_expenses.total_amount as total_amount,
-    group_expenses.split_rate as split_rate,
-    group_expenses.merchant_id as merchant_id,
-    group_expenses.category_id as category_id,
-    group_expenses.note        as note,
-    group_expenses.created_at  as created_at; 
+    group_transactions.id as transaction_id,
+    group_transactions.user_id  as user_id,
+    group_transactions.paid_amount as paid_amount,
+    group_transactions.total_amount as total_amount,
+    group_transactions.split_rate as split_rate,
+    group_transactions.merchant_id as merchant_id,
+    group_transactions.category_id as category_id,
+    group_transactions.note as note,
+    group_transactions.transaction_type as transaction_type,
+    group_transactions.created_at as created_at; 
 end;
 $$ language plpgsql security definer;
-grant execute on function public.insert_group_expense_with_merchant_category(
-  uuid, uuid, numeric, numeric, text, text, text, text
+grant execute on function public.insert_group_transaction_with_merchant_category(
+  uuid, uuid, numeric, numeric, text, text, text, text, transaction_type
 ) to authenticated;
 --------------------------------------------------------------------------

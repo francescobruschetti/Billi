@@ -1,29 +1,29 @@
 import 'package:logging/logging.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/models/expense_model.dart';
+import 'package:Billy/models/transaction_model.dart';
 import 'package:Billy/models/group_details_model.dart';
-import 'package:Billy/models/group_expense_model.dart';
+import 'package:Billy/models/group_transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ExpensesService {
+class TransactionsService {
 
-  final Logger log = Logger('ExpensesService');
+  final Logger log = Logger('TransactionsService');
   final SupabaseClient supabase = Supabase.instance.client;
 
-  Stream<List<ExpenseModel>> subscribeExpenses() {
-    log.fine("Subscribing to expenses stream");
+  Stream<List<TransactionModel>> subscribeTransactions() {
+    log.fine("Subscribing to transactions stream");
     final userId = supabase.auth.currentUser!.id;
 
     return supabase
-        .from('expenses')
+        .from('transactions')
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
         .order('created_at', ascending: false)
         .map((rows) =>
-            rows.map((row) => ExpenseModel.fromMap(row)).toList());
+            rows.map((row) => TransactionModel.fromMap(row)).toList());
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> createGroupExpense({
+  Future<ApiResponseModel<Map<String, dynamic>>> createGroupTransaction({
     required String groupId,
     required double price,
     String? splitRate,
@@ -35,7 +35,7 @@ class ExpensesService {
     
     final userId = supabase.auth.currentUser!.id;
     try {
-      final result = await supabase.rpc('insert_group_expense_with_merchant_category', params: {
+      final result = await supabase.rpc('insert_group_transaction_with_merchant_category', params: {
         'p_group_id': groupId,
         'p_user_id': userId,
         'p_paid_amount': paidAmount,
@@ -53,7 +53,7 @@ class ExpensesService {
     }
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> createPersonalExpense({
+  Future<ApiResponseModel<Map<String, dynamic>>> createPersonalTransaction({
     required double price,
     String? merchant,
     String? categories,
@@ -62,7 +62,7 @@ class ExpensesService {
     
     final userId = supabase.auth.currentUser!.id;
     try {
-      final result = await supabase.rpc('insert_expense_with_merchant_category', params: {
+      final result = await supabase.rpc('insert_transaction_with_merchant_category', params: {
         'p_user_id': userId,
         'p_total_amount': price,
         'p_merchant_name': merchant,
@@ -77,14 +77,14 @@ class ExpensesService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchLatestPersonalExpenses({required int pageIndex, int pageSize = 50}) async {
+  Future<List<Map<String, dynamic>>> fetchLatestPersonalTransactions({required int pageIndex, int pageSize = 50}) async {
     final userId = supabase.auth.currentUser!.id;
 
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
 
     final rows = await supabase
-      .from('expenses')
+      .from('transactions')
       .select('*, merchant:merchants(*), category:categories(*)')
       .eq('user_id', userId)
       .order('created_at', ascending: false)
@@ -94,30 +94,30 @@ class ExpensesService {
   }
 
   // TODO: NOT used anymore
-  Future<ApiResponseModel<List<GroupExpenseModel>>> fetchLatestGroupExpenses({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<ApiResponseModel<List<GroupTransactionModel>>> fetchLatestGroupTransactions({required String groupId, required int pageIndex, int pageSize = 50}) async {
     
     try {
       final from = pageIndex * pageSize;
       final to = from + pageSize - 1;
 
-      final expenses = await supabase
-        .from('group_expenses')
+      final transactions = await supabase
+        .from('group_transactions')
         .select('*, merchant:merchants(*), category:categories(*), profile:profiles(*)')
         .eq('group_id', groupId)
         .order('created_at', ascending: false)
         .range(from, to);
 
-      return ApiResponseModel<List<GroupExpenseModel>>(success: true, message: null, data: GroupExpenseModel.fromList(expenses));
+      return ApiResponseModel<List<GroupTransactionModel>>(success: true, message: null, data: GroupTransactionModel.fromList(transactions));
     } 
     catch (e) {
-      log.severe("Error fetching group expenses: $e");
-      return ApiResponseModel<List<GroupExpenseModel>>(success: false, message: e.toString(), data: []);
+      log.severe("Error fetching group transactions: $e");
+      return ApiResponseModel<List<GroupTransactionModel>>(success: false, message: e.toString(), data: []);
     }
   }
 
   Future<ApiResponseModel<GroupDetailsModel>> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
-      // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
+      // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
         .from('groups')
         .select('''
@@ -129,7 +129,7 @@ class ExpensesService {
           created_at,
           updated_at,
           group_participants:group_participants(user_id, profiles:profiles(*)),
-          group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(*))
+          group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(*))
         ''')
         .eq('id', groupId)
         .single();
@@ -145,7 +145,7 @@ class ExpensesService {
   // TODO: NOT used anymore
   Future<ApiResponseModel<GroupDetailsModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
-      // Example: group_expenses:group_expenses(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
+      // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
         .from('groups')
         .select('''
@@ -169,9 +169,9 @@ class ExpensesService {
     }
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> updateGroupExpense({
+  Future<ApiResponseModel<Map<String, dynamic>>> updateGroupTransaction({
     required String groupId,
-    required String expenseId, 
+    required String transactionId, 
     required double price,
     String? merchant, // TODO: da implementare
     String? categories, // TODO: da implementare
@@ -196,8 +196,8 @@ class ExpensesService {
     return ApiResponseModel<Map<String, dynamic>>(success: false, message: "Not implemented yet", data: {});
   }
   
-  Future<ApiResponseModel<Map<String, dynamic>>> updatePersonalExpense({
-    required String expenseId, 
+  Future<ApiResponseModel<Map<String, dynamic>>> updatePersonalTransaction({
+    required String transactionId, 
     required double price,
     String? merchant, // TODO: da implementare
     String? categories, // TODO: da implementare

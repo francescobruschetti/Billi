@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------
 -- FUNCTIONS -------------------------------------------------------------
 --------------------------------------------------------------------------
--- Get all groups cotaining the user as participant or creator
+-- Get all groups cotaining the user as participant or creator, and the total amount of each group
+DROP FUNCTION get_user_groups();
 create or replace function public.get_user_groups()
 returns table (
   id uuid,
@@ -9,7 +10,8 @@ returns table (
   link char(8),
   user_id uuid,
   created_at timestamptz,  -- must match table (timestamp with time zone)
-  updated_at timestamptz   -- must match table (timestamp with time zone)
+  updated_at timestamptz,  -- must match table (timestamp with time zone)
+  total_amount numeric -- somma di tutte le spese del gruppo
 )
 language plpgsql
 security definer
@@ -23,7 +25,12 @@ begin
     g.link,
     g.user_id,
     g.created_at,
-    g.updated_at
+    g.updated_at,
+    coalesce((
+      select sum(e.total_amount)
+      from group_transactions e
+      where e.group_id = g.id
+    ), 0) as total_amount
   from groups g
   left join group_participants gp
     on gp.group_id = g.id

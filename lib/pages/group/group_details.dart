@@ -1,3 +1,4 @@
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -73,93 +74,111 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   }
 
   Future<void> _getExistingUser(String key) async {
-    setState(() {
-      _isSearching = true;
-      _errorMessage = null;
-      _showOnlyError = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+        _errorMessage = null;
+        _showOnlyError = false;
+      });
+    }
 
     try {
       final res = await ProfilesService().getUserByEmailOrUsername(key);
       log.fine("User search result: $res");
-      if (res.isEmpty) {
-        setState(() {
-          _errorMessage = 'Nessun utente trovato con username o email "$key"';
-        });
-      } 
-      else {
-        setState(() {
-          for (var user in res) {
-            if (_existingUsers.any((u) => u.id == user['id'])) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Utente ${user['username'] ?? user['email'] ?? user['id']} già presente nel gruppo')),
-              );
-              continue; // Salta utenti già presenti nel gruppo
+      if (mounted) {
+        if (res.isEmpty) {
+          setState(() {
+            _errorMessage = 'Nessun utente trovato con username o email "$key"';
+          });
+        } 
+        else {
+          setState(() {
+            for (var user in res) {
+              if (_existingUsers.any((u) => u.id == user['id'])) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  CustomSnackkBarWidget( 
+                    text: 'Utente ${user['username'] ?? user['email'] ?? user['id']} già presente nel gruppo',
+                  ).build(context),
+                );
+                continue; // Salta utenti già presenti nel gruppo
+              }
+              if (!_selectedUsers.any((u) => u['id'] == user['id'])) {
+                _selectedUsers.add(user);
+              }
             }
-            if (!_selectedUsers.any((u) => u['id'] == user['id'])) {
-              _selectedUsers.add(user);
-            }
-          }
-        });
+          });
+        }
       }
     } 
     catch (e) {
-      setState(() {
-        _errorMessage = 'Errore durante la ricerca dell\'utente: $e';
-        _showOnlyError = true;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante la ricerca dell\'utente: $e';
+          _showOnlyError = true;
+        });
+      }
     } 
     finally {
-      setState(() {
-        _isSearching = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
     }
   }
 
   Future<void> _loadExistingGroup(String groupId) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final groupDetailsResponse = await GroupsService().getGroupDetailsAndParticipants(groupId);
       log.fine("Existing users in group $groupId: $groupDetailsResponse");
-      
-      if (groupDetailsResponse.success) {
-        log.fine("Group details: ${groupDetailsResponse.data}");
-        _nameController.text = groupDetailsResponse.data.name;
-        _descriptionController.text = groupDetailsResponse.data.description ?? '';
-        _linkController.text = groupDetailsResponse.data.link;
-        
-        final userProfiles = groupDetailsResponse.data.participants.map((p) => p.profile).toList();
-        setState(() {
-          _existingUsers.clear();
-          _existingUsers.addAll(userProfiles);
-        });
-      }
-      else {
-        setState(() {
-          _errorMessage = 'Errore durante il caricamento dei partecipanti esistenti: ${groupDetailsResponse.message}';
-        });
+      if (mounted) {
+        if (groupDetailsResponse.success) {
+          log.fine("Group details: ${groupDetailsResponse.data}");
+          _nameController.text = groupDetailsResponse.data.name;
+          _descriptionController.text = groupDetailsResponse.data.description ?? '';
+          _linkController.text = groupDetailsResponse.data.link;
+          final userProfiles = groupDetailsResponse.data.participants.map((p) => p.profile).toList();
+          setState(() {
+            _existingUsers.clear();
+            _existingUsers.addAll(userProfiles);
+          });
+        }
+        else {
+          setState(() {
+            _errorMessage = 'Errore durante il caricamento dei partecipanti esistenti: ${groupDetailsResponse.message}';
+          });
+        }
       }
     } 
     catch (e) {
-      setState(() {
-        _errorMessage = 'Errore durante il caricamento dei dettagli del gruppo.';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante il caricamento dei dettagli del gruppo.';
+        });
+      }
     } 
     finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _saveGroup() async {
-    setState(() {
-      _errorMessage = null;
-      _isSaveEnabled = false;
-    });
+    if (mounted) {
+      setState(() {
+        _errorMessage = null;
+        _isSaveEnabled = false;
+      });
+    }
 
     String message = '';
     ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
@@ -184,16 +203,22 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     }
 
     if (apiResponseModel.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-      _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackkBarWidget( 
+            text: message,
+          ).build(context),
+        );
+        _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
+      }
     }
     else {
-      setState(() {
-        _errorMessage = 'Errore durante il salvataggio dei dati';
-        _isSaveEnabled = true;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante il salvataggio dei dati';
+          _isSaveEnabled = true;
+        });
+      }
     }
   }
 
@@ -251,7 +276,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _linkController.text));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Link copiato negli appunti')),
+                            CustomSnackkBarWidget( 
+                              text: 'Link copiato negli appunti',
+                            ).build(context),
                           );
                         },
                       ),

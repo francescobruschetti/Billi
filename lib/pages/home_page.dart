@@ -1,14 +1,15 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
-import 'package:Billy/pages/expense/expense_group_page.dart';
-import 'package:Billy/pages/expense/expense_page.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
-import 'package:Billy/widgets/components/expense_card_widget.dart';
+import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
-import '../services/expenses_service.dart';
+import '../services/transactions_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,11 +20,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Logger log = Logger('HomePage');
-  final ExpensesService service = ExpensesService();
+  final TransactionsService service = TransactionsService();
   final ScrollController _scrollController = ScrollController();
 
-  late Future<List<Map<String, dynamic>>> expensesFuture;
-  List<Map<String, dynamic>> allExpenses = [];
+  late Future<List<Map<String, dynamic>>> transactionsFuture;
+  List<Map<String, dynamic>> allTransactions = [];
 
   int _currentPage = 0;
   final int _pageSize = 50;
@@ -34,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadExpenses(reset: true);
+    _loadTransactions(reset: true);
   }
 
   @override
@@ -44,11 +45,20 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _filterExpenses({bool reset = false}) async {
+  double _computeBalance() {
+    double res = allTransactions.fold<double>(0, (sum, e) {
+      final amount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
+      final type = TransactionTypeEnumExtension.fromValue(e['transaction_type']);
+      return type == TransactionTypeEnum.INCOME ? sum + amount : sum - amount;
+    });
+    return double.parse(res.toStringAsFixed(2));
+  }
+
+  void _filterTransactions({bool reset = false}) async {
     // TODO: da implementare filtro spese
   }
 
-  void _filterTimeExpenses({required TimeFilterEnum filter}) async {
+  void _filterTimeTransactions({required TimeFilterEnum filter}) async {
     log.info('Filtro Time selezionato: ${filter.value}');
     // TODO: da implementare filtro spese
   }
@@ -64,7 +74,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _loadExpenses({bool reset = false}) async {
+  Future<void> _loadTransactions({bool reset = false}) async {
     if (_isLoading) return;
     if (mounted) {
       setState(() {
@@ -74,18 +84,18 @@ class _HomePageState extends State<HomePage> {
     if (reset) {
       _currentPage = 0;
       _hasMore = true;
-      allExpenses.clear();
+      allTransactions.clear();
     }
-    expensesFuture = service.fetchLatestPersonalExpenses(pageIndex: _currentPage, pageSize: _pageSize);
-    final result = await expensesFuture;
+    transactionsFuture = service.fetchLatestPersonalTransactions(pageIndex: _currentPage, pageSize: _pageSize);
+    final result = await transactionsFuture;
 
     if (mounted) {
       setState(() {
         if (reset) {
-          allExpenses = result;
+          allTransactions = result;
         } 
         else {
-          allExpenses.addAll(result);
+          allTransactions.addAll(result);
         }
         _isLoading = false;
         _hasMore = result.length == _pageSize;
@@ -94,16 +104,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _navigateToExpensePage({required bool isPersonalExpense, required bool isEditAllowed}) async {
-    var page = isPersonalExpense ? ExpensePage(isEditAllowed: isEditAllowed) : ExpenseGroupPage(isEditAllowed: isEditAllowed);
-
+  void _navigateToTransactionPage({required TransactionTypeEnum transactionType, required bool isEditAllowed}) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => page),
+      MaterialPageRoute(builder: (context) => TransactionPage(isEditAllowed: isEditAllowed, transactionType: transactionType)),
     )
     .then((result) {
       if (result == true) {
-        _loadExpenses(reset: true);
+        _loadTransactions(reset: true);
       }
     });
   }
@@ -113,7 +121,7 @@ class _HomePageState extends State<HomePage> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll) {
-      _loadExpenses();
+      _loadTransactions();
     }
   }
 
@@ -128,38 +136,38 @@ class _HomePageState extends State<HomePage> {
             // Page Header
             Container(
               // debug UI: color: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
               child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                      'Totale spese (${allExpenses.length}): ${allExpenses.fold<double>(0, (sum, e) => sum + (double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0)).toStringAsFixed(2)}€',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                ),
-                const SizedBox(width: 5),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Aggiorna',
-                  onPressed: () => _loadExpenses(reset: true),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  tooltip: 'Filtra',
-                  onPressed: () => _filterExpenses(reset: true),
-                ),
-              ],
-            ),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: SelectableText(
+                        'Totale spese (${allTransactions.length}): ${_computeBalance()}€',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                  ),
+                  const SizedBox(width: 5),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Aggiorna',
+                    onPressed: () => _loadTransactions(reset: true),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.filter_list),
+                    tooltip: 'Filtra',
+                    onPressed: () => _filterTransactions(reset: true),
+                  ),
+                ],
+              ),
             ),
 
             // Page Header "subtitle"
             Container(
               // debug UI: color: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
               child: TimeFilterWidget(
                 timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                onPressed: (filter) => _filterTimeExpenses(filter: filter),
+                onPressed: (filter) => _filterTimeTransactions(filter: filter),
               ),
             ),
 
@@ -168,7 +176,7 @@ class _HomePageState extends State<HomePage> {
               child:
                 _isLoading 
                 ? const LoadingScaffold(message: 'Caricamento spese...')
-                : allExpenses.isEmpty
+                : allTransactions.isEmpty
                   ? const Center(child: Text('Nessuna spesa presente'))
                   : NotificationListener<ScrollNotification>(
                       onNotification: (scrollNotification) {
@@ -177,33 +185,36 @@ class _HomePageState extends State<HomePage> {
                         }
                         return false;
                       },
-                      child:
-                        ListView.builder(
+                      child: RefreshIndicator(
+                        onRefresh: () => _loadTransactions(reset: true),
+                        child: ListView.builder(
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: allExpenses.length + (_isLoading ? 1 : 0),
+                          itemCount: allTransactions.length + (_isLoading ? 1 : 0),
                           itemBuilder: (context, index) {
-                            if (index >= allExpenses.length) {
+                            if (index >= allTransactions.length) {
                               return const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 16),
                                 child: Center(child: Text('Carico altre spese...')),
                               );
                             }
-                            final e = allExpenses[index];
+                            final e = allTransactions[index];
                             final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
                             final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
                             final merchant = e['merchant'] ?? {};
                             final category = e['category'] ?? {};
 
-                            return ExpenseCardWidget(
-                              merchantName: merchant['name'] ?? '-',
-                              categoryName: category['name'] ?? '-',
+                            return TransactionCardWidget(
+                              merchantName: merchant['name'],
+                              categoryName: category['name'],
                               formattedDateTime: formattedDateTime,
                               totalAmount: totalAmount,
+                              transactionType: TransactionTypeEnumExtension.fromValue(e['transaction_type']),
                               note: e['note'],
                             );
                           },
                         ),
+                      ),
                     ),
             ),
           
@@ -215,24 +226,26 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: 
-                      CustomButtonWidget(
+                    child: CustomButtonWidget(
                         onPressed: () async {
-                          _navigateToExpensePage(isPersonalExpense: true, isEditAllowed: true);
-                        },
-                        text: 'Spesa Personale',
-                        icon: Icons.add,
-                      ),
+                        _navigateToTransactionPage(transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
+                      },
+                      text: 'Uscite',
+                      icon: Icons.logout,
+                      backgroundColor: Colors.red[100],
+                    ),
                   ),
                   const SizedBox(width: AppConstants.sizedBoxWidth),
                   Expanded(
-                    child: CustomButtonWidget(
+                    child: 
+                      CustomButtonWidget(
                         onPressed: () async {
-                        _navigateToExpensePage(isPersonalExpense: false, isEditAllowed: true);
-                      },
-                      text: 'Spesa Condivisa',
-                      icon: Icons.group_add_outlined,
-                    ),
+                          _navigateToTransactionPage(transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
+                        },
+                        text: 'Entrate',
+                        icon: Icons.login,
+                        backgroundColor: Colors.green[100],
+                      ),
                   ),
                 ],
               ),

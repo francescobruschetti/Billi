@@ -1,21 +1,24 @@
+import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/services/expenses_service.dart';
+import 'package:Billy/services/transactions_service.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 
-class ExpensePage extends StatefulWidget {
-  final String? expenseId;
+class TransactionPage extends StatefulWidget {
+  final String? transactionId;
+  final TransactionTypeEnum transactionType;
   final bool isEditAllowed;
 
-  const ExpensePage({super.key, this.expenseId, this.isEditAllowed = false});
+  const TransactionPage({super.key, this.transactionId, required this.transactionType, this.isEditAllowed = false});
 
   @override
-  State<ExpensePage> createState() => _ExpensePageState();
+  State<TransactionPage> createState() => _TransactionPageState();
 }
 
-class _ExpensePageState extends State<ExpensePage> {
+class _TransactionPageState extends State<TransactionPage> {
   late TextEditingController _priceController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
@@ -23,7 +26,7 @@ class _ExpensePageState extends State<ExpensePage> {
   bool _isLoading = false;
   bool _isSaveEnabled = false;
   String? _errorMessage;
-  String pageTitle = 'Inserisci Spesa';
+  String pageTitle = '';
 
   late final bool isEdit;
 
@@ -36,11 +39,11 @@ class _ExpensePageState extends State<ExpensePage> {
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
 
-    isEdit = widget.expenseId != null && widget.isEditAllowed;
+    isEdit = widget.transactionId != null && widget.isEditAllowed;
     _pageTitleSetup();
 
-    if (widget.expenseId != null) {
-      _loadExistingExpense(widget.expenseId!);
+    if (widget.transactionId != null) {
+      _loadExistingTransaction(widget.transactionId!);
     }
   }
   
@@ -57,10 +60,16 @@ class _ExpensePageState extends State<ExpensePage> {
   double _formatPriceInput() {
     String text = _priceController.text;
     text = text.replaceAll(',', '.');
+    
     _priceController.value = _priceController.value.copyWith(
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
     );
+
+    if(widget.transactionType == TransactionTypeEnum.EXPENSE) {
+      return double.tryParse('-$text') ?? 0.0;
+    } 
+    
     return double.tryParse(text) ?? 0.0;
   }
 
@@ -71,60 +80,75 @@ class _ExpensePageState extends State<ExpensePage> {
   }
 
   void _pageTitleSetup() {
-    pageTitle = isEdit ? 'Modifica Spesa' : 'Inserisci Spesa';
+    if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
+      pageTitle = isEdit ? 'Modifica Spesa' : 'Inserisci Spesa';
+    }
+    else if (widget.transactionType == TransactionTypeEnum.INCOME) {
+      pageTitle = isEdit ? 'Modifica Entrata' : 'Inserisci Entrata';
+    }
   }
 
-  Future<void> _loadExistingExpense(String expenseId) async {
+  Future<void> _loadExistingTransaction(String transactionId) async {
     setState(() {
       _isLoading = true;
     });
 
     // TODO: da implementare caricamento spesa esistente
   
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
   
-  Future<void> _saveExpense() async {
-    setState(() {
-      _errorMessage = null;
-      _isSaveEnabled = false;
-    });
+  Future<void> _saveTransaction() async {
+    if (mounted) {
+      setState(() {
+        _errorMessage = null;
+        _isSaveEnabled = false;
+      });
+    }
 
     String message = isEdit ? "Dati aggiornati" : "Dati salvati";
     ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
       success: false, message: "Errore durante il salvataggio dei dati", data: {}
     );
     if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await ExpensesService().updatePersonalExpense(
-        expenseId: widget.expenseId!,
+      apiResponseModel = await TransactionsService().updatePersonalTransaction(
+        transactionId: widget.transactionId!,
         price: _formatPriceInput(),
-        merchant: _merchantController.text.trim(),
+        merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
         categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     } 
     else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await ExpensesService().createPersonalExpense(
+      apiResponseModel = await TransactionsService().createPersonalTransaction(
         price: _formatPriceInput(),
-        merchant: _merchantController.text.trim(),
+        merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
         categories: _categoriesController.text.trim(),
         note: _noteController.text.trim(),
       );
     }
     
     if (apiResponseModel.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-      Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(      
+          CustomSnackkBarWidget( 
+            text: message,
+          ).build(context),
+        );
+        Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
+      }
     }
     else {
-      setState(() {
-        _errorMessage = 'Errore durante il salvataggio';
-        _isSaveEnabled = true;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante il salvataggio';
+          _isSaveEnabled = true;
+        });
+      }
     }
   }
 
@@ -160,23 +184,23 @@ class _ExpensePageState extends State<ExpensePage> {
                         ],
                         decoration: const InputDecoration(
                           labelText: 'Prezzo',
-                          suffixIcon: Padding(
-                            padding: EdgeInsets.only(right: 12.0),
-                            child: Text('€', style: TextStyle(fontSize: 18)),
-                          ),
+                          suffixIcon: Icon(Icons.euro),
                           suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
                         ),
+                        onChanged: (value) => _formatPriceInput(),
                       ),
                     ),
                   ],
                 ),
                 
                 // -- Negozio
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _merchantController,
-                  decoration: const InputDecoration(labelText: 'Negozio'),
-                ),
+                if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _merchantController,
+                    decoration: const InputDecoration(labelText: 'Negozio'),
+                  ),
+                ],
                 
                 // -- Categorie
                 const SizedBox(height: 8),
@@ -204,7 +228,7 @@ class _ExpensePageState extends State<ExpensePage> {
                   children: [
                     ElevatedButton(
                       onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
-                        _saveExpense();
+                        _saveTransaction();
                       } : null, // Disabilita il pulsante se il nome è vuoto
                       child: const Text('Salva'),
                     ),

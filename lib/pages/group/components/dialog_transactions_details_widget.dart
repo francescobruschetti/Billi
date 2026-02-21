@@ -3,14 +3,14 @@ import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 
-class DialogExpensesDetailsWidget extends StatelessWidget {
+class DialogTransactionsDetailsWidget extends StatelessWidget {
   static final ScrollController _verticalController = ScrollController();
   static final ScrollController _horizontalController = ScrollController();
   
   final String? title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
-  const DialogExpensesDetailsWidget({
+  const DialogTransactionsDetailsWidget({
     super.key,
     this.title,
     required this.participantsSummary,
@@ -19,7 +19,7 @@ class DialogExpensesDetailsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DialogWidget(
-      title: 'Riepilogo partecipante',
+      title: 'Riepilogo partecipanti',
       customContent: SizedBox(
         child: Scrollbar(
           controller: _verticalController,

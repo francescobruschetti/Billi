@@ -93,7 +93,7 @@
     },
     {
       "name": "built_value",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/built_value-8.12.3",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/built_value-8.12.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -114,6 +114,12 @@
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/clock-1.1.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "code_assets",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/code_assets-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
     },
     {
       "name": "code_builder",
@@ -177,7 +183,7 @@
     },
     {
       "name": "ffi",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/ffi-2.1.4",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/ffi-2.2.0",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -248,6 +254,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "hooks",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/hooks-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
       "name": "http",
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/http-1.6.0",
       "packageUri": "lib/",
@@ -273,19 +285,13 @@
     },
     {
       "name": "json_annotation",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/json_annotation-4.10.0",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/json_annotation-4.11.0",
       "packageUri": "lib/",
       "languageVersion": "3.9"
     },
     {
-      "name": "json_schema",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/json_schema-5.2.2",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
       "name": "json_serializable",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/json_serializable-6.12.0",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/json_serializable-6.13.0",
       "packageUri": "lib/",
       "languageVersion": "3.9"
     },
@@ -315,7 +321,7 @@
     },
     {
       "name": "lints",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/lints-6.0.0",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/lints-6.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -350,6 +356,18 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "native_toolchain_c",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/native_toolchain_c-0.17.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "objective_c",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/objective_c-9.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "package_config",
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/package_config-2.2.0",
       "packageUri": "lib/",
@@ -375,9 +393,9 @@
     },
     {
       "name": "path_provider_foundation",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/path_provider_foundation-2.5.1",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/path_provider_foundation-2.6.0",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.10"
     },
     {
       "name": "path_provider_linux",
@@ -440,12 +458,6 @@
       "languageVersion": "3.6"
     },
     {
-      "name": "quiver",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/quiver-3.2.2",
-      "packageUri": "lib/",
-      "languageVersion": "2.17"
-    },
-    {
       "name": "realtime_client",
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/realtime_client-2.7.0",
       "packageUri": "lib/",
@@ -454,12 +466,6 @@
     {
       "name": "retry",
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/retry-3.1.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.0"
-    },
-    {
-      "name": "rfc_6901",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/rfc_6901-0.2.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -477,7 +483,7 @@
     },
     {
       "name": "shared_preferences_android",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_android-2.4.18",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_android-2.4.20",
       "packageUri": "lib/",
       "languageVersion": "3.9"
     },
@@ -543,7 +549,7 @@
     },
     {
       "name": "source_span",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/source_span-1.10.1",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/source_span-1.10.2",
       "packageUri": "lib/",
       "languageVersion": "3.1"
     },
@@ -608,12 +614,6 @@
       "languageVersion": "3.5"
     },
     {
-      "name": "uri",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/uri-1.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
       "name": "url_launcher",
       "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher-6.3.2",
       "packageUri": "lib/",
@@ -627,9 +627,9 @@
     },
     {
       "name": "url_launcher_ios",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_ios-6.3.6",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_ios-6.4.1",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.10"
     },
     {
       "name": "url_launcher_linux",
@@ -651,9 +651,9 @@
     },
     {
       "name": "url_launcher_web",
-      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_web-2.4.1",
+      "rootUri": "file:///C:/Users/fbruschetti/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_web-2.4.2",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.10"
     },
     {
       "name": "url_launcher_windows",

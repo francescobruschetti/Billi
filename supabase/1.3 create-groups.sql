@@ -1,8 +1,4 @@
 --------------------------------------------------------------------------
--- Types (ENUMS)
-create type group_role as enum ('admin', 'creator', 'member');
-
---------------------------------------------------------------------------
 -- Tables
 create table groups (
   id uuid primary key default gen_random_uuid(),
@@ -33,19 +29,20 @@ create table group_participants (
 );
 
 -- ENUM per split_rate
-create table group_expenses (
+create table group_transactions (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references groups(id) on delete cascade,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   merchant_id uuid references merchants(id),
   category_id uuid references categories(id),
   paid_amount numeric(10,2) check (paid_amount >= 0),
-  total_amount numeric(10,2) not null check (total_amount > 0),
+  total_amount numeric(10,2) not null check (total_amount >= 0),
   split_rate text,
   note text,
+  transaction_type transaction_type not null default 'expense',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  constraint fk_group_expenses_profiles foreign key (user_id) references profiles(id) on delete cascade,
+  constraint fk_group_transactions_profiles foreign key (user_id) references profiles(id) on delete cascade,
   constraint chk_paid_or_split_only check (
     (paid_amount is not null and split_rate is null) or (paid_amount is null and split_rate is not null)
   )
@@ -54,14 +51,13 @@ create table group_expenses (
 --------------------------------------------------------------------------
 -- Indexes
 create index idx_groups_name on groups(name);
-create index idx_groups_link on groups(link);
 create index idx_group_participants_name on group_participants(user_id);
 create index idx_group_participants_group_id on group_participants(group_id);
-create index idx_group_expenses_group_user_id on group_expenses(user_id);
-create index idx_group_expenses_group_id on group_expenses(group_id);
+create index idx_group_transactions_group_user_id on group_transactions(user_id);
+create index idx_group_transactions_group_id on group_transactions(group_id);
 
 --------------------------------------------------------------------------
 -- Row Level Security (RLS)
 alter table groups enable row level security;
 alter table group_participants enable row level security;
-alter table group_expenses enable row level security;
+alter table group_transactions enable row level security;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Billy/pages/group/group_expenses.dart';
+import 'package:Billy/pages/group/group_transactions.dart';
 import 'package:Billy/services/groups_service.dart';
 import 'package:Billy/pages/group/group_details.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
@@ -118,7 +118,7 @@ class _GroupsPageState extends State<GroupsPage> {
                         final g = filteredGroups[index];
                         return ListTile(
                           title: Text(g['name'] ?? '-'),
-                          subtitle: Text('Totale: ${g['role']}, Devi: ${g['has_confirmed']}, Ti devono: ${g['is_enabled']}'), // TODO: da implementare
+                          subtitle: Text('Totale: ${g['total_expenses'] ?? 0} €'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -127,7 +127,7 @@ class _GroupsPageState extends State<GroupsPage> {
                             ],
                           ),
                           onTap: () {
-                            _openPage(GroupExpensesPage(groupId: g['id'], isEditAllowed: true));
+                            _openPage(GroupTransactionsPage(groupId: g['id'], isEditAllowed: true));
                           },
                         );
                       },

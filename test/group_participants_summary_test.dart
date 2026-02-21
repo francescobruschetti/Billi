@@ -1,10 +1,10 @@
 
 import 'package:Billy/models/category_model.dart';
-import 'package:Billy/models/group_expense_model.dart';
+import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 import 'package:Billy/models/profile_model.dart';
-import 'package:Billy/utils/group_expenses_util.dart';
+import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -15,8 +15,8 @@ void main() {
     final profile3 = ProfileModel(id: 'profile3', name: 'profile3', username: 'profile3', createdAt: DateTime.now(), updatedAt: DateTime.now());
 
     // Prepara dati di esempio
-    final expenses = [
-      GroupExpenseModel(
+    final transactions = [
+      GroupTransactionModel(
         id: 'e1',
         groupId: 'g1',
         profileModel: profile1,
@@ -28,7 +28,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e2',
         groupId: 'g1',
         profileModel: profile1,
@@ -48,7 +48,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
+    final summary = GroupTransactionsUtil.computeParticipantsSummary(transactions: transactions, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -98,8 +98,8 @@ void main() {
     final profile3 = ProfileModel(id: 'profile3', name: 'profile3', username: 'profile3', createdAt: DateTime.now(), updatedAt: DateTime.now());
 
     // Prepara dati di esempio
-    final expenses = [
-      GroupExpenseModel(
+    final transactions = [
+      GroupTransactionModel(
         id: 'e1',
         groupId: 'g1',
         profileModel: profile1,
@@ -111,7 +111,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e2',
         groupId: 'g1',
         profileModel: profile1,
@@ -123,7 +123,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e3',
         groupId: 'g1',
         profileModel: profile2,
@@ -143,7 +143,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
+    final summary = GroupTransactionsUtil.computeParticipantsSummary(transactions: transactions, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -190,8 +190,8 @@ void main() {
     final profile3 = ProfileModel(id: 'profile3', name: 'profile3', username: 'profile3', createdAt: DateTime.now(), updatedAt: DateTime.now());
 
     // Prepara dati di esempio
-    final expenses = [
-      GroupExpenseModel(
+    final transactions = [
+      GroupTransactionModel(
         id: 'e1',
         groupId: 'g1',
         profileModel: profile1,
@@ -203,7 +203,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e2',
         groupId: 'g1',
         profileModel: profile1,
@@ -215,7 +215,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e3',
         groupId: 'g1',
         profileModel: profile2,
@@ -227,7 +227,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e4',
         groupId: 'g1',
         profileModel: profile3,
@@ -247,7 +247,7 @@ void main() {
       GroupParticipantModel(userId: 'profile3', profile: profile3)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
+    final summary = GroupTransactionsUtil.computeParticipantsSummary(transactions: transactions, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 3);
@@ -295,8 +295,8 @@ void main() {
     final profile4 = ProfileModel(id: 'profile4', name: 'profile4', username: 'profile4', createdAt: DateTime.now(), updatedAt: DateTime.now());
 
     // Prepara dati di esempio
-    final expenses = [
-      GroupExpenseModel(
+    final transactions = [
+      GroupTransactionModel(
         id: 'e1',
         groupId: 'g1',
         profileModel: profile1,
@@ -308,7 +308,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e2',
         groupId: 'g1',
         profileModel: profile1,
@@ -320,7 +320,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
         id: 'e3',
         groupId: 'g1',
         profileModel: profile2,
@@ -332,7 +332,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      GroupExpenseModel(
+      GroupTransactionModel(
           id: 'e4',
           groupId: 'g1',
           profileModel: profile3,
@@ -344,7 +344,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
-      GroupExpenseModel(
+      GroupTransactionModel(
           id: 'e5',
           groupId: 'g1',
           profileModel: profile3,
@@ -356,7 +356,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
-      GroupExpenseModel(
+      GroupTransactionModel(
           id: 'e6',
           groupId: 'g1',
           profileModel: profile4,
@@ -377,7 +377,7 @@ void main() {
       GroupParticipantModel(userId: 'profile4', profile: profile4)
     ];
 
-    final summary = GroupExpensesUtil.computeParticipantsSummary(expenses: expenses, participants: groupParticipants);
+    final summary = GroupTransactionsUtil.computeParticipantsSummary(transactions: transactions, participants: groupParticipants);
     
     expect(summary, isNotNull);
     expect(summary.entries.length, 4);

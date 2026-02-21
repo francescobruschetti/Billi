@@ -31,14 +31,24 @@ class BillyApp extends StatelessWidget {
         '/logout': (context) => const LogoutPage(),
       },
       home: AuthGate(),
-
+      
       // Setup ThemeData con ColorScheme personalizzato
       theme: ThemeData(
+        brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue, // Colore principale
+          seedColor: Colors.blue,
           secondary: Colors.orange
         ),
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          secondary: Colors.orange,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system, // automatico
     );
   }
 }

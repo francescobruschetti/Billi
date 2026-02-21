@@ -8,9 +8,9 @@ class GroupParticipantSummaryModel {
   double paidAmountItself; // Physically spent for itself
   double toReceiveNet; // Net Amount that participant shall pay to others
   double toReceiveGross; // Gross Amount that participant shall receive from others
-  double expectedtoReceiveNet; // FOR FUTURE USE: Amount that participant should pay based on how much it contributed to the expenses
-  List<GroupExpenseSummaryBalanceMovementModel> movements = []; // List of all movements this user has to execute to balance the expenses (to pay other participants)
-  List<GroupExpenseSummaryBalanceMovementModel> balanceMovements = []; // List of all movements this user has to execute to balance the expenses (to receive from other participants)
+  double expectedtoReceiveNet; // FOR FUTURE USE: Amount that participant should pay based on how much it contributed to the transactions
+  List<GroupTransactionSummaryBalanceMovementModel> movements = []; // List of all movements this user has to execute to balance the transactions (to pay other participants)
+  List<GroupTransactionSummaryBalanceMovementModel> balanceMovements = []; // List of all movements this user has to execute to balance the transactions (to receive from other participants)
 
   GroupParticipantSummaryModel({
     required this.userId,
@@ -45,8 +45,8 @@ class GroupParticipantSummaryModel {
       toReceiveNet: toReceiveNet,
       toReceiveGross: toReceiveGross,
       expectedtoReceiveNet: expectedtoReceiveNet,
-      movements: List<GroupExpenseSummaryBalanceMovementModel>.from(movements),
-      balanceMovements: List<GroupExpenseSummaryBalanceMovementModel>.from(balanceMovements)
+      movements: List<GroupTransactionSummaryBalanceMovementModel>.from(movements),
+      balanceMovements: List<GroupTransactionSummaryBalanceMovementModel>.from(balanceMovements)
     );
   }
 
