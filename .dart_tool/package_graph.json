@@ -10,7 +10,9 @@
         "cupertino_icons",
         "dropdown_search",
         "flutter",
+        "flutter_localizations",
         "flutter_riverpod",
+        "intl",
         "json_annotation",
         "logging",
         "supabase_flutter"
@@ -154,6 +156,24 @@
       "name": "cupertino_icons",
       "version": "1.0.8",
       "dependencies": []
+    },
+    {
+      "name": "intl",
+      "version": "0.20.2",
+      "dependencies": [
+        "clock",
+        "meta",
+        "path"
+      ]
+    },
+    {
+      "name": "flutter_localizations",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter",
+        "intl",
+        "path"
+      ]
     },
     {
       "name": "flutter",

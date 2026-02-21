@@ -1,5 +1,7 @@
+import 'package:Billy/languages/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
@@ -54,6 +56,18 @@ class BillyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system, // automatico
+
+      // Configure Language (localization)
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en'), // English
+        Locale('it'), // Italian
+      ],
     );
   }
 }

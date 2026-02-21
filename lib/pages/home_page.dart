@@ -1,5 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/languages/app_localizations.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -139,11 +140,26 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // ! TODO: PROVAAAAAAAAAAAAA-------------------------------
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(AppLocalizations.of(context)!.nWombats(0)),
+                        // Returns '1 wombat'
+                        Text(AppLocalizations.of(context)!.nWombats(1)),
+                        // Returns '5 wombats'
+                        Text(AppLocalizations.of(context)!.nWombats(5)),
+                        Text(AppLocalizations.of(context)!.helloWorldOn(DateTime.utc(1959, 7, 9))),
+                      ],
+                    ),
+                  ),
+                  // ! TODO: PROVAAAAAAAAAAAAA-------------------------------
+
                   Expanded(
                     child: SelectableText(
-                        'Totale spese (${allTransactions.length}): ${_computeBalance()}€',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
+                      'Totale spese (${allTransactions.length}): ${_computeBalance()}€',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                   ),
                   const SizedBox(width: 5),
                   IconButton(
