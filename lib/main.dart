@@ -44,18 +44,20 @@ class BillyApp extends StatelessWidget {
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
-          secondary: Colors.orange
+          onPrimaryContainer: Colors.black,
+          secondary: Colors.orange,
         ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
+          onPrimaryContainer: Colors.black,
           secondary: Colors.orange,
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.system, // automatico
+      themeMode: ThemeMode.light, // automatico
 
       // Configure Language (localization)
       localizationsDelegates: [

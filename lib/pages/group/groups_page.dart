@@ -13,6 +13,7 @@ class GroupsPage extends StatefulWidget {
 }
 
 class _GroupsPageState extends State<GroupsPage> {
+  final ScrollController _scrollController = ScrollController();
 
   late Future<List<Map<String, dynamic>>> groupsFuture;
   List<Map<String, dynamic>> allGroups = [];
@@ -23,7 +24,15 @@ class _GroupsPageState extends State<GroupsPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadGroups();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _createGroup() {
@@ -35,7 +44,7 @@ class _GroupsPageState extends State<GroupsPage> {
     );
   }
 
-  void _loadGroups() async {
+  Future<void> _loadGroups() async {
     if (mounted) {
       setState(() {
         _isLoading = true;
@@ -49,6 +58,15 @@ class _GroupsPageState extends State<GroupsPage> {
         allGroups = result;
         _isLoading = false;
       });
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isLoading) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll) {
+      _loadGroups();
     }
   }
 
@@ -112,25 +130,36 @@ class _GroupsPageState extends State<GroupsPage> {
               height: 400,
               child: filteredGroups.isEmpty
                   ? const Center(child: Text('Nessun gruppo trovato'))
-                  : ListView.builder(
-                      itemCount: filteredGroups.length,
-                      itemBuilder: (context, index) {
-                        final g = filteredGroups[index];
-                        return ListTile(
-                          title: Text(g['name'] ?? '-'),
-                          subtitle: Text('Totale: ${g['total_expenses'] ?? 0} €'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(onPressed: () => _openPage(GroupDetailsPage(groupId: g['id'], isEditAllowed: true)), icon: Icon(Icons.more_vert)),
-                              Icon(Icons.chevron_right),
-                            ],
-                          ),
-                          onTap: () {
-                            _openPage(GroupTransactionsPage(groupId: g['id'], isEditAllowed: true));
-                          },
-                        );
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: (scrollNotification) {
+                        if (scrollNotification is ScrollEndNotification) {
+                          _onScroll();
+                        }
+                        return false;
                       },
+                      child: RefreshIndicator(
+                        onRefresh: () => _loadGroups(),
+                        child: ListView.builder(
+                          itemCount: filteredGroups.length,
+                          itemBuilder: (context, index) {
+                            final g = filteredGroups[index];
+                            return ListTile(
+                              title: Text(g['name'] ?? '-'),
+                              subtitle: Text('Totale: ${g['total_expenses'] ?? 0} €'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(onPressed: () => _openPage(GroupDetailsPage(groupId: g['id'], isEditAllowed: true)), icon: Icon(Icons.more_vert)),
+                                  Icon(Icons.chevron_right),
+                                ],
+                              ),
+                              onTap: () {
+                                _openPage(GroupTransactionsPage(groupId: g['id'], isEditAllowed: true));
+                              },
+                            );
+                          },
+                        ),
+                      ),
                     ),
             ),
         ],

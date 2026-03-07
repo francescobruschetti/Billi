@@ -1,7 +1,7 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/languages/app_localizations.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/widgets/components/balance_bar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -31,6 +31,10 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = false;
   bool _hasMore = true;
 
+  double _totalBalance = 0;
+  double _totalExpenses = 0;
+  double _totalIncomes = 0;
+
   @override
   void initState() {
     super.initState();
@@ -46,12 +50,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   double _computeBalance() {
+    _totalBalance = 0;
+    _totalExpenses = 0;
+    _totalIncomes = 0;
     double res = allTransactions.fold<double>(0, (sum, e) {
       final amount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
       final type = TransactionTypeEnumExtension.fromValue(e['transaction_type']);
-      return type == TransactionTypeEnum.INCOME ? sum + amount : sum - amount;
+      if (type == TransactionTypeEnum.INCOME) {
+        _totalIncomes += amount;
+        return sum + amount;
+      } 
+      else {
+        _totalExpenses += amount;
+        return sum - amount;
+      }
     });
-    return double.parse(res.toStringAsFixed(2));
+    _totalBalance = double.parse(res.toStringAsFixed(2));
+    _totalExpenses = double.parse(_totalExpenses.toStringAsFixed(2));
+    _totalIncomes = double.parse(_totalIncomes.toStringAsFixed(2));
+    return _totalBalance;
   }
 
   void _filterTransactions({bool reset = false}) async {
@@ -140,24 +157,9 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // ! TODO: PROVAAAAAAAAAAAAA-------------------------------
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(AppLocalizations.of(context)!.nWombats(0)),
-                        // Returns '1 wombat'
-                        Text(AppLocalizations.of(context)!.nWombats(1)),
-                        // Returns '5 wombats'
-                        Text(AppLocalizations.of(context)!.nWombats(5)),
-                        Text(AppLocalizations.of(context)!.helloWorldOn(DateTime.utc(1959, 7, 9))),
-                      ],
-                    ),
-                  ),
-                  // ! TODO: PROVAAAAAAAAAAAAA-------------------------------
-
                   Expanded(
                     child: SelectableText(
-                      'Totale spese (${allTransactions.length}): ${_computeBalance()}€',
+                      'Saldo (${allTransactions.length}): ${_computeBalance()}€',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
@@ -174,6 +176,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+            ),
+
+            Container(
+              // debug UI: color: Colors.red,
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
+              child: BalanceBarWidget(totalBalance: _totalBalance, totalExpenses: _totalExpenses, totalIncomes: _totalIncomes)
             ),
 
             // Page Header "subtitle"

@@ -1,4 +1,5 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/pages/favorites_page.dart';
 import 'package:Billy/pages/group/group_page_provder.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
@@ -18,7 +19,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
     GroupsPage(),
-    GroupsPageProvider()
+    GroupsPageProvider(),
+    FavoritesPage(),
   ];
 
   @override
@@ -63,7 +65,8 @@ class _MainScaffoldState extends State<MainScaffold> {
             borderRadius: BorderRadius.circular(16),
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
-              type: BottomNavigationBarType.fixed,
+              type: BottomNavigationBarType.fixed,              
+              selectedItemColor: Theme.of(context).colorScheme.secondary,
               // debug UI: backgroundColor: Colors.orange[200],
               onTap: (index) {
                 setState(() => _currentIndex = index);
@@ -80,6 +83,10 @@ class _MainScaffoldState extends State<MainScaffold> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),
                   label: 'GruppiProvider',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.padding),
+                  label: 'Prove UI',
                 )
               ],
             ),

@@ -31,7 +31,7 @@ class CustomButtonWidget extends StatelessWidget {
           if (text != null) ...[
             Icon(icon),
             const SizedBox(width: 8),
-            Text(text!),
+            Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)),
           ]
           else ...[
             Icon(icon, size: 30),
