@@ -147,6 +147,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           // TODO: x: return Padding(
           // TODO: x:   padding: const EdgeInsets.only(top: AppConstants.rowVerticalPadding, left: AppConstants.rowHorizontalPadding, right: AppConstants.rowHorizontalPadding, bottom: AppConstants.rowVerticalPadding),
           // TODO: x:     child: Column(
+
+          // Aggiorna il balance ogni volta che cambia la lista transazioni
+          _balanceDetails = GroupTransactionsUtil.computeBalance(transactions);
+          
           return Column(
               children: [
                 // Page Header
