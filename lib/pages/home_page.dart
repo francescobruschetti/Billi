@@ -1,7 +1,10 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/balance_bar_widget.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -25,15 +28,12 @@ class _HomePageState extends State<HomePage> {
 
   late Future<List<Map<String, dynamic>>> transactionsFuture;
   List<Map<String, dynamic>> allTransactions = [];
+  late BalanceDetailsModel _balanceDetails;
 
   int _currentPage = 0;
   final int _pageSize = 50;
   bool _isLoading = false;
   bool _hasMore = true;
-
-  double _totalBalance = 0;
-  double _totalExpenses = 0;
-  double _totalIncomes = 0;
 
   @override
   void initState() {
@@ -47,28 +47,6 @@ class _HomePageState extends State<HomePage> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  double _computeBalance() {
-    _totalBalance = 0;
-    _totalExpenses = 0;
-    _totalIncomes = 0;
-    double res = allTransactions.fold<double>(0, (sum, e) {
-      final amount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
-      final type = TransactionTypeEnumExtension.fromValue(e['transaction_type']);
-      if (type == TransactionTypeEnum.INCOME) {
-        _totalIncomes += amount;
-        return sum + amount;
-      } 
-      else {
-        _totalExpenses += amount;
-        return sum - amount;
-      }
-    });
-    _totalBalance = double.parse(res.toStringAsFixed(2));
-    _totalExpenses = double.parse(_totalExpenses.toStringAsFixed(2));
-    _totalIncomes = double.parse(_totalIncomes.toStringAsFixed(2));
-    return _totalBalance;
   }
 
   void _filterTransactions({bool reset = false}) async {
@@ -114,6 +92,7 @@ class _HomePageState extends State<HomePage> {
         else {
           allTransactions.addAll(result);
         }
+        _balanceDetails = GroupTransactionsUtil.computeBalance(allTransactions);
         _isLoading = false;
         _hasMore = result.length == _pageSize;
         if (_hasMore) _currentPage++;
@@ -159,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Expanded(
                     child: SelectableText(
-                      'Saldo (${allTransactions.length}): ${_computeBalance()}€',
+                      'Saldo (${allTransactions.length}): ${_balanceDetails.totalBalance}€',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
@@ -181,7 +160,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               // debug UI: color: Colors.red,
               padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
-              child: BalanceBarWidget(totalBalance: _totalBalance, totalExpenses: _totalExpenses, totalIncomes: _totalIncomes)
+              child: BalanceBarWidget(totalBalance: _balanceDetails.totalBalance, totalExpenses: _balanceDetails.totalExpenses, totalIncomes: _balanceDetails.totalIncomes)
             ),
 
             // Page Header "subtitle"
@@ -254,8 +233,8 @@ class _HomePageState extends State<HomePage> {
                         _navigateToTransactionPage(transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
                       },
                       text: 'Uscite',
-                      icon: Icons.logout,
-                      backgroundColor: Colors.red[100],
+                      customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
+                      backgroundColor: AppConstants.defaultExpenseColor,
                     ),
                   ),
                   const SizedBox(width: AppConstants.sizedBoxWidth),
@@ -266,8 +245,8 @@ class _HomePageState extends State<HomePage> {
                           _navigateToTransactionPage(transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
                         },
                         text: 'Entrate',
-                        icon: Icons.login,
-                        backgroundColor: Colors.green[100],
+                        iconData: Icons.login,
+                        backgroundColor: AppConstants.defaultIncomeColor,
                       ),
                   ),
                 ],

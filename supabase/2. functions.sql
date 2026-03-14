@@ -27,7 +27,12 @@ begin
     g.created_at,
     g.updated_at,
     coalesce((
-      select sum(e.total_amount)
+      select sum(
+        case
+          when e.transaction_type = 'income' then e.total_amount
+          else -e.total_amount
+        end
+      )
       from group_transactions e
       where e.group_id = g.id
     ), 0) as total_amount

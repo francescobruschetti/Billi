@@ -6,13 +6,10 @@ class CreateGroupPage extends ConsumerStatefulWidget {
   const CreateGroupPage({super.key});
 
   @override
-  ConsumerState<CreateGroupPage> createState() =>
-      _CreateGroupPageState();
+  ConsumerState<CreateGroupPage> createState() => _CreateGroupPageState();
 }
 
-class _CreateGroupPageState
-    extends ConsumerState<CreateGroupPage> {
-
+class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
   final controller = TextEditingController();
   bool isLoading = false;
 

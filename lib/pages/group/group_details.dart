@@ -1,3 +1,4 @@
+import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,18 +8,19 @@ import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/services/group_service.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GroupDetailsPage extends StatefulWidget {
+class GroupDetailsPage extends ConsumerStatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
   final bool isEditAllowed;
 
   const GroupDetailsPage({super.key, this.groupId, this.isEditAllowed = false});
 
   @override
-  State<GroupDetailsPage> createState() => _GroupDetailsPageState();
+  ConsumerState<GroupDetailsPage> createState() => _GroupDetailsPageState();
 }
 
-class _GroupDetailsPageState extends State<GroupDetailsPage> {
+class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   final Logger log = Logger('GroupDetailsPage');
   
   late TextEditingController _nameController;
@@ -172,6 +174,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     }
   }
 
+  void _navigatePop() {
+    Navigator.of(context).pop();
+  }
+
   Future<void> _saveGroup() async {
     if (mounted) {
       setState(() {
@@ -204,12 +210,20 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
 
     if (apiResponseModel.success) {
       if (mounted) {
+        _updateGroupProvider(); 
+
         ScaffoldMessenger.of(context).showSnackBar(
           CustomSnackkBarWidget( 
             text: message,
           ).build(context),
         );
-        _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
+
+        if (isEdit) {
+          _navigatePop();
+        }
+        else {
+          _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
+        }
       }
     }
     else {
@@ -220,6 +234,11 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         });
       }
     }
+  }
+
+  void _updateGroupProvider() async {
+    // Aggiorniamo la lista dei gruppi in groupsProvider
+    await ref.read(groupsProvider.notifier).createGroup(_nameController.text.trim());
   }
 
   @override
@@ -410,7 +429,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                     ),
                     const SizedBox(width: 16),
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => _navigatePop(),
                       child: const Text('Annulla'),
                     ),
                   ],

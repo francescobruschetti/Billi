@@ -25,12 +25,32 @@ void main() async {
   );
 }
 
-class BillyApp extends StatelessWidget {
+class BillyApp extends StatefulWidget {
   const BillyApp({super.key});
+
+  @override
+  State<BillyApp> createState() => _BillyAppState();
+
+  static void setLocale(BuildContext context, Locale locale) {
+    _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
+    state?.changeLocale(locale);
+  }
+}
+
+class _BillyAppState extends State<BillyApp> {
+  Locale _locale = const Locale('en');
+
+  void changeLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: _locale,
+
       debugShowCheckedModeBanner: false,
       routes: {
         '/login': (context) => const LoginPage(),
@@ -44,20 +64,24 @@ class BillyApp extends StatelessWidget {
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
-          onPrimaryContainer: Colors.black,
+          onPrimary: Colors.black,
           secondary: Colors.orange,
+          onSecondary: Colors.black,
+          secondaryContainer: Colors.orange[400],
         ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
-          onPrimaryContainer: Colors.black,
+          onPrimary: Colors.white,
           secondary: Colors.orange,
+          onSecondary: Colors.black,
+          secondaryContainer: Colors.blue[400],
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.light, // automatico
+      themeMode: ThemeMode.system, // automatico
 
       // Configure Language (localization)
       localizationsDelegates: [

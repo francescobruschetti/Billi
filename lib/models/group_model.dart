@@ -6,7 +6,8 @@ class GroupModel {
   final String name;
   final String? description;
   final String link;
-  final String userId;
+  final String userId;  
+  final double totalAmount;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<GroupParticipantModel> participants;
@@ -18,6 +19,7 @@ class GroupModel {
     required this.link,
     required this.description,
     required this.userId,
+    required this.totalAmount,
     required this.createdAt,
     required this.updatedAt,
     required this.participants,
@@ -34,6 +36,7 @@ class GroupModel {
       link: map['link'],
       description: map['description'],
       userId: map['user_id'],
+      totalAmount: map['total_amount'] ?? 0.0,
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : DateTime.fromMillisecondsSinceEpoch(0),
       participants: (map['group_participants'] as List? ?? [])

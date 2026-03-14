@@ -1,3 +1,5 @@
+import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/utils/number_util.dart';
@@ -7,6 +9,32 @@ import 'package:Billy/models/group_participant_summary_model.dart';
 
 class GroupTransactionsUtil {
   static final Logger log = Logger('GroupTransactionsUtil');
+
+  static BalanceDetailsModel computeBalance(List<Map<String, dynamic>> allTransactions) {
+    double totalBalance = 0;
+    double totalExpenses = 0;
+    double totalIncomes = 0;
+    double res = allTransactions.fold<double>(0, (sum, e) {
+      final amount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
+      final type = TransactionTypeEnumExtension.fromValue(e['transaction_type']);
+      if (type == TransactionTypeEnum.INCOME) {
+        totalIncomes += amount;
+        return sum + amount;
+      } 
+      else {
+        totalExpenses += amount;
+        return sum - amount;
+      }
+    });
+    totalBalance = double.parse(res.toStringAsFixed(2));
+    totalExpenses = double.parse(totalExpenses.toStringAsFixed(2));
+    totalIncomes = double.parse(totalIncomes.toStringAsFixed(2));
+    return BalanceDetailsModel(
+      totalBalance: totalBalance,
+      totalExpenses: totalExpenses,
+      totalIncomes: totalIncomes,
+    );
+  }
 
   static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({
     required List<GroupTransactionModel> transactions, 

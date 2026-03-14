@@ -15,6 +15,10 @@ class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupModel>>> {
     loadGroups();
   }
 
+  void clear() {
+    state = const AsyncData([]);
+  }
+
   Future<void> loadGroups() async {
     try {
       state = const AsyncLoading();

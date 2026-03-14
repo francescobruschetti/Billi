@@ -50,8 +50,8 @@ class GroupService {
   // TODO: created to test and implement group_provider.dart
   Future<List<GroupModel>> fetchGroupsProvider() async {
     try {
-    final res = await supabase.rpc('get_user_groups');
-    return (res as List)
+      final res = await supabase.rpc('get_user_groups');
+      return (res as List)
         .map((g) => GroupModel.fromMap(g as Map<String, dynamic>))
         .toList();
     }

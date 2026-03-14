@@ -30,7 +30,7 @@ class BalanceBarWidget extends StatelessWidget {
                 child: Container(
                   height: 10,
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: AppConstants.defaultExpenseColor,
                     borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
                   ),
                 ),
@@ -41,7 +41,7 @@ class BalanceBarWidget extends StatelessWidget {
                 child: Container(
                   height: 10,
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: AppConstants.defaultIncomeColor,
                     borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
                   ),
                 ),

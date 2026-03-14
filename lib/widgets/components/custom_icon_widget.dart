@@ -18,7 +18,7 @@ class CustomIconWidget extends StatelessWidget {
       assetPath,
       width: size,
       height: size,
-      color: color ?? Colors.black,
+      color: color ?? Theme.of(context).colorScheme.onPrimaryContainer,
       fit: BoxFit.contain,
     );
   }

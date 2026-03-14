@@ -312,16 +312,26 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: CustomButtonWidget(text: "Utenti: $_groupParticipantsCnt", icon: Icons.trending_up, onPressed: _openSummaryDetailsDialog)
+                        child: CustomButtonWidget(
+                          text: "Utenti: $_groupParticipantsCnt", 
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          iconData: Icons.trending_up, 
+                          onPressed: _openSummaryDetailsDialog
+                        )
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: CustomButtonWidget(text: "Da saldare: $_groupTransactionsBalanceCnt", icon: Icons.monetization_on_outlined, onPressed: _openSummaryTransactionDialog)
+                        child: CustomButtonWidget(
+                          text: "Da saldare: $_groupTransactionsBalanceCnt", 
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          iconData: Icons.monetization_on_outlined, 
+                          onPressed: _openSummaryTransactionDialog
+                        )
                       ),
                     ],
                   ),
 
-                  // // v1: 
+                  // v1: 
                   // const SizedBox(height: 4),
                   // Card(
                   //   shape: RoundedRectangleBorder(
@@ -439,9 +449,9 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         flex: 1,
-                        child:
+                        child:                      
                         IconButton(
-                          icon: const Icon(Icons.add),
+                          icon: Image.asset('assets/images/icons/add.png'),
                           style: IconButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.secondary,
                             foregroundColor: Colors.white,
