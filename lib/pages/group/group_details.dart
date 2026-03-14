@@ -1,14 +1,18 @@
+import 'package:Billy/constants.dart';
+import 'package:Billy/exceptions/app_exception.dart';
+import 'package:Billy/models/group_model.dart';
+import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/api_response_model.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/services/group_service.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 
 class GroupDetailsPage extends ConsumerStatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
@@ -32,7 +36,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   bool _showOnlyError = false; // TODO: da implementare
   String? _errorMessage;
   String _searchUser = '';
-  final List<Map<String, dynamic>> _selectedUsers = [];
+  final List<GroupParticipantModel> _selectedUsers = [];
   final List<String> _removedUserIds = [];
   final List<ProfileModel> _existingUsers = [];
 
@@ -62,17 +66,24 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     super.dispose();
   }
 
-  void _onNameChanged() {
-    setState(() {
-      _isSaveEnabled = _nameController.text.trim().isNotEmpty;
-    });
-  }
+  Future<void> _deleteGroup(String groupId) async {
+    try {
+      final res = await GroupService().deleteGroup(groupId);
+      ref.read(groupsProvider.notifier).removeGroupLocally(groupId);
 
-  // Apri i dettagli del gruppo dopo la creazione
-  void _openGroupDetails(String groupId) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupId, isEditAllowed: true)),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        CustomSnackBarWidget(text: 'Grouppo eliminato').build(context),
+      );
+      _navigatePop();    
+    } 
+    catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante la cancellazione del grouppo: $e';
+          _showOnlyError = true;
+        });
+      }
+    } 
   }
 
   Future<void> _getExistingUser(String key) async {
@@ -88,28 +99,19 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       final res = await ProfileService().getUserByEmailOrUsername(key);
       log.fine("User search result: $res");
       if (mounted) {
-        if (res.isEmpty) {
-          setState(() {
-            _errorMessage = 'Nessun utente trovato con username o email "$key"';
-          });
-        } 
-        else {
-          setState(() {
-            for (var user in res) {
-              if (_existingUsers.any((u) => u.id == user['id'])) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  CustomSnackkBarWidget( 
-                    text: 'Utente ${user['username'] ?? user['email'] ?? user['id']} già presente nel gruppo',
-                  ).build(context),
-                );
-                continue; // Salta utenti già presenti nel gruppo
-              }
-              if (!_selectedUsers.any((u) => u['id'] == user['id'])) {
-                _selectedUsers.add(user);
-              }
-            }
-          });
-        }
+        setState(() {
+          if (_existingUsers.any((u) => u.id == res.id)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              CustomSnackBarWidget( 
+                text: 'Utente ${res.username} già presente nel gruppo',
+              ).build(context),
+            );
+            return; // Salta utenti già presenti nel gruppo
+          }
+          if (!_selectedUsers.any((u) => u.userId == res.id)) {
+            _selectedUsers.add(GroupParticipantModel(userId: res.id, profile: res));
+          }
+        });
       }
     } 
     catch (e) {
@@ -137,27 +139,26 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     }
 
     try {
-      final groupDetailsResponse = await GroupService().getGroupDetailsAndParticipants(groupId);
+      final groupDetailsResponse = await GroupService().fetchGroupDetailsAndParticipants(groupId);
       log.fine("Existing users in group $groupId: $groupDetailsResponse");
       if (mounted) {
-        if (groupDetailsResponse.success) {
-          log.fine("Group details: ${groupDetailsResponse.data}");
-          _nameController.text = groupDetailsResponse.data.name;
-          _descriptionController.text = groupDetailsResponse.data.description ?? '';
-          _linkController.text = groupDetailsResponse.data.link;
-          final userProfiles = groupDetailsResponse.data.participants.map((p) => p.profile).toList();
-          setState(() {
-            _existingUsers.clear();
-            _existingUsers.addAll(userProfiles);
-          });
-        }
-        else {
-          setState(() {
-            _errorMessage = 'Errore durante il caricamento dei partecipanti esistenti: ${groupDetailsResponse.message}';
-          });
-        }
+        _nameController.text = groupDetailsResponse.name;
+        _descriptionController.text = groupDetailsResponse.description ?? '';
+        _linkController.text = groupDetailsResponse.link;
+        final userProfiles = groupDetailsResponse.participants.map((p) => p.profile).toList();
+        setState(() {
+          _existingUsers.clear();
+          _existingUsers.addAll(userProfiles);
+        });
       }
     } 
+    on GroupException catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.message;
+        });
+      }
+    }
     catch (e) {
       if (mounted) {
         setState(() {
@@ -178,6 +179,20 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     Navigator.of(context).pop();
   }
 
+  void _onNameChanged() {
+    setState(() {
+      _isSaveEnabled = _nameController.text.trim().isNotEmpty;
+    });
+  }
+
+  // Apri i dettagli del gruppo dopo la creazione
+  void _openGroupDetails(String groupId) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupId, isEditAllowed: true)),
+    );
+  }
+
+
   Future<void> _saveGroup() async {
     if (mounted) {
       setState(() {
@@ -186,59 +201,54 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       });
     }
 
-    String message = '';
-    ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
-      success: false, message: "Errore durante il salvataggio dei dati", data: {}
-    );
-    if (isEdit) { // Logica di salvataggio modifica gruppo
-      message = "Dati aggiornati correttamente";
-      apiResponseModel = await GroupService().updateGroup(
-        id: widget.groupId!,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        participantsToAdd: _selectedUsers,
-        participantsToRemoveIds: _removedUserIds,
-      );
-    } 
-    else { // Logica di creazione nuovo gruppo
-      message = "Gruppo creato con successo";
-      apiResponseModel = await GroupService().createGroup(
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-      );
-    }
-
-    if (apiResponseModel.success) {
-      if (mounted) {
-        _updateGroupProvider(); 
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSnackkBarWidget( 
-            text: message,
-          ).build(context),
+    try {
+      if (isEdit) { // Logica di salvataggio modifica gruppo
+        final updated = await GroupService().updateGroup(
+          id: widget.groupId!,
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          participantsToAdd: _selectedUsers,
+          participantsToRemoveIds: _removedUserIds,
         );
 
-        if (isEdit) {
-          _navigatePop();
-        }
-        else {
-          _openGroupDetails(apiResponseModel.data['id'] ?? apiResponseModel.data['id'] ?? widget.groupId!);
-        }
-      }
-    }
-    else {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Errore durante il salvataggio dei dati';
-          _isSaveEnabled = true;
-        });
-      }
-    }
-  }
+        ref.read(groupsProvider.notifier).updateGroupLocally(updated);
 
-  void _updateGroupProvider() async {
-    // Aggiorniamo la lista dei gruppi in groupsProvider
-    await ref.read(groupsProvider.notifier).createGroup(_nameController.text.trim());
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackBarWidget(text: "Dati aggiornati correttamente").build(context),
+        );
+        _navigatePop();
+      } 
+      else { // Logica di creazione nuovo gruppo
+        final created = await GroupService().createGroup(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+        );
+
+        ref.read(groupsProvider.notifier).addGroupLocally(created);
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackBarWidget(text: "Gruppo creato con successo").build(context),
+        );
+        _openGroupDetails(created.id);
+      }
+    } 
+    on GroupException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.message;
+        _isSaveEnabled = true;
+      });
+    } 
+    catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = "Errore imprevisto, riprova più tardi";
+        _isSaveEnabled = true;
+      });
+    }
+  
   }
 
   @override
@@ -248,6 +258,14 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(isEdit ? 'Dettagli gruppo' : 'Crea gruppo'),
+        actions: [
+          if (isEdit)
+            IconButton(
+              icon: const Icon(Icons.delete, color: AppConstants.red),
+              tooltip: 'Elimina gruppo',
+              onPressed: () => _deleteGroup(widget.groupId!),
+            ),
+        ],
       ),
       body: _isLoading
         ? Center(
@@ -295,7 +313,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _linkController.text));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            CustomSnackkBarWidget( 
+                            CustomSnackBarWidget( 
                               text: 'Link copiato negli appunti',
                             ).build(context),
                           );
@@ -351,10 +369,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                     Wrap(
                       spacing: 8,
                       children: _selectedUsers.map((u) => Chip(
-                        label: Text(u['username'] ?? u['email'] ?? u['id']),
+                        label: Text(u.profile.username),
                         onDeleted: () {
                           setState(() {
-                            _selectedUsers.removeWhere((x) => x['id'] == u['id']);
+                            _selectedUsers.removeWhere((x) => x.userId == u.userId);
                           });
                         },
                       )).toList(),

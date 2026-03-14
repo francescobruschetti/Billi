@@ -133,7 +133,15 @@ create or replace function update_group_and_participants(
   p_participants_to_add uuid[],
   p_participants_to_remove uuid[]
 )
-returns uuid as $$
+returns table (
+  id uuid,
+  name text,
+  description text,
+  link text,
+  user_id uuid,
+  created_at timestamptz,
+  updated_at timestamptz
+) as $$
 begin
   -- Aggiorna i dettagli del gruppo
   update groups
@@ -155,7 +163,17 @@ begin
       and user_id = any(p_participants_to_remove);
   end if;
 
-  return p_group_id;
+  return query
+  select 
+    g.id as id,
+    g.name::text as name,
+    g.description::text as description,
+    g.link::text as link,
+    g.user_id as user_id,
+    g.created_at as created_at,
+    g.updated_at as updated_at
+  from groups g
+  where g.id = p_group_id;
 end;
 $$ language plpgsql;
 

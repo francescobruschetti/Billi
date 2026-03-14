@@ -137,7 +137,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
     });
 
     // TODO: da implementare caricamento spesa esistente
-    // final groupDetailsResponse = await GroupService().getGroupDetailsAndParticipants(transactionId);
+    // final groupDetailsResponse = await GroupService().fetchGroupDetailsAndParticipants(transactionId);
     // log.fine("Existing users in group $transactionId: $groupDetailsResponse");
     
     // if (groupDetailsResponse.success) {
@@ -166,12 +166,12 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
   }
 
   Future<void> _loadUserGroups() async {
-    final groups = await GroupService().fetchAllGroupsForUser();
-    if (mounted) {
-      setState(() {
-        _userGroups = groups;
-      });
-    }
+    // TODO: final groups = await GroupService().fetchAllGroupsForUser();
+    // if (mounted) {
+    //   setState(() {
+    //     _userGroups = groups;
+    //   });
+    // }
   }
   
   Future<void> _saveTransaction() async {
@@ -212,7 +212,7 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
     if (apiResponseModel.success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          CustomSnackkBarWidget( 
+          CustomSnackBarWidget( 
             text: message,
           ).build(context),
         );

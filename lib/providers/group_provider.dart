@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/group_model.dart';
-import '../services/group_service.dart';
+import 'package:Billy/models/group_model.dart';
+import 'package:Billy/services/group_service.dart';
 
 final groupServiceProvider = Provider((ref) => GroupService());
 
@@ -9,20 +9,17 @@ final groupsProvider = StateNotifierProvider<GroupsNotifier, AsyncValue<List<Gro
 );
 
 class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupModel>>> {
-  final GroupService service;
+  final GroupService _service;
 
-  GroupsNotifier(this.service) : super(const AsyncLoading()) {
-    loadGroups();
+  GroupsNotifier(this._service) : super(const AsyncLoading()) {
+    _loadFromServer();
   }
 
-  void clear() {
-    state = const AsyncData([]);
-  }
-
-  Future<void> loadGroups() async {
+  // Carica dal server — chiamato solo all'avvio e su refresh forzato
+  Future<void> _loadFromServer() async {
     try {
       state = const AsyncLoading();
-      final groups = await service.fetchGroupsProvider();
+      final groups = await _service.fetchGroups();
       state = AsyncData(groups);
     } 
     catch (e, st) {
@@ -30,16 +27,36 @@ class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupModel>>> {
     }
   }
 
-  Future<void> refresh() async {
-    final groups = await service.fetchGroupsProvider();
-    state = AsyncData(groups);
+  // Refresh forzato dall'utente (pull-to-refresh)
+  Future<void> refresh() => _loadFromServer();
+
+  // Aggiunta ottimistica — aggiorna la memoria immediatamente
+  // poi sincronizza col server
+  Future<void> addGroup({ required String name, String? description }) async {
+    try {
+      final newGroup = await _service.createGroup(name: name, description: description);
+      state = state.whenData((groups) => [newGroup, ...groups]);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
   }
 
-  Future<void> createGroup(String name) async {
-    final newGroup = await service.createGroupProvider(name);
+  void addGroupLocally(GroupModel newGroup) {
+    state = state.whenData((groups) => [newGroup, ...groups]);
+  }
 
-    state.whenData((groups) {
-      state = AsyncData([newGroup, ...groups]);
-    });
+  // Aggiornamento ottimistico locale — nessuna chiamata al server
+  void updateGroupLocally(GroupModel updated) {
+    state = state.whenData((groups) => [
+      for (final g in groups)
+        if (g.id == updated.id) updated else g,
+    ]);
+  }
+
+  // Rimozione ottimistica locale
+  void removeGroupLocally(String id) {
+    state = state.whenData(
+      (groups) => groups.where((g) => g.id != id).toList(),
+    );
   }
 }

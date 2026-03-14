@@ -83,7 +83,7 @@ class _SearchPageState extends State<SearchPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      CustomSnackkBarWidget( 
+                      CustomSnackBarWidget( 
                         text: 'Operazione annullata',
                       ).build(context),
                     );

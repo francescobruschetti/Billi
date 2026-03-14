@@ -135,7 +135,7 @@ class _TransactionPageState extends State<TransactionPage> {
     if (apiResponseModel.success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(      
-          CustomSnackkBarWidget( 
+          CustomSnackBarWidget( 
             text: message,
           ).build(context),
         );

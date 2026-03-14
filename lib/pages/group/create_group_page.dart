@@ -16,9 +16,10 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
   Future<void> _create() async {
     setState(() => isLoading = true);
 
-    await ref
-        .read(groupsProvider.notifier)
-        .createGroup(controller.text);
+    // TODO: 
+    // await ref
+    //     .read(groupsProvider.notifier)
+    //     .createGroup(controller.text);
 
     setState(() => isLoading = false);
 
