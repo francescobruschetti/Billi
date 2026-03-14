@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:Billy/enums/transaction_insert_mode_enum.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
@@ -182,44 +184,39 @@ class _TransactionGroupPageState extends State<TransactionGroupPage> {
       });
     }
 
-    String message = isEdit ? "Dati aggiornati" : "Dati salvati";
-    ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
-      success: false, message: "Errore durante il salvataggio dei dati", data: {}
-    );
-
-    if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await TransactionService().updateGroupTransaction(
-        groupId: _selectedGroup!['id'],
-        transactionId: widget.transactionId!,
-        price: _formatPriceInput(),
-        merchant: _merchantController.text.trim(),
-        categories: _categoriesController.text.trim(),
-        note: _noteController.text.trim(),
-      );
-    } 
-    else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await TransactionService().createGroupTransaction(
-        groupId: _selectedGroup!['id'],
-        price: _formatPriceInput(),
-        splitRate: _selectedSplitRateValue,
-        paidAmount: double.tryParse(_paidAmountController.text.replaceAll(',', '.')),
-        merchant: _merchantController.text.trim(),
-        categories: _categoriesController.text.trim(),
-        note: _noteController.text.trim(),
-      );
-    }
+    try {
+      if (isEdit) { // Logica di salvataggio modifica gruppo
+        await TransactionService().updateGroupTransaction(
+          groupId: _selectedGroup!['id'],
+          transactionId: widget.transactionId!,
+          price: _formatPriceInput(),
+          merchant: _merchantController.text.trim(),
+          categories: _categoriesController.text.trim(),
+          note: _noteController.text.trim(),
+        );
+      } 
+      else { // Logica di creazione nuovo gruppo
+        await TransactionService().createGroupTransaction(
+          groupId: _selectedGroup!['id'],
+          price: _formatPriceInput(),
+          splitRate: _selectedSplitRateValue,
+          paidAmount: double.tryParse(_paidAmountController.text.replaceAll(',', '.')),
+          merchant: _merchantController.text.trim(),
+          categories: _categoriesController.text.trim(),
+          note: _noteController.text.trim(),
+        );
+      }
     
-    if (apiResponseModel.success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           CustomSnackBarWidget( 
-            text: message,
+            text: isEdit ? "Dati aggiornati" : "Dati salvati",
           ).build(context),
         );
         Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
       }
     }
-    else {
+    catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = 'Errore durante il salvataggio';

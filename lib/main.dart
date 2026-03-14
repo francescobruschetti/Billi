@@ -35,14 +35,21 @@ class BillyApp extends StatefulWidget {
     _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
     state?.changeLocale(locale);
   }
+
+  static String getCurrentLanguage(BuildContext context) {
+    _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
+    return state?.currentLanguage ?? 'en';
+  }
 }
 
 class _BillyAppState extends State<BillyApp> {
-  Locale _locale = const Locale('en');
+  String currentLanguage = 'en';
+  late Locale _locale = Locale(currentLanguage);
 
   void changeLocale(Locale locale) {
     setState(() {
       _locale = locale;
+      currentLanguage = locale.languageCode;
     });
   }
 

@@ -2,18 +2,23 @@ import 'package:Billy/languages/app_localizations.dart';
 import 'package:Billy/main.dart';
 import 'package:flutter/material.dart';
 
-class FavoritesPage extends StatefulWidget {
-  const FavoritesPage({super.key});
+class UIProvePage extends StatefulWidget {
+  const UIProvePage({super.key});
 
   @override
-  State<FavoritesPage> createState() => _FavoritesPageState();
+  State<UIProvePage> createState() => _UIProvePageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
-  String currentLanguage = 'it';
+class _UIProvePageState extends State<UIProvePage> {
+  late String currentLanguage;
+
+  @override
+  void initState() {
+    super.initState();
+    currentLanguage = BillyApp.getCurrentLanguage(context);
+  }
 
   void changeLanguage(BuildContext context, String languageCode) {
-    /* TODO: not working: */
     Locale newLocale = Locale(languageCode);
     BillyApp.setLocale(context, newLocale);
     setState(() {
@@ -26,6 +31,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     return Center(
       child: Column(
         children: [
+          Text('Current language: $currentLanguage'),
           ElevatedButton(
             onPressed: () {
               changeLanguage(context, currentLanguage == 'en' ? 'it' : 'en');

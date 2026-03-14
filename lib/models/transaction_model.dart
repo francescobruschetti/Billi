@@ -25,4 +25,12 @@ class TransactionModel {
       createdAt: DateTime.parse(map['created_at']),
     );
   }
+
+  static List<TransactionModel> fromList(List<Map<String, dynamic>> transactionsMap) {
+    List<TransactionModel> transactions = [];
+    for (var item in transactionsMap) {
+      transactions.add(TransactionModel.fromMap(item));
+    }
+    return transactions;
+  }
 }

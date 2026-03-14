@@ -138,38 +138,30 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     }
 
     try {
-      final apiResponseModel = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
-      if (!apiResponseModel.success) {
-        setState(() {
-          _errorMessage = 'Errore durante il caricamento';
-          _isLoadingPage = false;
-        });
-      }
-      else {
-        if (mounted) {
-          setState(() {
-            if (reset) {
-              _groupTransactions = apiResponseModel.data.transactions;
+      final groupDetails = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
 
-              _groupDetails = apiResponseModel.data;
-              _groupName = (_groupDetails != null && _groupDetails!.name.isNotEmpty) ? _groupDetails!.name : '-';
-              _isLoadingPage = false;
-            } 
-            else {
-              _groupTransactions.addAll(apiResponseModel.data.transactions);
-              _isLoadingContent = false;
-            }
-            _handleUsersSummary();
-            _groupParticipantsCnt = _groupDetails?.participants.length ?? 0;
-            _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
-            
-            log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupTransactionsBalanceCnt: $_groupTransactionsBalanceCnt');
-            _hasMore = apiResponseModel.data.transactions.length == _pageSize;            
-            if (_hasMore) {
-              _currentPage++;
-            }
-          });
-        }
+      if (mounted) {
+        setState(() {
+          if (reset) {
+            _groupTransactions = groupDetails.transactions;
+
+            _groupName = (groupDetails.name.isNotEmpty) ? groupDetails.name : '-';
+            _isLoadingPage = false;
+          } 
+          else {
+            _groupTransactions.addAll(groupDetails.transactions);
+            _isLoadingContent = false;
+          }
+          _handleUsersSummary();
+          _groupParticipantsCnt = groupDetails.participants.length;
+          _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
+          
+          log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupTransactionsBalanceCnt: $_groupTransactionsBalanceCnt');
+          _hasMore = groupDetails.transactions.length == _pageSize;            
+          if (_hasMore) {
+            _currentPage++;
+          }
+        });
       }
     } 
     catch (e) {

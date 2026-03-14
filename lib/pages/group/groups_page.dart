@@ -49,6 +49,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
           return Column(
             children: [
               _buildSearchBar(),
+              
               Expanded(child: _buildList(filtered)),
             ],
           );
@@ -121,4 +122,5 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       )),
     );
   }
+
 }

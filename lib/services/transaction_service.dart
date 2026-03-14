@@ -1,8 +1,5 @@
 import 'package:logging/logging.dart';
-import 'package:Billy/models/api_response_model.dart';
-import 'package:Billy/models/transaction_model.dart';
 import 'package:Billy/models/group_model.dart';
-import 'package:Billy/models/group_transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TransactionService {
@@ -10,20 +7,7 @@ class TransactionService {
   final Logger log = Logger('TransactionService');
   final SupabaseClient supabase = Supabase.instance.client;
 
-  Stream<List<TransactionModel>> subscribeTransactions() {
-    log.fine("Subscribing to transactions stream");
-    final userId = supabase.auth.currentUser!.id;
-
-    return supabase
-        .from('transactions')
-        .stream(primaryKey: ['id'])
-        .eq('user_id', userId)
-        .order('created_at', ascending: false)
-        .map((rows) =>
-            rows.map((row) => TransactionModel.fromMap(row)).toList());
-  }
-
-  Future<ApiResponseModel<Map<String, dynamic>>> createGroupTransaction({
+  Future<Map<String, dynamic>> createGroupTransaction({
     required String groupId,
     required double price,
     String? splitRate,
@@ -45,15 +29,15 @@ class TransactionService {
         'p_category_name': categories,
         'p_note': note,
       }).select().single();
-      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: result);
+      return result;
     } 
     catch (e) {
       log.severe("Errore salvataggio spesa: $e");
-      return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
+      throw Exception("Errore salvataggio spesa");
     }
   }
 
-  Future<ApiResponseModel<Map<String, dynamic>>> createPersonalTransaction({
+  Future<Map<String, dynamic>> createPersonalTransaction({
     required double price,
     String? merchant,
     String? categories,
@@ -69,11 +53,11 @@ class TransactionService {
         'p_category_name': categories,
         'p_note': note,
       }).select().single();
-      return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: result);
+      return result;
     } 
     catch (e) {
       log.severe("Errore salvataggio spesa: $e");
-      return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
+      throw Exception("Errore salvataggio spesa");
     }
   }
 
@@ -93,29 +77,7 @@ class TransactionService {
     return rows;
   }
 
-  // TODO: NOT used anymore
-  Future<ApiResponseModel<List<GroupTransactionModel>>> fetchLatestGroupTransactions({required String groupId, required int pageIndex, int pageSize = 50}) async {
-    
-    try {
-      final from = pageIndex * pageSize;
-      final to = from + pageSize - 1;
-
-      final transactions = await supabase
-        .from('group_transactions')
-        .select('*, merchant:merchants(*), category:categories(*), profile:profiles(*)')
-        .eq('group_id', groupId)
-        .order('created_at', ascending: false)
-        .range(from, to);
-
-      return ApiResponseModel<List<GroupTransactionModel>>(success: true, message: null, data: GroupTransactionModel.fromList(transactions));
-    } 
-    catch (e) {
-      log.severe("Error fetching group transactions: $e");
-      return ApiResponseModel<List<GroupTransactionModel>>(success: false, message: e.toString(), data: []);
-    }
-  }
-
-  Future<ApiResponseModel<GroupModel>> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<GroupModel> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -134,42 +96,15 @@ class TransactionService {
         .eq('id', groupId)
         .single();
 
-      return ApiResponseModel<GroupModel>(success: true, message: null, data: GroupModel.fromMap(result));
+      return GroupModel.fromMap(result);
     }
     catch (e) {
       log.severe("Error fetching group details: $e");
-      return ApiResponseModel<GroupModel>(success: false, message: e.toString(), data: GroupModel.fromMap({}));
+      throw Exception("Error fetching group details: $e");
     }
   }
 
-  // TODO: NOT used anymore
-  Future<ApiResponseModel<GroupModel>> fetchGroupParticipants({required String groupId, required int pageIndex, int pageSize = 50}) async {
-    try {
-      // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
-      final result = await supabase
-        .from('groups')
-        .select('''
-          id,
-          name,
-          description,
-          link,
-          user_id,
-          created_at,
-          updated_at,
-          group_participants:group_participants(user_id, profiles:profiles(*))
-        ''')
-        .eq('id', groupId)
-        .single();
-
-      return ApiResponseModel<GroupModel>(success: true, message: null, data: GroupModel.fromMap(result));
-    } 
-    catch (e) {
-      log.severe("Error fetching group participants: $e");
-      return ApiResponseModel<GroupModel>(success: false, message: e.toString(), data: GroupModel.fromMap({}));
-    }
-  }
-
-  Future<ApiResponseModel<Map<String, dynamic>>> updateGroupTransaction({
+  Future<Map<String, dynamic>> updateGroupTransaction({
     required String groupId,
     required String transactionId, 
     required double price,
@@ -193,10 +128,10 @@ class TransactionService {
     //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
-    return ApiResponseModel<Map<String, dynamic>>(success: false, message: "Not implemented yet", data: {});
+    throw Exception("Not implemented yet");
   }
   
-  Future<ApiResponseModel<Map<String, dynamic>>> updatePersonalTransaction({
+  Future<Map<String, dynamic>> updatePersonalTransaction({
     required String transactionId, 
     required double price,
     String? merchant, // TODO: da implementare
@@ -219,7 +154,7 @@ class TransactionService {
     //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
-    return ApiResponseModel<Map<String, dynamic>>(success: false, message: "Not implemented yet", data: {});
+    throw Exception("Not implemented yet");
   }
   
 

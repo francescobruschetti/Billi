@@ -110,39 +110,35 @@ class _TransactionPageState extends State<TransactionPage> {
       });
     }
 
-    String message = isEdit ? "Dati aggiornati" : "Dati salvati";
-    ApiResponseModel<Map<String, dynamic>> apiResponseModel = ApiResponseModel<Map<String, dynamic>>(
-      success: false, message: "Errore durante il salvataggio dei dati", data: {}
-    );
-    if (isEdit) { // Logica di salvataggio modifica gruppo
-      apiResponseModel = await TransactionService().updatePersonalTransaction(
-        transactionId: widget.transactionId!,
-        price: _formatPriceInput(),
-        merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
-        categories: _categoriesController.text.trim(),
-        note: _noteController.text.trim(),
-      );
-    } 
-    else { // Logica di creazione nuovo gruppo
-      apiResponseModel = await TransactionService().createPersonalTransaction(
-        price: _formatPriceInput(),
-        merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
-        categories: _categoriesController.text.trim(),
-        note: _noteController.text.trim(),
-      );
-    }
+    try {
+      if (isEdit) { // Logica di salvataggio modifica gruppo
+        await TransactionService().updatePersonalTransaction(
+          transactionId: widget.transactionId!,
+          price: _formatPriceInput(),
+          merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
+          categories: _categoriesController.text.trim(),
+          note: _noteController.text.trim(),
+        );
+      } 
+      else { // Logica di creazione nuovo gruppo
+        await TransactionService().createPersonalTransaction(
+          price: _formatPriceInput(),
+          merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
+          categories: _categoriesController.text.trim(),
+          note: _noteController.text.trim(),
+        );
+      }
     
-    if (apiResponseModel.success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(      
           CustomSnackBarWidget( 
-            text: message,
+            text: isEdit ? "Dati aggiornati" : "Dati salvati",
           ).build(context),
         );
         Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
       }
     }
-    else {
+    catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = 'Errore durante il salvataggio';

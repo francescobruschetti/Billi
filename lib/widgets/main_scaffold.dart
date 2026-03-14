@@ -1,6 +1,5 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/pages/favorites_page.dart';
-import 'package:Billy/pages/group/group_page_provder.dart';
+import 'package:Billy/pages/ui_prove_page.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
@@ -19,8 +18,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
     GroupsPage(),
-    GroupsPageProvider(),
-    FavoritesPage(),
+    UIProvePage(),
   ];
 
   @override
@@ -81,13 +79,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                   label: 'Gruppi',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.group),
-                  label: 'GruppiProvider',
-                ),
-                BottomNavigationBarItem(
                   icon: Icon(Icons.padding),
                   label: 'Prove UI',
-                )
+                ),
               ],
             ),
           ),

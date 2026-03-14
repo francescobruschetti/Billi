@@ -1,11 +1,14 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
+import 'package:Billy/models/transaction_model.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/balance_bar_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
@@ -14,32 +17,37 @@ import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
 import '../services/transaction_service.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   final Logger log = Logger('HomePage');
   final TransactionService service = TransactionService();
   final ScrollController _scrollController = ScrollController();
-
-  late Future<List<Map<String, dynamic>>> transactionsFuture;
-  List<Map<String, dynamic>> allTransactions = [];
-  late BalanceDetailsModel _balanceDetails;
+  late BalanceDetailsModel _balanceDetails = BalanceDetailsModel(totalBalance: 0, totalExpenses: 0, totalIncomes: 0);
 
   int _currentPage = 0;
   final int _pageSize = 50;
   bool _isLoading = false;
   bool _hasMore = true;
+  bool _showFilters = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadTransactions(reset: true);
+
+    setState(() {
+      _isLoading = false;
+      _hasMore = true;
+      _showFilters = false;
+    });
+
+    // TODO: x: _loadTransactions(reset: true);
   }
 
   @override
@@ -49,8 +57,10 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _filterTransactions({bool reset = false}) async {
-    // TODO: da implementare filtro spese
+  void _filterTransactions({bool reset = false}) {
+    setState(() {
+      _showFilters = !_showFilters;
+    });
   }
 
   void _filterTimeTransactions({required TimeFilterEnum filter}) async {
@@ -69,36 +79,38 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _loadTransactions({bool reset = false}) async {
-    if (_isLoading) return;
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-      });
-    }
-    if (reset) {
-      _currentPage = 0;
-      _hasMore = true;
-      allTransactions.clear();
-    }
-    transactionsFuture = service.fetchLatestPersonalTransactions(pageIndex: _currentPage, pageSize: _pageSize);
-    final result = await transactionsFuture;
+  // TODO: x: 
+  // Future<void> _loadTransactions({bool reset = false}) async {
+  //   if (_isLoading) return;
+  //   if (mounted) {
+  //     setState(() {
+  //       _isLoading = true;
+  //     });
+  //   }
+  //   if (reset) {
+  //     _currentPage = 0;
+  //     _hasMore = true;
+  //     allTransactions.clear();
+  //   }
+    
+  //   Future<List<Map<String, dynamic>>> transactionsFuture = service.fetchLatestPersonalTransactions(pageIndex: _currentPage, pageSize: _pageSize);
+  //   final result = await transactionsFuture;
 
-    if (mounted) {
-      setState(() {
-        if (reset) {
-          allTransactions = result;
-        } 
-        else {
-          allTransactions.addAll(result);
-        }
-        _balanceDetails = GroupTransactionsUtil.computeBalance(allTransactions);
-        _isLoading = false;
-        _hasMore = result.length == _pageSize;
-        if (_hasMore) _currentPage++;
-      });
-    }
-  }
+  //   if (mounted) {
+  //     setState(() {
+  //       if (reset) {
+  //         allTransactions = result;
+  //       } 
+  //       else {
+  //         allTransactions.addAll(result);
+  //       }
+  //       _balanceDetails = GroupTransactionsUtil.computeBalance(allTransactions);
+  //       _isLoading = false;
+  //       _hasMore = result.length == _pageSize;
+  //       if (_hasMore) _currentPage++;
+  //     });
+  //   }
+  // }
 
   void _navigateToTransactionPage({required TransactionTypeEnum transactionType, required bool isEditAllowed}) async {
     await Navigator.push(
@@ -107,7 +119,7 @@ class _HomePageState extends State<HomePage> {
     )
     .then((result) {
       if (result == true) {
-        _loadTransactions(reset: true);
+        // TODO: x: _loadTransactions(reset: true);
       }
     });
   }
@@ -117,143 +129,197 @@ class _HomePageState extends State<HomePage> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll) {
-      _loadTransactions();
+      // TODO: x: _loadTransactions();
     }
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {  
+    final transactionsState = ref.watch(transactionProvider);
+
     return Scaffold(
       // debug UI: backgroundColor: Colors.orange,
-      body: Padding(
-        padding: const EdgeInsets.only(top: AppConstants.rowVerticalPadding, left: AppConstants.rowHorizontalPadding, right: AppConstants.rowHorizontalPadding, bottom: AppConstants.rowVerticalPadding),
-        child: Column(
-          children: [
-            // Page Header
-            Container(
-              // debug UI: color: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: SelectableText(
-                      'Saldo (${allTransactions.length}): ${_balanceDetails.totalBalance}€',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    tooltip: 'Aggiorna',
-                    onPressed: () => _loadTransactions(reset: true),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.filter_list),
-                    tooltip: 'Filtra',
-                    onPressed: () => _filterTransactions(reset: true),
-                  ),
-                ],
-              ),
-            ),
-
-            Container(
-              // debug UI: color: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
-              child: BalanceBarWidget(totalBalance: _balanceDetails.totalBalance, totalExpenses: _balanceDetails.totalExpenses, totalIncomes: _balanceDetails.totalIncomes)
-            ),
-
-            // Page Header "subtitle"
-            Container(
-              // debug UI: color: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
-              child: TimeFilterWidget(
-                timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                onPressed: (filter) => _filterTimeTransactions(filter: filter),
-              ),
-            ),
-
-            // Page Content
-            Expanded(
-              child:
-                _isLoading 
-                ? const LoadingScaffold(message: 'Caricamento spese...')
-                : allTransactions.isEmpty
-                  ? const Center(child: Text('Nessuna spesa presente'))
-                  : NotificationListener<ScrollNotification>(
-                      onNotification: (scrollNotification) {
-                        if (scrollNotification is ScrollEndNotification) {
-                          _onScroll();
-                        }
-                        return false;
-                      },
-                      child: RefreshIndicator(
-                        onRefresh: () => _loadTransactions(reset: true),
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: allTransactions.length + (_isLoading ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index >= allTransactions.length) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(child: Text('Carico altre spese...')),
-                              );
-                            }
-                            final e = allTransactions[index];
-                            final formattedDateTime = _formatDateTime(e['updated_at'] ?? '');
-                            final totalAmount = double.tryParse(e['total_amount']?.toString() ?? '0') ?? 0;
-                            final merchant = e['merchant'] ?? {};
-                            final category = e['category'] ?? {};
-
-                            return TransactionCardWidget(
-                              merchantName: merchant['name'],
-                              categoryName: category['name'],
-                              formattedDateTime: formattedDateTime,
-                              totalAmount: totalAmount,
-                              transactionType: TransactionTypeEnumExtension.fromValue(e['transaction_type']),
-                              note: e['note'],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-            ),
+      body: transactionsState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text("Errore: $err")),
+        data: (transactions) {
           
-            // Page footer
-            const SizedBox(height: AppConstants.rowVerticalPadding),
-            Container(
-              // debug UI: color: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomButtonWidget(
-                        onPressed: () async {
-                        _navigateToTransactionPage(transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
-                      },
-                      text: 'Uscite',
-                      customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
-                      backgroundColor: AppConstants.defaultExpenseColor,
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.sizedBoxWidth),
-                  Expanded(
-                    child: 
-                      CustomButtonWidget(
-                        onPressed: () async {
-                          _navigateToTransactionPage(transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
-                        },
-                        text: 'Entrate',
-                        iconData: Icons.login,
-                        backgroundColor: AppConstants.defaultIncomeColor,
-                      ),
-                  ),
-                ],
+          // TODO: x: return Padding(
+          // TODO: x:   padding: const EdgeInsets.only(top: AppConstants.rowVerticalPadding, left: AppConstants.rowHorizontalPadding, right: AppConstants.rowHorizontalPadding, bottom: AppConstants.rowVerticalPadding),
+          // TODO: x:     child: Column(
+          return Column(
+              children: [
+                // Page Header
+                _pageHeader(transactions),
+
+                _pageHeaderSubtitle(),  
+
+                // Page Header "subtitle" animata
+                _animatedTimeFilters(),
+
+                // Page Content
+                _buildPageContent(transactions),
+                              
+                // Page footer
+                const SizedBox(height: AppConstants.rowVerticalPadding),
+                _footer(),
+              ],
+          // TODO: x:  )
+          );
+        }
+      ),
+    );
+  }
+
+  Widget _pageHeader(List<Map<String, dynamic>> transactions) {
+    return Container(
+      // debug UI: color: Colors.green,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: SelectableText(
+              'Saldo (${transactions.length}): ${_balanceDetails.totalBalance}€',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          const SizedBox(width: 5),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Aggiorna',
+            onPressed: () => ref.read(transactionProvider.notifier).refresh() // TODO: x: _loadTransactions(reset: true),
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filtra',
+            onPressed: () => _filterTransactions(reset: true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pageHeaderSubtitle() {
+    return Container(
+      // debug UI: color: Colors.red,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
+      child: BalanceBarWidget(totalBalance: _balanceDetails.totalBalance, totalExpenses: _balanceDetails.totalExpenses, totalIncomes: _balanceDetails.totalIncomes)
+    );
+  }
+
+  Widget _animatedTimeFilters() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          axis: Axis.vertical,
+          child: child,
+        ),
+      ),
+      child: _showFilters
+        ? Container(
+            key: const ValueKey('filters'),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
+            child: TimeFilterWidget(
+              timeFilters: [
+                TimeFilterEnum.ONE_DAY,
+                TimeFilterEnum.ONE_WEEK,
+                TimeFilterEnum.ONE_MONTH,
+                TimeFilterEnum.ONE_YEAR
+              ],
+              onPressed: (filter) => _filterTimeTransactions(filter: filter),
+            ),
+          )
+        : const SizedBox.shrink(key: ValueKey('nofilters')),
+    );
+  }
+
+  Widget _buildPageContent(List<Map<String, dynamic>> transactions) {
+    return Expanded(
+      child: 
+        _buildList(transactions),
+        /* TODO: x:_isLoading 
+        ? const LoadingScaffold(message: 'Caricamento spese...')
+        : transactions.isEmpty
+          ? const Center(child: Text('Nessuna spesa presente'))
+          : NotificationListener<ScrollNotification>(
+              onNotification: (scrollNotification) {
+                if (scrollNotification is ScrollEndNotification) {
+                  _onScroll();
+                }
+                return false;
+              },
+              child: RefreshIndicator(
+                onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
+                child: _buildList(transactions),
               ),
             ),
-          ],
-        )
+        */
+    );
+  }
+
+   Widget _buildList(List<Map<String, dynamic>> transactions) {
+    if (transactions.isEmpty) {
+      return const Center(child: Text('Nessuna spesa trovata'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
+      child: ListView.builder(
+        itemCount: transactions.length,
+        itemBuilder: (context, index) => _buildTransactionTile(transactions[index]),
+      ),
+    );
+  }
+
+  Widget _buildTransactionTile(Map<String, dynamic> transactions) {
+    final formattedDateTime = _formatDateTime(transactions['updated_at'] ?? '');
+    final totalAmount = double.tryParse(transactions['total_amount']?.toString() ?? '0') ?? 0;
+    final merchant = transactions['merchant'] ?? {};
+    final category = transactions['category'] ?? {};
+    
+    return TransactionCardWidget(
+      merchantName: merchant['name'],
+      categoryName: category['name'],
+      formattedDateTime: formattedDateTime,
+      totalAmount: totalAmount,
+      transactionType: TransactionTypeEnumExtension.fromValue(transactions['transaction_type']),
+      note: transactions['note'],
+    );
+  }
+
+  Widget _footer() {
+    return Container(
+      // debug UI: color: Colors.red,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+      child: Row(
+        children: [
+          Expanded(
+            child: CustomButtonWidget(
+                onPressed: () async {
+                _navigateToTransactionPage(transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
+              },
+              text: 'Uscite',
+              customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
+              backgroundColor: AppConstants.defaultExpenseColor,
+            ),
+          ),
+          const SizedBox(width: AppConstants.sizedBoxWidth),
+          Expanded(
+            child: 
+              CustomButtonWidget(
+                onPressed: () async {
+                  _navigateToTransactionPage(transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
+                },
+                text: 'Entrate',
+                iconData: Icons.login,
+                backgroundColor: AppConstants.defaultIncomeColor,
+              ),
+          ),
+        ],
       ),
     );
   }
