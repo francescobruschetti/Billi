@@ -1,4 +1,4 @@
-import 'package:Billy/languages/app_localizations.dart';
+import 'package:Billy/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -20,17 +20,37 @@ void main() async {
   setupLogging(); // Initialize logging
   runApp(
     ProviderScope( // *Added in order to use Riverpod providers*
-      child: const BillyApp(),
+      child: BillyApp(),
     ),
   );
 }
 
-class BillyApp extends StatelessWidget {
+class BillyApp extends StatefulWidget {
   const BillyApp({super.key});
+
+  @override
+  State<BillyApp> createState() => _BillyAppState();
+
+  static void setLocale(BuildContext context, Locale locale) {
+    _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
+    state?.changeLocale(locale);
+  }
+}
+
+class _BillyAppState extends State<BillyApp> {
+  Locale _locale = const Locale('en');
+
+  void changeLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: _locale,
+
       debugShowCheckedModeBanner: false,
       routes: {
         '/login': (context) => const LoginPage(),
@@ -57,7 +77,7 @@ class BillyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.light, // automatico
+      themeMode: ThemeMode.system, // automatico
 
       // Configure Language (localization)
       localizationsDelegates: [
