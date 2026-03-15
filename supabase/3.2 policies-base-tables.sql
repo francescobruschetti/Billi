@@ -162,9 +162,13 @@ declare
   v_category_id uuid;
 begin
   -- Merchant
-  select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) limit 1;
-  if v_merchant_id is null then
-    insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
+  if p_transaction_type = 'income' then
+    v_merchant_id := null;
+  else
+    select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) limit 1;
+    if v_merchant_id is null then
+      insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
+    end if;
   end if;
 
   -- Category

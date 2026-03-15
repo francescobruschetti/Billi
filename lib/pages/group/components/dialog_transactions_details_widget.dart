@@ -3,6 +3,18 @@ import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 
+/* To be used with:
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return DialogTransactionsDetailsWidget(
+        title: 'Riepilogo partecipanti',
+        participantsSummary: _participantsSummary,
+      );
+    },
+  );
+*/
+
 class DialogTransactionsDetailsWidget extends StatelessWidget {
   static final ScrollController _verticalController = ScrollController();
   static final ScrollController _horizontalController = ScrollController();
@@ -19,7 +31,7 @@ class DialogTransactionsDetailsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DialogWidget(
-      title: 'Riepilogo partecipanti',
+      title: title,
       customContent: SizedBox(
         child: Scrollbar(
           controller: _verticalController,

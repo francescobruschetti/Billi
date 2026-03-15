@@ -1,5 +1,15 @@
 // ignore: constant_identifier_names
-enum TransactionTypeEnum { EXPENSE, INCOME }
+enum TransactionTypeEnum { EXPENSE, INCOME;
+
+  String toValue() {
+    switch (this) {
+      case TransactionTypeEnum.EXPENSE:
+        return 'expense';
+      case TransactionTypeEnum.INCOME:
+        return 'income';
+    }
+  }
+}
 
 extension TransactionTypeEnumExtension on TransactionTypeEnum {
   static TransactionTypeEnum fromValue(String value) {

@@ -40,7 +40,7 @@ class CustomButtonWidget extends StatelessWidget {
           if (text != null) ...[
             if (iconData != null || customIcon != null)
               const SizedBox(width: 8),
-            Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+            Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)),
           ],
         ],
       ),

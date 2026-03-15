@@ -72,9 +72,11 @@ class _BillyAppState extends State<BillyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
           onPrimary: Colors.black,
+          primaryContainer: Colors.blue[300],
           secondary: Colors.orange,
           onSecondary: Colors.black,
           secondaryContainer: Colors.orange[400],
+          onSecondaryContainer: Colors.black,
         ),
       ),
       darkTheme: ThemeData(
@@ -82,13 +84,15 @@ class _BillyAppState extends State<BillyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
           onPrimary: Colors.white,
+          primaryContainer: Colors.blue[300],
           secondary: Colors.orange,
           onSecondary: Colors.black,
           secondaryContainer: Colors.blue[400],
+          onSecondaryContainer: Colors.black,
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.system, // automatico
+      themeMode: ThemeMode.system, // automatico: system
 
       // Configure Language (localization)
       localizationsDelegates: [

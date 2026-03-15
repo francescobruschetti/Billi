@@ -2,7 +2,6 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Billy/models/api_response_model.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
@@ -65,10 +64,6 @@ class _TransactionPageState extends State<TransactionPage> {
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
     );
-
-    if(widget.transactionType == TransactionTypeEnum.EXPENSE) {
-      return double.tryParse('-$text') ?? 0.0;
-    } 
     
     return double.tryParse(text) ?? 0.0;
   }
@@ -115,6 +110,7 @@ class _TransactionPageState extends State<TransactionPage> {
         await TransactionService().updatePersonalTransaction(
           transactionId: widget.transactionId!,
           price: _formatPriceInput(),
+          transactionType: widget.transactionType,
           merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
           categories: _categoriesController.text.trim(),
           note: _noteController.text.trim(),
@@ -123,6 +119,7 @@ class _TransactionPageState extends State<TransactionPage> {
       else { // Logica di creazione nuovo gruppo
         await TransactionService().createPersonalTransaction(
           price: _formatPriceInput(),
+          transactionType: widget.transactionType,
           merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
           categories: _categoriesController.text.trim(),
           note: _noteController.text.trim(),

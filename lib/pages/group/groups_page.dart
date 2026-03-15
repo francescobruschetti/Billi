@@ -1,4 +1,4 @@
-import 'package:Billy/models/group_model.dart';
+import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/providers/group_provider.dart';
@@ -17,7 +17,7 @@ class GroupsPage extends ConsumerStatefulWidget {
 class _GroupsPageState extends ConsumerState<GroupsPage> {
   String _searchText = '';
 
-  List<GroupModel> _filtered(List<GroupModel> groups) {
+  List<GroupDetailsModel> _filtered(List<GroupDetailsModel> groups) {
     if (_searchText.isEmpty) return groups;
     return groups
       .where((g) => g.name.toLowerCase().contains(_searchText.toLowerCase()))
@@ -29,6 +29,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
     final groupsState = ref.watch(groupsProvider);
 
     return Scaffold(
+      appBar: _buildAppBar(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.secondary,
         onPressed: () => Navigator.push(
@@ -42,14 +43,12 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       ),
       body: groupsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("Errore: $err")),
+        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")),
         data: (groups) {
           final filtered = _filtered(groups);
 
           return Column(
-            children: [
-              _buildSearchBar(),
-              
+            children: [             
               Expanded(child: _buildList(filtered)),
             ],
           );
@@ -58,44 +57,27 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: SearchFieldWidget(
-              text: 'Cerca gruppo...',
-              icon: Icons.search,
-              onChanged: (value) => setState(() => _searchText = value),
-            ),
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
+      actions: [
+        Expanded(
+          child: SearchFieldWidget(
+            text: 'Cerca gruppo...',
+            icon: Icons.search,
+            onChanged: (value) => setState(() => _searchText = value),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Aggiorna',
-            onPressed: () => ref.read(groupsProvider.notifier).refresh(),
-          ),
-        ],
-      ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Aggiorna',
+          onPressed: () => ref.read(groupsProvider.notifier).refresh(),
+        ),
+      ],
     );
   }
 
-  Widget _buildList(List<GroupModel> groups) {
-    if (groups.isEmpty) {
-      return const Center(child: Text('Nessun gruppo trovato'));
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => ref.read(groupsProvider.notifier).refresh(),
-      child: ListView.builder(
-        itemCount: groups.length,
-        itemBuilder: (context, index) => _buildGroupTile(groups[index]),
-      ),
-    );
-  }
-
-  Widget _buildGroupTile(GroupModel g) {
+  Widget _buildGroupTile(GroupDetailsModel g) {
     return ListTile(
       title: Text(g.name),
       subtitle: Text('Totale: ${g.totalAmount} €'),
@@ -120,6 +102,20 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => GroupTransactionsPage(groupId: g.id, isEditAllowed: true),
       )),
+    );
+  }
+
+  Widget _buildList(List<GroupDetailsModel> groups) {
+    if (groups.isEmpty) {
+      return const Center(child: Text('Nessun gruppo trovato'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(groupsProvider.notifier).refresh(),
+      child: ListView.builder(
+        itemCount: groups.length,
+        itemBuilder: (context, index) => _buildGroupTile(groups[index]),
+      ),
     );
   }
 

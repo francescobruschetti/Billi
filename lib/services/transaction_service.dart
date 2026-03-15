@@ -1,5 +1,6 @@
+import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/group_details_model.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/group_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TransactionService {
@@ -10,6 +11,7 @@ class TransactionService {
   Future<Map<String, dynamic>> createGroupTransaction({
     required String groupId,
     required double price,
+    required TransactionTypeEnum transactionType,
     String? splitRate,
     double? paidAmount,
     String? merchant,
@@ -28,6 +30,7 @@ class TransactionService {
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,
+        'p_transaction_type': transactionType.toValue(),
       }).select().single();
       return result;
     } 
@@ -39,6 +42,7 @@ class TransactionService {
 
   Future<Map<String, dynamic>> createPersonalTransaction({
     required double price,
+    required TransactionTypeEnum transactionType,
     String? merchant,
     String? categories,
     String? note,
@@ -52,6 +56,7 @@ class TransactionService {
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,
+        'p_transaction_type': transactionType.toValue(),
       }).select().single();
       return result;
     } 
@@ -77,7 +82,7 @@ class TransactionService {
     return rows;
   }
 
-  Future<GroupModel> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<GroupDetailsModel> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -96,7 +101,7 @@ class TransactionService {
         .eq('id', groupId)
         .single();
 
-      return GroupModel.fromMap(result);
+      return GroupDetailsModel.fromMap(result);
     }
     catch (e) {
       log.severe("Error fetching group details: $e");
@@ -108,6 +113,7 @@ class TransactionService {
     required String groupId,
     required String transactionId, 
     required double price,
+    required TransactionTypeEnum transactionType,
     String? merchant, // TODO: da implementare
     String? categories, // TODO: da implementare
     String? note,
@@ -134,6 +140,7 @@ class TransactionService {
   Future<Map<String, dynamic>> updatePersonalTransaction({
     required String transactionId, 
     required double price,
+    required TransactionTypeEnum transactionType,
     String? merchant, // TODO: da implementare
     String? categories, // TODO: da implementare
     String? note,

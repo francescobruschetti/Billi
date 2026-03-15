@@ -1,7 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
-import 'package:Billy/models/transaction_model.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
@@ -13,7 +12,6 @@ import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
-import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
 import '../services/transaction_service.dart';
 
@@ -30,7 +28,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final ScrollController _scrollController = ScrollController();
   late BalanceDetailsModel _balanceDetails = BalanceDetailsModel(totalBalance: 0, totalExpenses: 0, totalIncomes: 0);
 
-  int _currentPage = 0;
+  final int _currentPage = 0;
   final int _pageSize = 50;
   bool _isLoading = false;
   bool _hasMore = true;
@@ -46,8 +44,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       _hasMore = true;
       _showFilters = false;
     });
-
-    // TODO: x: _loadTransactions(reset: true);
   }
 
   @override
@@ -79,39 +75,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  // TODO: x: 
-  // Future<void> _loadTransactions({bool reset = false}) async {
-  //   if (_isLoading) return;
-  //   if (mounted) {
-  //     setState(() {
-  //       _isLoading = true;
-  //     });
-  //   }
-  //   if (reset) {
-  //     _currentPage = 0;
-  //     _hasMore = true;
-  //     allTransactions.clear();
-  //   }
-    
-  //   Future<List<Map<String, dynamic>>> transactionsFuture = service.fetchLatestPersonalTransactions(pageIndex: _currentPage, pageSize: _pageSize);
-  //   final result = await transactionsFuture;
-
-  //   if (mounted) {
-  //     setState(() {
-  //       if (reset) {
-  //         allTransactions = result;
-  //       } 
-  //       else {
-  //         allTransactions.addAll(result);
-  //       }
-  //       _balanceDetails = GroupTransactionsUtil.computeBalance(allTransactions);
-  //       _isLoading = false;
-  //       _hasMore = result.length == _pageSize;
-  //       if (_hasMore) _currentPage++;
-  //     });
-  //   }
-  // }
-
   void _navigateToTransactionPage({required TransactionTypeEnum transactionType, required bool isEditAllowed}) async {
     await Navigator.push(
       context,
@@ -141,13 +104,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       // debug UI: backgroundColor: Colors.orange,
       body: transactionsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("Errore: $err")),
+        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")),
         data: (transactions) {
-          
-          // TODO: x: return Padding(
-          // TODO: x:   padding: const EdgeInsets.only(top: AppConstants.rowVerticalPadding, left: AppConstants.rowHorizontalPadding, right: AppConstants.rowHorizontalPadding, bottom: AppConstants.rowVerticalPadding),
-          // TODO: x:     child: Column(
-
           // Aggiorna il balance ogni volta che cambia la lista transazioni
           _balanceDetails = GroupTransactionsUtil.computeBalance(transactions);
           
@@ -168,47 +126,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 const SizedBox(height: AppConstants.rowVerticalPadding),
                 _footer(),
               ],
-          // TODO: x:  )
           );
         }
       ),
-    );
-  }
-
-  Widget _pageHeader(List<Map<String, dynamic>> transactions) {
-    return Container(
-      // debug UI: color: Colors.green,
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: SelectableText(
-              'Saldo (${transactions.length}): ${_balanceDetails.totalBalance}€',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          const SizedBox(width: 5),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Aggiorna',
-            onPressed: () => ref.read(transactionProvider.notifier).refresh() // TODO: x: _loadTransactions(reset: true),
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filtra',
-            onPressed: () => _filterTransactions(reset: true),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pageHeaderSubtitle() {
-    return Container(
-      // debug UI: color: Colors.red,
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
-      child: BalanceBarWidget(totalBalance: _balanceDetails.totalBalance, totalExpenses: _balanceDetails.totalExpenses, totalIncomes: _balanceDetails.totalIncomes)
     );
   }
 
@@ -241,6 +161,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  Widget _buildList(List<Map<String, dynamic>> transactions) {
+    if (transactions.isEmpty) {
+      return const Center(child: Text('Nessuna spesa trovata'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
+      child: ListView.builder(
+        itemCount: transactions.length,
+        itemBuilder: (context, index) => _buildTransactionTile(transactions[index]),
+      ),
+    );
+  }
+
   Widget _buildPageContent(List<Map<String, dynamic>> transactions) {
     return Expanded(
       child: 
@@ -262,20 +196,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
         */
-    );
-  }
-
-   Widget _buildList(List<Map<String, dynamic>> transactions) {
-    if (transactions.isEmpty) {
-      return const Center(child: Text('Nessuna spesa trovata'));
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
-      child: ListView.builder(
-        itemCount: transactions.length,
-        itemBuilder: (context, index) => _buildTransactionTile(transactions[index]),
-      ),
     );
   }
 
@@ -325,6 +245,43 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _pageHeader(List<Map<String, dynamic>> transactions) {
+    return Container(
+      // debug UI: color: Colors.green,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: SelectableText(
+              'Saldo (${transactions.length}): ${_balanceDetails.totalBalance}€',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          const SizedBox(width: 5),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Aggiorna',
+            onPressed: () => ref.read(transactionProvider.notifier).refresh() // TODO: x: _loadTransactions(reset: true),
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filtra',
+            onPressed: () => _filterTransactions(reset: true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pageHeaderSubtitle() {
+    return Container(
+      // debug UI: color: Colors.red,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
+      child: BalanceBarWidget(totalBalance: _balanceDetails.totalBalance, totalExpenses: _balanceDetails.totalExpenses, totalIncomes: _balanceDetails.totalIncomes)
     );
   }
 }

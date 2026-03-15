@@ -1,3 +1,4 @@
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logging/logging.dart';
@@ -118,7 +119,10 @@ class _SignupPageState extends State<SignupPage> {
                 labelText: 'Password',
                 errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
                 suffixIcon: IconButton(
-                  icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+                  icon: CustomIconWidget(
+                    assetPath: 'assets/images/icons/${_showPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
+                    size: 24
+                  ),
                   onPressed: () {
                     setState(() {
                       _showPassword = !_showPassword;
@@ -133,9 +137,12 @@ class _SignupPageState extends State<SignupPage> {
               controller: _repeatPasswordController,
               decoration: InputDecoration(
                 labelText: 'Ripeti Password',
-                errorText: null, // TODO: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+                errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
                 suffixIcon: IconButton(
-                  icon: Icon(_showRepeatPassword ? Icons.visibility_off : Icons.visibility),
+                  icon: CustomIconWidget(
+                    assetPath: 'assets/images/icons/${_showRepeatPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
+                    size: 24
+                  ),
                   onPressed: () {
                     setState(() {
                       _showRepeatPassword = !_showRepeatPassword;

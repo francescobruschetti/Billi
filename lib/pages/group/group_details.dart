@@ -1,6 +1,5 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/exceptions/app_exception.dart';
-import 'package:Billy/models/group_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
@@ -12,7 +11,6 @@ import 'package:Billy/services/group_service.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 
 class GroupDetailsPage extends ConsumerStatefulWidget {
   final String? groupId; // null = creazione, non null = modifica
@@ -191,7 +189,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupId, isEditAllowed: true)),
     );
   }
-
 
   Future<void> _saveGroup() async {
     if (mounted) {

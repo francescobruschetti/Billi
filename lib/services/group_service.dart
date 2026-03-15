@@ -1,21 +1,26 @@
 import 'package:Billy/exceptions/app_exception.dart';
+import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/group_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupService {
   final Logger log = Logger('GroupService');
   final SupabaseClient supabase = Supabase.instance.client;
 
-  Future<List<GroupModel>> fetchGroups() async {
-    final res = await supabase.rpc('get_user_groups');
-    return (res as List)
-      .map((g) => GroupModel.fromMap(g as Map<String, dynamic>))
-      .toList();
+  Future<List<GroupDetailsModel>> fetchGroups() async {
+    try {
+      final res = await supabase.rpc('get_user_groups');
+      return (res as List)
+        .map((g) => GroupDetailsModel.fromMap(g as Map<String, dynamic>))
+        .toList();
+    } catch (e) {
+      log.severe("Errore fetching groups: $e");
+      throw AppException("Impossibile caricare i gruppi. Riprova più tardi.");
+    }
   }
 
-  Future<GroupModel> fetchGroupDetailsAndParticipants(String groupId) async {
+  Future<GroupDetailsModel> fetchGroupDetailsAndParticipants(String groupId) async {
     // Prendi dettagli gruppo e partecipanti (join con profiles)
     final res = await supabase
       .from('groups')
@@ -23,24 +28,24 @@ class GroupService {
       .eq('id', groupId)
       .single();
 
-    return GroupModel.fromMap(res);
+    return GroupDetailsModel.fromMap(res);
   }
 
-  Future<GroupModel> createGroup({ required String name, String? description }) async {
+  Future<GroupDetailsModel> createGroup({ required String name, String? description }) async {
     try {
       final res = await supabase
         .from('groups')
         .insert({'name': name, 'description': description})
         .select()
         .single();
-      return GroupModel.fromMap(res);
+      return GroupDetailsModel.fromMap(res);
     } 
     catch (e) {
       throw GroupException("Impossibile creare il gruppo: $e");
     }
   }
 
-  Future<GroupModel> updateGroup({ 
+  Future<GroupDetailsModel> updateGroup({ 
     required String id, 
     required String name, 
     String? description,
@@ -56,7 +61,7 @@ class GroupService {
         'p_participants_to_add': participantsToAdd?.map((u) => u.userId).toList() ?? [],
         'p_participants_to_remove': participantsToRemoveIds ?? [],
       }).single();
-      return GroupModel.fromMap(res);
+      return GroupDetailsModel.fromMap(res);
     }
     catch (e) {
       throw GroupException("Impossibile aggiornare il gruppo: $e");

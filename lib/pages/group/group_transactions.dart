@@ -1,12 +1,16 @@
 
+import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/dialog_transactions_balance_widget.dart';
 import 'package:Billy/pages/group/components/dialog_transactions_details_widget.dart';
+import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
+import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
-import 'package:Billy/models/group_model.dart';
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/pages/transaction/transaction_group_page.dart';
@@ -38,7 +42,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
   Map<String, GroupParticipantSummaryModel> _participantsSummary = {};
   List<GroupTransactionModel> _groupTransactions = [];
-  GroupModel? _groupDetails;
+  late GroupDetailsModel _groupDetails;
 
   int _currentPage = 0;
 
@@ -47,6 +51,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   bool _isLoadingContent = false;
   bool _isLoadingPage = false;
   bool _hasMore = true;
+  bool _showFilters = false;
   String _searchText = '';
   String _groupName = '-';
   String? _errorMessage;
@@ -57,6 +62,12 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+
+    setState(() {
+      _isLoadingPage = false;
+      _hasMore = true;
+      _showFilters = false;
+    });
 
     _loadData(reset: true);
   }
@@ -85,8 +96,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     return count;
   }
 
-  void _filterTransactions({bool reset = false}) async {
-    // TODO: d_participantsSummarya implementare filtro spese
+  void _filterTransactions({bool reset = false}) {
+    setState(() {
+      _showFilters = !_showFilters;
+    });
   }
 
   void _filterTimeTransactions({required TimeFilterEnum filter}) async {
@@ -110,7 +123,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       _isComputingUsersSummary = true;
     });
 
-    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails?.participants ?? []);
+    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails.participants);
+    log.fine('Computed participants summary: $_participantsSummary');
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
@@ -138,26 +152,26 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     }
 
     try {
-      final groupDetails = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
+      _groupDetails = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
 
       if (mounted) {
         setState(() {
           if (reset) {
-            _groupTransactions = groupDetails.transactions;
+            _groupTransactions = _groupDetails.transactions;
 
-            _groupName = (groupDetails.name.isNotEmpty) ? groupDetails.name : '-';
+            _groupName = (_groupDetails.name.isNotEmpty) ? _groupDetails.name : '-';
             _isLoadingPage = false;
           } 
           else {
-            _groupTransactions.addAll(groupDetails.transactions);
+            _groupTransactions.addAll(_groupDetails.transactions);
             _isLoadingContent = false;
           }
           _handleUsersSummary();
-          _groupParticipantsCnt = groupDetails.participants.length;
+          _groupParticipantsCnt = _groupDetails.participants.length;
           _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
           
           log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupTransactionsBalanceCnt: $_groupTransactionsBalanceCnt');
-          _hasMore = groupDetails.transactions.length == _pageSize;            
+          _hasMore = _groupDetails.transactions.length == _pageSize;            
           if (_hasMore) {
             _currentPage++;
           }
@@ -205,27 +219,27 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     );
   }
 
-  void _openSummaryDetailsDialog() {
-    showDialog(
+  void _openSummaryDetailsBottomSheet() {
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return DialogTransactionsDetailsWidget(
-          title: 'Riepilogo partecipanti',
-          participantsSummary: _participantsSummary,
-        );
-      },
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+      builder: (BuildContext context) => TransactionsDetailsBottomSheetWidget(
+        title: 'Riepilogo partecipanti',
+        participantsSummary: _participantsSummary,
+      ),
     );
   }
 
-  void _openSummaryTransactionDialog() {
-    showDialog(
+  void _openSummaryTransactionBottomSheet() {
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return DialogTransactionsBalanceWidget(
-          title: 'Riepilogo saldo',
-          participantsSummary: _participantsSummary,
-        );
-      },
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+      builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
+        title: 'Riepilogo saldo',
+        participantsSummary: _participantsSummary,
+      ),
     );
   }
 
@@ -233,22 +247,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   Widget build(BuildContext context) {    
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text('Spese: $_groupName'),
-            ),
-            const SizedBox(width: 5),
-            IconButton(
-              icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG'),
-              tooltip: 'Impostazioni Gruppo',
-              onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
-            ),
-          ],
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: _isLoadingPage
         ? Center(
             child: Column(
@@ -257,7 +256,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
             ),
           )
         : Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
             child: Column(
               children: [
                 // Page Header
@@ -284,21 +283,14 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                   ],
                 ),
                 
+                _animatedTimeFilters(),
+
                 // Alert errore
                 if (_errorMessage != null) ...[
                   ErrorAlertWidget(errorMessage: _errorMessage!),
                 ]
                 else ...[
-                  // TODO: NOT USED FOR NOW, DA IMPLEMENTARE FILTRO PER DATA
-                  // Page Header "subtitle"
-                  // const SizedBox(height: 4),
-                  // TimeFilterWidget(
-                  //   timeFilters: [ TimeFilterEnum.ONE_DAY, TimeFilterEnum.ONE_WEEK, TimeFilterEnum.ONE_MONTH, TimeFilterEnum.ONE_YEAR ],
-                  //   onPressed: (filter) => _filterTimeTransactions(filter: filter),
-                  // ),
-
                   // How much user owes or is owed
-                  // v2:                  
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -306,73 +298,22 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                       Expanded(
                         child: CustomButtonWidget(
                           text: "Utenti: $_groupParticipantsCnt", 
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                           iconData: Icons.trending_up, 
-                          onPressed: _openSummaryDetailsDialog
+                          onPressed: _openSummaryDetailsBottomSheet
                         )
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: CustomButtonWidget(
                           text: "Da saldare: $_groupTransactionsBalanceCnt", 
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                           iconData: Icons.monetization_on_outlined, 
-                          onPressed: _openSummaryTransactionDialog
+                          onPressed: _openSummaryTransactionBottomSheet
                         )
                       ),
                     ],
                   ),
-
-                  // v1: 
-                  // const SizedBox(height: 4),
-                  // Card(
-                  //   shape: RoundedRectangleBorder(
-                  //     side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                  //     borderRadius: BorderRadius.circular(12),
-                  //   ),
-                  //   child: ExpansionTile(
-                  //     title: Text("Riepilogo utenti (${_groupDetails?.participants.length ?? 0})", style: const TextStyle(fontWeight: FontWeight.w500)),
-                  //     children: [
-                  //       SizedBox(
-                  //         height: 100,
-                  //         child: _isComputingUsersSummary
-                  //           ? const LoadingScaffold(message: 'Caricamento dettagli...')
-                  //           : _participantsSummary.isEmpty
-                  //             ? const Center(child: Text('Nessun utente presente'))
-                  //             : SingleChildScrollView(
-                  //                 scrollDirection: Axis.horizontal,
-                  //                 child: SingleChildScrollView(
-                  //                   scrollDirection: Axis.vertical,
-                  //                   child: DataTable(
-                  //                     columns: [
-                  //                       DataColumn(label: Text('Nome')),
-                  //                       DataColumn(label: Text('Versati')),
-                  //                       DataColumn(label: Text('Spesi')),
-                  //                       DataColumn(label: Text('Da Incassare (lordi)')),
-                  //                       DataColumn(label: Text('Da Incassare (netti)')),
-                  //                       DataColumn(label: Text('Azioni')),
-                  //                     ],
-                  //                     rows: _participantsSummary.values.map((e) => DataRow(cells: [
-                  //                       DataCell(Text(e.profile.name)),
-                  //                       DataCell(Text(e.paidAmountGroup.toStringAsFixed(2))),
-                  //                       DataCell(Text(e.paidAmountItself.toStringAsFixed(2))),
-                  //                       DataCell(Text(e.toReceiveGross.toStringAsFixed(2))),
-                  //                       DataCell(Text(e.toReceiveNet.toStringAsFixed(2))),
-                  //                       DataCell(
-                  //                         IconButton(
-                  //                           icon: const Icon(Icons.info_outline),
-                  //                           tooltip: 'Dettagli',
-                  //                           onPressed: () => _openSummaryDialog(),
-                  //                         ),
-                  //                       ),
-                  //                     ])).toList(),
-                  //                   ),
-                  //                 ),
-                  //               )
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
                   
                   // Page Content
                   Expanded(
@@ -460,7 +401,49 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
               ],
             ),
           ),
+    );
+  }
 
+  Widget _animatedTimeFilters() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          axis: Axis.vertical,
+          child: child,
+        ),
+      ),
+      child: _showFilters
+        ? Container(
+            key: const ValueKey('filters'),
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
+            child: TimeFilterWidget(
+              timeFilters: [
+                TimeFilterEnum.ONE_DAY,
+                TimeFilterEnum.ONE_WEEK,
+                TimeFilterEnum.ONE_MONTH,
+                TimeFilterEnum.ONE_YEAR
+              ],
+              onPressed: (filter) => _filterTimeTransactions(filter: filter),
+            ),
+          )
+        : const SizedBox.shrink(key: ValueKey('nofilters')),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Text('Spese: $_groupName'),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
+      actions: [
+        IconButton(
+          icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG'),
+          tooltip: 'Impostazioni Gruppo',
+          onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
+        ),
+      ],
     );
   }
 }

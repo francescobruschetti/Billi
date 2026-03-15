@@ -1,14 +1,14 @@
+import 'package:Billy/models/group_details_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:Billy/models/group_model.dart';
 import 'package:Billy/services/group_service.dart';
 
 final groupServiceProvider = Provider((ref) => GroupService());
 
-final groupsProvider = StateNotifierProvider<GroupsNotifier, AsyncValue<List<GroupModel>>>(
+final groupsProvider = StateNotifierProvider<GroupsNotifier, AsyncValue<List<GroupDetailsModel>>>(
   (ref) => GroupsNotifier(ref.read(groupServiceProvider)),
 );
 
-class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupModel>>> {
+class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupDetailsModel>>> {
   final GroupService _service;
 
   GroupsNotifier(this._service) : super(const AsyncLoading()) {
@@ -41,12 +41,12 @@ class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupModel>>> {
     }
   }
 
-  void addGroupLocally(GroupModel newGroup) {
+  void addGroupLocally(GroupDetailsModel newGroup) {
     state = state.whenData((groups) => [newGroup, ...groups]);
   }
 
   // Aggiornamento ottimistico locale — nessuna chiamata al server
-  void updateGroupLocally(GroupModel updated) {
+  void updateGroupLocally(GroupDetailsModel updated) {
     state = state.whenData((groups) => [
       for (final g in groups)
         if (g.id == updated.id) updated else g,

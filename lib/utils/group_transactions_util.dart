@@ -43,10 +43,6 @@ class GroupTransactionsUtil {
   {    
     Map<String, GroupParticipantSummaryModel> summary = {};
 
-    if (transactions.isEmpty) {
-      log.info("No transactions found for group. Returning empty summary.");
-      return summary;
-    }
     if (participants.isEmpty) {
       log.warning("Number of participants is zero or negative. Defaulting to 1 to avoid division by zero.");
       return summary;
@@ -54,6 +50,11 @@ class GroupTransactionsUtil {
     
     // Step 1 - Initialize participants summary
     initParticipantsSummary(summary, participants);
+
+    if (transactions.isEmpty) {
+      log.info("No transactions found for group. Returning empty summary.");
+      return summary;
+    }
 
     // Step 2 - Compute total amount and update summary with active payments
     double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, transactions);

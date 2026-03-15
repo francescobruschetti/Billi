@@ -3,6 +3,18 @@ import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/widgets/components/dialog_widget.dart';
 import 'package:flutter/material.dart';
 
+/* To be used with:
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return DialogTransactionsBalanceWidget(
+        title: 'Riepilogo saldo',
+        participantsSummary: _participantsSummary,
+      );
+    },
+  );
+*/
+
 class DialogTransactionsBalanceWidget extends StatelessWidget {
   final String? title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
@@ -16,7 +28,7 @@ class DialogTransactionsBalanceWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DialogWidget(
-          title: 'Riepilogo saldo',
+          title: title,
           customContent: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
