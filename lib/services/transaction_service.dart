@@ -82,7 +82,7 @@ class TransactionService {
     return rows;
   }
 
-  Future<GroupDetailsModel> fetchGroup({required String groupId, required int pageIndex, int pageSize = 50}) async {
+  Future<GroupDetailsModel> fetchGroup({required String groupId}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
       final result = await supabase
@@ -101,7 +101,9 @@ class TransactionService {
         .eq('id', groupId)
         .single();
 
-      return GroupDetailsModel.fromMap(result);
+      final group = GroupDetailsModel.fromMap(result);
+      group.transactions.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return group;
     }
     catch (e) {
       log.severe("Error fetching group details: $e");

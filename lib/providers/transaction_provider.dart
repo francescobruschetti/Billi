@@ -26,7 +26,7 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyn
   }
 
   // Refresh forzato dall'utente (pull-to-refresh)
-  Future<void> refresh() => _loadFromServer(pageIndex: 0);
+  Future<void> refresh() => _loadFromServer(pageIndex: 0, pageSize: 50);
 
   void addGroupLocally(Map<String, dynamic> newGroup) {
     state = state.whenData((transactions) => [newGroup, ...transactions]);

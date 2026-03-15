@@ -66,13 +66,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
 
   Future<void> _deleteGroup(String groupId) async {
     try {
-      final res = await GroupService().deleteGroup(groupId);
+      await GroupService().deleteGroup(groupId);
       ref.read(groupsProvider.notifier).removeGroupLocally(groupId);
 
       ScaffoldMessenger.of(context).showSnackBar(
         CustomSnackBarWidget(text: 'Grouppo eliminato').build(context),
       );
-      _navigatePop();    
+      _navigatePop(result: { 'deleteGroupId': groupId});    
     } 
     catch (e) {
       if (mounted) {
@@ -173,8 +173,8 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     }
   }
 
-  void _navigatePop() {
-    Navigator.of(context).pop();
+  void _navigatePop({Map<String, dynamic>? result}) {
+    Navigator.of(context).pop(result);
   }
 
   void _onNameChanged() {

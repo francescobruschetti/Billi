@@ -1,3 +1,4 @@
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,7 +17,7 @@ class LogoutPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Logout')),
       body: Center(
         child: ElevatedButton.icon(
-          icon: const Icon(Icons.logout),
+          icon: const CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24),
           label: const Text('Logout'),
           onPressed: () => _logout(context),
         ),

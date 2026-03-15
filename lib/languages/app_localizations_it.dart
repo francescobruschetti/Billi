@@ -23,7 +23,7 @@ class AppLocalizationsIt extends AppLocalizations {
       locale: localeName,
       other: '$countString wombats',
       one: '1 wombat',
-      zero: 'no wombats',
+      zero: 'nessun wombat',
     );
     return '$_temp0';
   }
@@ -33,6 +33,6 @@ class AppLocalizationsIt extends AppLocalizations {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);
 
-    return 'Hello World on $dateString';
+    return 'Ciao Mondo il $dateString';
   }
 }

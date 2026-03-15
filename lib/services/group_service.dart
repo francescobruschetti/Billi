@@ -68,11 +68,11 @@ class GroupService {
     }
   }
 
-  Future<dynamic> deleteGroup(String groupId) async {
-    final res = await supabase
+  Future<void> deleteGroup(String groupId) async {
+    await supabase
       .from('groups')
       .delete()
       .eq('id', groupId);
-    return res;
+    return;
   }
 }

@@ -146,6 +146,16 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     pageTitle = isEdit ? 'Modifica Spesa di Gruppo' : 'Inserisci Spesa Gruppo';
   }
 
+  Future<bool> _confirmSave({required String message}) async {
+    // Mostra dialog di conferma
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => _buildConfirmDialog(context, message: message),
+    );
+
+    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
+  }
+
   Future<void> _loadExistingTransaction(String transactionId) async {
     setState(() {
       _isLoading = true;
@@ -181,7 +191,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
   
   Future<void> _saveTransaction() async {
-    log.fine("Saving transaction with groupId: ${_selectedGroup?.id}, price: ${_priceController.text}, paidAmount: ${_paidAmountController.text}, splitRate: $_selectedSplitRateValue, merchant: ${_merchantController.text}, categories: ${_categoriesController.text}, note: ${_noteController.text}");
     if (mounted) {
       setState(() {
         _errorMessage = null;
@@ -190,11 +199,30 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     }
 
     try {
+      if (_paidAmountController.text.isEmpty && _selectedSplitRateValue == null) {
+        throw Exception("Devi specificare una quota pagata o un tasso di divisione");
+      }
+
+      double formattedPrice = _formatPriceInput();
+      double? paidAmount;
+      if (_paidAmountController.text.isNotEmpty) {
+        paidAmount = double.tryParse(_paidAmountController.text.replaceAll(',', '.')) ?? 0.0;
+        if (paidAmount > formattedPrice) {
+          final bool proceed = await _confirmSave(message: "La quota pagata è maggiore del totale. Vuoi procedere comunque?");
+          if (!proceed) {
+            setState(() {
+              _isSaveEnabled = true;
+            });
+            return; // Esci dalla funzione senza salvare
+          }
+        }
+      }
+
       if (isEdit) { // Logica di salvataggio modifica gruppo
         await TransactionService().updateGroupTransaction(
           groupId: _selectedGroup!.id,
           transactionId: widget.transactionId!,
-          price: _formatPriceInput(),
+          price: formattedPrice,
           transactionType: TransactionTypeEnum.EXPENSE, // TODO: da impostare in base alla selezione dell'utente
           merchant: _merchantController.text.trim(),
           categories: _categoriesController.text.trim(),
@@ -204,10 +232,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       else { // Logica di creazione nuovo gruppo
         await TransactionService().createGroupTransaction(
           groupId: _selectedGroup!.id,
-          price: _formatPriceInput(),
+          price: formattedPrice,
           transactionType: TransactionTypeEnum.EXPENSE, // TODO: da impostare in base alla selezione dell'utente
           splitRate: _selectedSplitRateValue,
-          paidAmount: double.tryParse(_paidAmountController.text.replaceAll(',', '.')),
+          paidAmount: paidAmount,
           merchant: _merchantController.text.trim(),
           categories: _categoriesController.text.trim(),
           note: _noteController.text.trim(),
@@ -321,7 +349,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          // TODO: onPressed: (_transactionInsertMode != TransactionInsertModeEnum.SPLIT_RATE) ? () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID) : null,
                           onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
                           child: const Text('Specifica quota'),
                         ),
@@ -341,7 +368,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                           ),
-                          // TODO: onPressed: (_transactionInsertMode != TransactionInsertModeEnum.FIX_PAID) ? () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE) : null,
                           onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
                           child: const Text('Dividi spesa'),
                         ),
@@ -394,6 +420,24 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       ),    
     );      
   }
+
+  Widget _buildConfirmDialog(BuildContext context, {required String message}) {
+    return AlertDialog(
+      title: const Text('Conferma salvataggio'),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Conferma'),
+        ),
+      ]
+    );
+  }
+
   Widget _buildErrorAlert() {
     return Container(
       width: double.infinity,
@@ -681,4 +725,5 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       ],
     );
   }
+
 }

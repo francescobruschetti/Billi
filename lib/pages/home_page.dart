@@ -29,7 +29,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   late BalanceDetailsModel _balanceDetails = BalanceDetailsModel(totalBalance: 0, totalExpenses: 0, totalIncomes: 0);
 
   final int _currentPage = 0;
-  final int _pageSize = 50;
+  final int _pageSize = 5;
   bool _isLoading = false;
   bool _hasMore = true;
   bool _showFilters = false;
@@ -82,7 +82,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     )
     .then((result) {
       if (result == true) {
-        // TODO: x: _loadTransactions(reset: true);
+        ref.read(transactionProvider.notifier).refresh();
       }
     });
   }
@@ -167,7 +167,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
+      onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
       child: ListView.builder(
         itemCount: transactions.length,
         itemBuilder: (context, index) => _buildTransactionTile(transactions[index]),
@@ -265,7 +265,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Aggiorna',
-            onPressed: () => ref.read(transactionProvider.notifier).refresh() // TODO: x: _loadTransactions(reset: true),
+            onPressed: () => ref.read(transactionProvider.notifier).refresh(),
           ),
           IconButton(
             icon: const Icon(Icons.filter_list),

@@ -2,8 +2,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
-import 'package:Billy/pages/group/components/dialog_transactions_balance_widget.dart';
-import 'package:Billy/pages/group/components/dialog_transactions_details_widget.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
@@ -44,13 +42,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   List<GroupTransactionModel> _groupTransactions = [];
   late GroupDetailsModel _groupDetails;
 
-  int _currentPage = 0;
-
-  final int _pageSize = 50;
-  bool _isComputingUsersSummary = true;
   bool _isLoadingContent = false;
   bool _isLoadingPage = false;
-  bool _hasMore = true;
   bool _showFilters = false;
   String _searchText = '';
   String _groupName = '-';
@@ -65,7 +58,6 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
     setState(() {
       _isLoadingPage = false;
-      _hasMore = true;
       _showFilters = false;
     });
 
@@ -119,16 +111,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   }
 
   void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate transactions e group details hanno caricato i dati necessari
-    setState(() {
-      _isComputingUsersSummary = true;
-    });
-
     _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails.participants);
-    log.fine('Computed participants summary: $_participantsSummary');
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
-      _isComputingUsersSummary = false;
     });
   }
 
@@ -146,13 +132,11 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       });
     }
     if (reset) {
-      _currentPage = 0;
-      _hasMore = true;
       _groupTransactions.clear();
     }
 
     try {
-      _groupDetails = await service.fetchGroup(groupId: widget.groupId, pageIndex: _currentPage, pageSize: _pageSize);
+      _groupDetails = await service.fetchGroup(groupId: widget.groupId);
 
       if (mounted) {
         setState(() {
@@ -171,10 +155,6 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
           _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
           
           log.fine('reset: $reset, _groupParticipantsCnt: $_groupParticipantsCnt, _groupTransactionsBalanceCnt: $_groupTransactionsBalanceCnt');
-          _hasMore = _groupDetails.transactions.length == _pageSize;            
-          if (_hasMore) {
-            _currentPage++;
-          }
         });
       }
     } 
@@ -205,7 +185,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || _isLoadingPage || !_hasMore) return;
+    if (!_scrollController.hasClients || _isLoadingPage) return;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll) {
@@ -216,7 +196,12 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   void _openPage(StatefulWidget widget) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => widget),
-    );
+    ).then((result) {
+      log.fine('Result from page: $result');
+      if (result?['deleteGroupId'] != null) {
+        Navigator.of(context).pop(result);
+      }
+    });
   }
 
   void _openSummaryDetailsBottomSheet() {
