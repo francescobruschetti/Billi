@@ -28,12 +28,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   final ScrollController _scrollController = ScrollController();
   late BalanceDetailsModel _balanceDetails = BalanceDetailsModel(totalBalance: 0, totalExpenses: 0, totalIncomes: 0);
 
-  final int _currentPage = 0;
-  final int _pageSize = 5;
   bool _isLoading = false;
-  bool _hasMore = true;
+  bool _hasMore = false;
   bool _showFilters = false;
-
+  
   @override
   void initState() {
     super.initState();
@@ -41,8 +39,16 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     setState(() {
       _isLoading = false;
-      _hasMore = true;
+      _hasMore = false;
       _showFilters = false;
+    });
+
+    // Carica i primi N elementi all'avvio
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = ref.read(transactionProvider);
+      if (state is AsyncLoading) {
+        ref.read(transactionProvider.notifier).loadMore(reset: true);
+      }
     });
   }
 
@@ -88,11 +94,21 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || _isLoading || !_hasMore) return;
+    if (!_scrollController.hasClients || _isLoading) return;
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    if (currentScroll >= maxScroll) {
-      // TODO: x: _loadTransactions();
+
+    // Carica altri elementi quando si arriva in fondo
+    if (currentScroll >= maxScroll - 50) {
+      setState(() {
+        _hasMore = true;
+      });
+      ref.read(transactionProvider.notifier).loadMore().then( (_) {
+        setState(() {
+          _hasMore = false;
+        });
+      });
     }
   }
 
@@ -120,7 +136,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _animatedTimeFilters(),
 
                 // Page Content
-                _buildPageContent(transactions),
+                _buildList(transactions),
                               
                 // Page footer
                 const SizedBox(height: AppConstants.rowVerticalPadding),
@@ -166,36 +182,48 @@ class _HomePageState extends ConsumerState<HomePage> {
       return const Center(child: Text('Nessuna spesa trovata'));
     }
 
-    return RefreshIndicator(
-      onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
-      child: ListView.builder(
-        itemCount: transactions.length,
-        itemBuilder: (context, index) => _buildTransactionTile(transactions[index]),
-      ),
-    );
-  }
-
-  Widget _buildPageContent(List<Map<String, dynamic>> transactions) {
     return Expanded(
-      child: 
-        _buildList(transactions),
-        /* TODO: x:_isLoading 
-        ? const LoadingScaffold(message: 'Caricamento spese...')
-        : transactions.isEmpty
-          ? const Center(child: Text('Nessuna spesa presente'))
-          : NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                if (scrollNotification is ScrollEndNotification) {
-                  _onScroll();
-                }
-                return false;
-              },
-              child: RefreshIndicator(
-                onRefresh: () => ref.read(transactionProvider.notifier).refresh(), // TODO: x: _loadTransactions(reset: true),
-                child: _buildList(transactions),
-              ),
-            ),
-        */
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification is ScrollEndNotification) {
+            _onScroll();
+          }
+          return false;
+        },
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
+          child: ListView.builder(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: transactions.length + 1, // +1 per il loader in fondo
+            itemBuilder: (context, index) {
+              if (index < transactions.length) {
+                return _buildTransactionTile(transactions[index]);
+              }
+
+              // Mostra il loader in fondo se stiamo caricando più elementi
+              return Card(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_hasMore) ...[
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ]
+                  ],
+                ),
+              );
+            }
+          ),
+        ),
+      ),
     );
   }
 
@@ -218,7 +246,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _footer() {
     return Container(
       // debug UI: color: Colors.red,
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.zeroPadding),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),
       child: Row(
         children: [
           Expanded(
@@ -256,11 +284,19 @@ class _HomePageState extends ConsumerState<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: SelectableText(
-              'Saldo (${transactions.length}): ${_balanceDetails.totalBalance}€',
-              style: Theme.of(context).textTheme.headlineSmall,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Bilancio', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 8),
+                SelectableText(
+                  '${_balanceDetails.totalBalance}€',
+                  style: TextStyle(fontSize: 30),
+                ),
+              ],
             ),
           ),
+
           const SizedBox(width: 5),
           IconButton(
             icon: const Icon(Icons.refresh),

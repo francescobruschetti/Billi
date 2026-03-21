@@ -5,6 +5,7 @@ import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/group_transaction_card_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -186,6 +187,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
   void _onScroll() {
     if (!_scrollController.hasClients || _isLoadingPage) return;
+    
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (currentScroll >= maxScroll) {
@@ -331,8 +333,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                                   final merchant = e.merchant;
                                   final category = e.category;
 
-                                  return TransactionCardWidget(
-                                    isGroupTransaction: true,
+                                  return GroupTransactionCardWidget(
                                     merchantName: merchant?.name,
                                     categoryName: category?.name,
                                     formattedDateTime: formattedDateTime,

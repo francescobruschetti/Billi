@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 
-class TransactionCardWidget extends StatelessWidget {
+class GroupTransactionCardWidget extends StatelessWidget {
   final String? merchantName;
   final String? categoryName;
   final String formattedDateTime;
@@ -14,7 +14,7 @@ class TransactionCardWidget extends StatelessWidget {
   final String? splitRate;
   final double? paidAmount;
 
-  const TransactionCardWidget({
+  const GroupTransactionCardWidget({
     super.key,
     this.merchantName,
     this.categoryName,
@@ -53,7 +53,7 @@ class TransactionCardWidget extends StatelessWidget {
                   if (merchantName != null) Text(merchantName!, style: const TextStyle(fontWeight: FontWeight.w500)),
                 ],
               ),
-              if (profileModel != null) ...[
+              if (profileModel != null) 
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -61,17 +61,13 @@ class TransactionCardWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(profileModel!.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                   ],
-                ),
-              ],
+                ),           
             ],
           ),
           subtitle: Text(formattedDateTime, style: const TextStyle(fontSize: 12)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (note != null && note!.isNotEmpty) ...[
-                Icon(Icons.note, color: Colors.yellow[700], size: 20),
-              ],
               const SizedBox(width: 4),
               Text(
                 _formatAmount(totalAmount, transactionType), 
@@ -81,6 +77,7 @@ class TransactionCardWidget extends StatelessWidget {
                   color: transactionType == TransactionTypeEnum.INCOME ? Colors.green : Colors.red,
                 )
               ),
+              Icon(Icons.expand_more, color: Colors.grey.shade600),
             ],
           ),
           children: [
@@ -98,6 +95,42 @@ class TransactionCardWidget extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (paidAmount != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: 
+                                SelectableText('Importo pagato: €${paidAmount!.toStringAsFixed(2)}',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )
+                                ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: 
+                                SelectableText('Importo mancante: €${(totalAmount - (paidAmount ?? 0)).toStringAsFixed(2)}', 
+                                  textAlign: TextAlign.left, 
+                                  style: TextStyle(
+                                    color: (totalAmount - (paidAmount ?? 0)) > 0 ? Colors.red : Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  )
+                                ),
+                            ),
+                          ),
+                        if (splitRate != null)
+                          Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Percentuale di suddivisione: $splitRate', textAlign: TextAlign.left),
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Align(

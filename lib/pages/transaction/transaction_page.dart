@@ -1,5 +1,7 @@
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/services/transaction_service.dart';
@@ -169,16 +171,16 @@ class _TransactionPageState extends State<TransactionPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: CupertinoTextField(
                         controller: _priceController,
                         keyboardType: TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
                         ],
-                        decoration: const InputDecoration(
-                          labelText: 'Prezzo',
-                          suffixIcon: Icon(Icons.euro),
-                          suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                        placeholder: 'Prezzo',
+                        prefix: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Icon(Icons.euro, size: 20, color: Colors.blueGrey),
                         ),
                         onChanged: (value) => _formatPriceInput(),
                       ),
@@ -189,24 +191,36 @@ class _TransactionPageState extends State<TransactionPage> {
                 // -- Negozio
                 if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
                   const SizedBox(height: 8),
-                  TextField(
+                  CupertinoTextField(
                     controller: _merchantController,
-                    decoration: const InputDecoration(labelText: 'Negozio'),
+                    placeholder: 'Negozio',
+                    prefix: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 20, color: Colors.blueGrey),
+                    ),
                   ),
                 ],
                 
                 // -- Categorie
                 const SizedBox(height: 8),
-                TextField(
+                CupertinoTextField(
                   controller: _categoriesController,
-                  decoration: const InputDecoration(labelText: 'Categorie'),
+                  placeholder: 'Categorie',
+                  prefix: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
+                  ),
                 ),
                 
                 // -- Note
                 const SizedBox(height: 8),
-                TextField(
+                CupertinoTextField(
                   controller: _noteController,
-                  decoration: const InputDecoration(labelText: 'Note'),
+                  placeholder: 'Note',
+                  prefix: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(Icons.note, size: 20, color: Colors.blueGrey),
+                  ),
                 ),
 
                 // Alert errore

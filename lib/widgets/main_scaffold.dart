@@ -1,4 +1,5 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/pages/settings.dart';
 import 'package:Billy/pages/ui_prove_page.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
     GroupsPage(),
+    SettingsPage(),
     UIProvePage(),
   ];
 
@@ -27,10 +29,14 @@ class _MainScaffoldState extends State<MainScaffold> {
     return Scaffold(
       // debug UI: backgroundColor: Colors.pink[200],
       resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
-      appBar: AppBar(
-        title: const Text('Billy - Monitoraggio Spese'),
-        actions: [ ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Billy - Monitoraggio Spese'),
+      //   actions: [ ],
+      //   backgroundColor: Colors.red,
+      //   shape: const RoundedRectangleBorder(
+      //     borderRadius: BorderRadius.all(Radius.circular(20)),
+      //   ),
+      // ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -78,6 +84,10 @@ class _MainScaffoldState extends State<MainScaffold> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),
                   label: 'Gruppi',
+                ),
+                BottomNavigationBarItem(
+                  icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
+                  label: 'Settings',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.padding),

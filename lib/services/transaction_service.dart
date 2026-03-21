@@ -32,6 +32,8 @@ class TransactionService {
         'p_note': note,
         'p_transaction_type': transactionType.toValue(),
       }).select().single();
+
+      
       return result;
     } 
     catch (e) {
