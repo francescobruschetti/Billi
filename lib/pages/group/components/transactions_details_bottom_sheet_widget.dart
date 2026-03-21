@@ -6,6 +6,7 @@ class TransactionsDetailsBottomSheetWidget extends AppBottomSheet {
   static final ScrollController _verticalController = ScrollController();
   static final ScrollController _horizontalController = ScrollController();
 
+  @override
   final String? title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 

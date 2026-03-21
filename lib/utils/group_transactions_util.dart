@@ -120,12 +120,12 @@ class GroupTransactionsUtil {
         log.fine("Transaction ${transaction.id} has NO split rate.");
         summary[userId]?.increasePaidAmountGroup(paidAmountGroup);
         summary[userId]?.increasePaidAmountItself(paidAmountItself);
-        summary[userId]?.increasetoReceiveGross(paidAmountGroup - paidAmountItself);
+        summary[userId]?.increasetoReceiveGross(NumberUtil.roundToDecimals(value: paidAmountGroup - paidAmountItself));
       }
       totalAmount += paidAmountGroup;
     }
 
-    return totalAmount;
+    return NumberUtil.roundToDecimals(value: totalAmount);
   }
 
   // Compute how much each participant ows or should receive to balance the transactions, based on how much they paid
@@ -138,7 +138,11 @@ class GroupTransactionsUtil {
           continue; // Skip self
         }
 
-        movementAmount = NumberUtil.roundToTwoDecimals(value: (otherUserSummary.toReceiveGross / (summary.length - 1)));
+        movementAmount = NumberUtil.roundToDecimals(value: (otherUserSummary.toReceiveGross / (summary.length - 1)));
+        if (movementAmount == 0) {
+          continue; // Skip movements of zero amount
+        }
+        
         toReceiveNet += movementAmount;
         userSummary.movements.add(
           GroupTransactionSummaryBalanceMovementModel(
@@ -149,7 +153,7 @@ class GroupTransactionsUtil {
         );
       }
 
-      userSummary.toReceiveNet = NumberUtil.roundToTwoDecimals(value: userSummary.toReceiveGross - toReceiveNet);
+      userSummary.toReceiveNet = NumberUtil.roundToDecimals(value: userSummary.toReceiveGross - toReceiveNet);
     }
   }
 
@@ -159,9 +163,14 @@ class GroupTransactionsUtil {
       GroupParticipantSummaryModel currentUser = balanceMovements[i];
       GroupParticipantSummaryModel lastUser = balanceMovements.last;
 
-      // TODO: IMPORTANTE: Questa funziona gestisce MALE gli arrotondamenti.... Bisogna gestire meglio gli arrotondamenti per evitare che rimangano piccoli importi da pagare o ricevere che non vengono gestiti correttamente e che portano a movimenti non ottimali
+      /* IMPORTANTE: Questa funzione gestisce MALE gli arrotondamenti. 
+      * Il controll if (diff.abs() <= 0.01) permette di considerare resti di 0.01 come bilanciati */
 
-      double diff = NumberUtil.roundToTwoDecimals(value: currentUser.toReceiveNet + lastUser.toReceiveNet);
+      double diff = NumberUtil.roundToDecimals(value: currentUser.toReceiveNet + lastUser.toReceiveNet);
+      if (diff.abs() <= 0.01) {
+        diff = 0; // Considera il debito come completamente bilanciato se la differenza è inferiore a 1 centesimo
+      }
+      
       if (diff < 0) {
         summary[currentUser.userId]?.balanceMovements.add(
           GroupTransactionSummaryBalanceMovementModel(
