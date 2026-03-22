@@ -3,6 +3,7 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:Billy/providers/transaction_provider.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/balance_bar_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
@@ -307,6 +308,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filtra',
             onPressed: () => _filterTransactions(reset: true),
+          ),
+          IconButton(
+            icon: const Icon(Icons.pie_chart),
+            tooltip: 'Statistiche',
+            onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare pagina statistiche
           ),
         ],
       ),

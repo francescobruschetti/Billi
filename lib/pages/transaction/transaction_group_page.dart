@@ -4,7 +4,9 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
+import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/enums/split_rate_mode_enum.dart';
@@ -243,11 +245,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       }
     
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSnackBarWidget( 
-            text: isEdit ? "Dati aggiornati" : "Dati salvati",
-          ).build(context),
-        );
+        GenericUtil.showSnackbar(context, isEdit ? "Dati aggiornati" : "Dati salvati");
         Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
       }
     }
@@ -407,7 +405,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
 
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  _buildErrorAlert(),
+                  ErrorAlertWidget(errorMessage: _errorMessage!),
                 ],
                 
                 // Save/Cancel buttons
@@ -435,31 +433,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
           child: const Text('Conferma'),
         ),
       ]
-    );
-  }
-
-  Widget _buildErrorAlert() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        border: Border.all(color: Colors.red, width: 2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

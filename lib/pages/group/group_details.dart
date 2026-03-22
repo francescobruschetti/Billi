@@ -2,7 +2,11 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
+import 'package:Billy/widgets/components/custom_textfield_widget.dart';
+import 'package:Billy/widgets/components/error_alert_widget.dart';
+import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -65,19 +69,27 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   }
 
   Future<void> _deleteGroup(String groupId) async {
+    final confirmed = await GenericUtil.showConfirmationBeforeDeleteDialog(
+      context, 
+      'Conferma eliminazione', 
+      "Sei sicuro di voler eliminare questo gruppo e tutti i dati associati?\nL'operazione non è reversibile.",
+      confirmButtonText: 'Elimina',
+      cancelButtonText: 'Annulla');
+    if (confirmed != true) return;
+
     try {
       await GroupService().deleteGroup(groupId);
       ref.read(groupsProvider.notifier).removeGroupLocally(groupId);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomSnackBarWidget(text: 'Grouppo eliminato').build(context),
-      );
+      if (!mounted) return; // To ensure that "context" is still valid after using "await"
+      GenericUtil.showSnackbar(context, 'Gruppo eliminato');
       _navigatePop(result: { 'deleteGroupId': groupId});    
     } 
     catch (e) {
+      log.severe("Errore durante la cancellazione del gruppo: $e");
       if (mounted) {
         setState(() {
-          _errorMessage = 'Errore durante la cancellazione del grouppo: $e';
+          _errorMessage = 'Errore durante la cancellazione del gruppo';
           _showOnlyError = true;
         });
       }
@@ -99,11 +111,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       if (mounted) {
         setState(() {
           if (_existingUsers.any((u) => u.id == res.id)) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomSnackBarWidget( 
-                text: 'Utente ${res.username} già presente nel gruppo',
-              ).build(context),
-            );
+            GenericUtil.showSnackbar(context, 'Utente ${res.username} già presente nel gruppo');
             return; // Salta utenti già presenti nel gruppo
           }
           if (!_selectedUsers.any((u) => u.userId == res.id)) {
@@ -211,9 +219,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         ref.read(groupsProvider.notifier).updateGroupLocally(updated);
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSnackBarWidget(text: "Dati aggiornati correttamente").build(context),
-        );
+        GenericUtil.showSnackbar(context, "Dati aggiornati correttamente");
         _navigatePop();
       } 
       else { // Logica di creazione nuovo gruppo
@@ -225,9 +231,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         ref.read(groupsProvider.notifier).addGroupLocally(created);
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSnackBarWidget(text: "Gruppo creato con successo").build(context),
-        );
+        GenericUtil.showSnackbar(context, "Gruppo creato con successo");
         _openGroupDetails(created.id);
       }
     } 
@@ -258,7 +262,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         actions: [
           if (isEdit)
             IconButton(
-              icon: const Icon(Icons.delete, color: AppConstants.red),
+              icon: const Icon(Icons.delete_forever_rounded, color: AppConstants.red, size: 24),
               tooltip: 'Elimina gruppo',
               onPressed: () => _deleteGroup(widget.groupId!),
             ),
@@ -284,12 +288,12 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 // Campi di input
                 TextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Nome gruppo'),
+                  decoration: const InputDecoration(labelText: 'Nome gruppo', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 8),
-                TextField(
+                CustomTextFieldWidget(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Descrizione (opzionale)'),
+                  text: 'Descrizione (opzionale)',
                 ),
                 // if editing an existing group
                 if (widget.groupId != null) ...[
@@ -300,7 +304,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       Expanded(
                         child: TextField(
                           controller: _linkController,
-                          decoration: const InputDecoration(labelText: 'Link'),
+                          decoration: const InputDecoration(labelText: 'Link', border: OutlineInputBorder()),
                           readOnly: true,
                         ),
                       ),
@@ -309,20 +313,14 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                         tooltip: 'Copia',
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _linkController.text));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            CustomSnackBarWidget( 
-                              text: 'Link copiato negli appunti',
-                            ).build(context),
-                          );
+                          GenericUtil.showSnackbar(context, 'Link copiato negli appunti');
                         },
                       ),
-                      // IconButton(
-                      //   icon: const Icon(Icons.ios_share),
-                      //   tooltip: 'Condividi',
-                      //   onPressed: () {
-                      //     // TODO: implementa la logica di condivisione
-                      //   },
-                      // ),
+                      IconButton(
+                        icon: const Icon(Icons.ios_share),
+                        tooltip: 'Condividi',
+                        onPressed: () => GenericUtil.showSnackbar(context, 'Funzione di condivisione non ancora implementata'), // TODO: implementare condivisione link
+                      ),
                     ],
                   ),
                 
@@ -333,12 +331,8 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            hintText: 'Cerca utente per username o email',
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                          ),
+                        child: SearchFieldWidget(
+                          hintText: 'Cerca utente per username o email',
                           onChanged: (value) {
                             setState(() => _searchUser = value);
                           },
@@ -407,28 +401,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(top: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      border: Border.all(color: Colors.red, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ErrorAlertWidget(errorMessage: _errorMessage!),
                 ],
                 
                 // Save/Cancel buttons

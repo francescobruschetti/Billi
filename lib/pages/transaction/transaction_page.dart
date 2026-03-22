@@ -1,4 +1,5 @@
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -129,11 +130,7 @@ class _TransactionPageState extends State<TransactionPage> {
       }
     
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(      
-          CustomSnackBarWidget( 
-            text: isEdit ? "Dati aggiornati" : "Dati salvati",
-          ).build(context),
-        );
+        GenericUtil.showSnackbar(context, isEdit ? "Dati aggiornati" : "Dati salvati");
         Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
       }
     }

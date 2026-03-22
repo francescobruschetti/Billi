@@ -1,3 +1,4 @@
+import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,7 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _loading = false;
   bool _isFormValid = false;
-  String? _error;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -41,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     setState(() {
       _loading = true;
-      _error = null;
+      _errorMessage = null;
     });
     try {
       final res = await Supabase.instance.client.auth.signInWithPassword(
@@ -49,14 +50,14 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       );
       if (res.user == null) {
-        setState(() => _error = 'Login fallito');
+        setState(() => _errorMessage = 'Login fallito');
       }
       else {
         // Naviga alla homepage e rimuovi la pagina di login dallo stack
         Navigator.of(context).pushReplacementNamed('/');
       }
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _errorMessage = e.message);
     } finally {
       setState(() => _loading = false);
     }
@@ -74,29 +75,47 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset('assets/images/splash-screen-image_v1.png', height: 250),
+              
+              // Email input field
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
+              
+              // Password input field
+              const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 onSubmitted: (_) => _login(), // Permette di inviare il form premendo "Invio"
               ),
-              const SizedBox(height: 24),
-              if (_error != null)
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: (_loading || !_isFormValid) ? null : _login,
-                  child: _loading ? const CircularProgressIndicator() : const Text('Login'),
+              
+              // Error message
+              if (_errorMessage != null) ...[
+                ErrorAlertWidget(errorMessage: _errorMessage!),
+                const SizedBox(height: 4),
+              ],
+
+              // Login button
+              const SizedBox(height: 8),
+              if (_loading) ...[
+                const CircularProgressIndicator(),
+              ] else ...[
+                ElevatedButton(
+                  onPressed: _isFormValid ? _login : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
+                  ),
+                  child: const Text('Login'),
                 ),
-              ),
+              ],
+              
+              // Registration button
+              const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');

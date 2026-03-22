@@ -356,7 +356,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                       Expanded(
                         flex: 9,
                         child: SearchFieldWidget(
-                          text: 'Cerca spesa...',
+                          hintText: 'Cerca spesa...',
                           icon: Icons.search,
                           onChanged: (value) {
                             setState(() {
@@ -425,7 +425,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
       actions: [
         IconButton(
-          icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG'),
+          icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
           tooltip: 'Impostazioni Gruppo',
           onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
         ),

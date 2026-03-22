@@ -63,7 +63,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       actions: [
         Expanded(
           child: SearchFieldWidget(
-            text: 'Cerca gruppo...',
+            hintText: 'Cerca gruppo...',
             icon: Icons.search,
             onChanged: (value) => setState(() => _searchText = value),
           ),

@@ -32,32 +32,32 @@ class _MainScaffoldState extends State<MainScaffold> {
       // appBar: AppBar(
       //   title: const Text('Billy - Monitoraggio Spese'),
       //   actions: [ ],
-      //   backgroundColor: Colors.red,
-      //   shape: const RoundedRectangleBorder(
-      //     borderRadius: BorderRadius.all(Radius.circular(20)),
+      //   // backgroundColor: Colors.red,
+      //   // shape: const RoundedRectangleBorder(
+      //   //   borderRadius: BorderRadius.all(Radius.circular(20)),
+      //   // ),
+      // ),
+      // drawer: Drawer(
+      //   child: ListView(
+      //     padding: EdgeInsets.zero,
+      //     children: [
+      //       const DrawerHeader(
+      //         decoration: BoxDecoration(
+      //           color: Colors.blue,
+      //         ),
+      //         child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+      //       ),
+      //       ListTile(
+      //         leading: const CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24),
+      //         title: const Text('Logout'),
+      //         onTap: () {
+      //           Navigator.of(context).pop(); // Chiude il drawer
+      //           Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      //         },
+      //       ),
+      //     ],
       //   ),
       // ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
-            ),
-            ListTile(
-              leading: const CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.of(context).pop(); // Chiude il drawer
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-              },
-            ),
-          ],
-        ),
-      ),
       body: _pages[_currentIndex],
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),
@@ -86,8 +86,8 @@ class _MainScaffoldState extends State<MainScaffold> {
                   label: 'Gruppi',
                 ),
                 BottomNavigationBarItem(
-                  icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
-                  label: 'Settings',
+                  icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG', size: 24),
+                  label: 'Impostazioni',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.padding),
