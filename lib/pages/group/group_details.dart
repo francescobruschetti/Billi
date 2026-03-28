@@ -3,8 +3,6 @@ import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';
-import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
-import 'package:Billy/widgets/components/custom_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter/material.dart';
@@ -291,9 +289,9 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   decoration: const InputDecoration(labelText: 'Nome gruppo', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 8),
-                CustomTextFieldWidget(
+                TextField(
                   controller: _descriptionController,
-                  text: 'Descrizione (opzionale)',
+                  decoration: const InputDecoration(labelText: 'Descrizione (opzionale)', border: OutlineInputBorder()),
                 ),
                 // if editing an existing group
                 if (widget.groupId != null) ...[

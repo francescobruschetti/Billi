@@ -1,4 +1,5 @@
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logging/logging.dart';
@@ -36,13 +37,22 @@ class _SignupPageState extends State<SignupPage> {
 
   void _onFormChanged() {
     setState(() {
-      _isFormValid = _nameController.text.trim().isNotEmpty
-                    && _usernameController.text.trim().isNotEmpty 
+      _isFormValid = _usernameController.text.trim().isNotEmpty 
                     && _emailController.text.trim().isNotEmpty
                     && _passwordController.text.trim().isNotEmpty
                     && _repeatPasswordController.text.trim().isNotEmpty
                     && (_passwordController.text.trim() == _repeatPasswordController.text.trim());
     });
+  }
+
+  String? passwordsMatchErrorValidator(String value) {
+    if (_repeatPasswordController.text.trim().isEmpty) {
+      return 'Campo obbligatorio';
+    }
+    if (_passwordController.text.trim() != _repeatPasswordController.text.trim()) {
+      return 'Le password non corrispondono';
+    }
+    return null;
   }
 
   Future<void> _register() async {
@@ -65,7 +75,7 @@ class _SignupPageState extends State<SignupPage> {
       if (res.user == null) {
         setState(() => _error = 'Registrazione fallita');
       }      
-      else {
+      else if (mounted) {
         // Naviga alla login e rimuovi la pagina di registrazione dallo stack
         Navigator.of(context).pushReplacementNamed('/login');
       }
@@ -92,76 +102,86 @@ class _SignupPageState extends State<SignupPage> {
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Nome',
-                errorText: null, // TODO: _nameController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
+                border: const OutlineInputBorder(),
               ),
             ),
+            
             const SizedBox(height: 16),
-            TextField(
+            CustomValidatedTextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                errorText: null, // TODO: _emailController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
-              ),
+              labelText: 'Email',
+              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               keyboardType: TextInputType.emailAddress,
             ),
+            
             const SizedBox(height: 16),
-            TextField(
+            CustomValidatedTextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                errorText: null, // TODO: _usernameController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
-              ),
+              labelText: 'Username',
+              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
+            
             const SizedBox(height: 16),
-            TextField(
+            CustomValidatedTextField(
               controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
-                suffixIcon: IconButton(
-                  icon: CustomIconWidget(
-                    assetPath: 'assets/images/icons/${_showPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
-                    size: 24
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _showPassword = !_showPassword;
-                    });
-                  },
-                ),
-              ),
+              labelText: 'Password',
+              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               obscureText: !_showPassword,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _repeatPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Ripeti Password',
-                errorText: null, // TODO: _passwordController.text.trim().isEmpty && !_isFormValid ? 'Campo obbligatorio' : null,
-                suffixIcon: IconButton(
-                  icon: CustomIconWidget(
-                    assetPath: 'assets/images/icons/${_showRepeatPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
-                    size: 24
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _showRepeatPassword = !_showRepeatPassword;
-                    });
-                  },
+              suffixIcon: IconButton(
+                icon: CustomIconWidget(
+                  assetPath: 'assets/images/icons/${_showPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
+                  size: 24
                 ),
+                onPressed: () {
+                  setState(() {
+                    _showPassword = !_showPassword;
+                  });
+                },
               ),
-              obscureText: !_showRepeatPassword,
             ),
+            
+            const SizedBox(height: 16),
+            CustomValidatedTextField(
+              controller: _repeatPasswordController,
+              labelText: 'Ripeti Password',
+              validator: (value) => passwordsMatchErrorValidator(value),
+              suffixIcon: IconButton(
+                icon: CustomIconWidget(
+                  assetPath: 'assets/images/icons/${_showRepeatPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
+                  size: 24
+                ),
+                onPressed: () {
+                  setState(() {
+                    _showRepeatPassword = !_showRepeatPassword;
+                  });
+                },
+              ),
+            ),
+
             const SizedBox(height: 24),
-            if (_error != null) 
+            if (_error != null) ...[
               Text(_error!, style: const TextStyle(color: Colors.red)),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: (_loading || !_isFormValid) ? null : _register,
-                child: _loading ? const CircularProgressIndicator() : const Text('Registrati'),
+            ],
+
+            // Registration button
+            const SizedBox(height: 16),
+            if (_loading) ...[
+              const CircularProgressIndicator(),
+            ] 
+            else ...[
+              ElevatedButton(
+                onPressed: _isFormValid ? _register : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
+                ),
+                child: const Text('Registrati'),
               ),
-            ),
+            ],
+
+            // Login Page navigation
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);

@@ -1,3 +1,4 @@
+import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,13 +53,15 @@ class _LoginPageState extends State<LoginPage> {
       if (res.user == null) {
         setState(() => _errorMessage = 'Login fallito');
       }
-      else {
+      else if (mounted) {
         // Naviga alla homepage e rimuovi la pagina di login dallo stack
         Navigator.of(context).pushReplacementNamed('/');
       }
-    } on AuthException catch (e) {
+    } 
+    on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
-    } finally {
+    } 
+    finally {
       setState(() => _loading = false);
     }
   }
@@ -68,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       // appBar: AppBar(title: const Text('Login')),
       body: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -77,20 +80,22 @@ class _LoginPageState extends State<LoginPage> {
               Image.asset('assets/images/splash-screen-image_v1.png', height: 250),
               
               // Email input field
-              const SizedBox(height: 8),
-              TextField(
+              const SizedBox(height: 16),
+              CustomValidatedTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                labelText: 'Email',
                 keyboardType: TextInputType.emailAddress,
+                validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               ),
               
               // Password input field
-              const SizedBox(height: 8),
-              TextField(
+              const SizedBox(height: 16),
+              CustomValidatedTextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
+                labelText: 'Password',
                 obscureText: true,
-                onSubmitted: (_) => _login(), // Permette di inviare il form premendo "Invio"
+                validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
+                onSubmitted: (_) => _login(),
               ),
               
               // Error message
@@ -100,22 +105,24 @@ class _LoginPageState extends State<LoginPage> {
               ],
 
               // Login button
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               if (_loading) ...[
                 const CircularProgressIndicator(),
-              ] else ...[
+              ] 
+              else ...[
                 ElevatedButton(
                   onPressed: _isFormValid ? _login : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
                   ),
                   child: const Text('Login'),
                 ),
               ],
               
-              // Registration button
-              const SizedBox(height: 8),
+              // Registration Page Navigation
+              const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');

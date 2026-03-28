@@ -18,7 +18,6 @@ import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
-import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

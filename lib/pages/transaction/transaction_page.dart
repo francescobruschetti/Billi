@@ -1,7 +1,6 @@
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
-import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

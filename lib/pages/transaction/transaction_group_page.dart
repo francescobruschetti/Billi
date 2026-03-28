@@ -5,7 +5,6 @@ import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
-import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

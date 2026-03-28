@@ -83,7 +83,7 @@ class _BillyAppState extends State<BillyApp> {
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
-          onPrimary: Colors.white,
+          onPrimary: Colors.black,
           primaryContainer: Colors.blue[300],
           secondary: Colors.orange,
           onSecondary: Colors.black,

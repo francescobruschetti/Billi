@@ -17,7 +17,7 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyn
 
   TransactionsNotifier(this._service, {int pageSize = 5}) 
     : _pageSize = pageSize,
-    super(const AsyncLoading()) {}
+    super(const AsyncLoading());
 
   Future<void> _loadFromServer({required int pageIndex, required int pageSize, bool append = false}) async {
     try {
