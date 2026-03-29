@@ -57,10 +57,10 @@ class AppBottomSheet extends StatelessWidget {
                 ),
               ),
               if (title != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
                 Text(title!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               child, // Contenuto personalizzato
             ],
           ),

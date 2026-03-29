@@ -1,25 +1,36 @@
 
 // Widget riutilizzabile per TextField con validazione e gestione focus/touched
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomValidatedTextField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
-  final String? Function(String value)? validator;
   final bool obscureText;
+
+  final List<TextInputFormatter>? inputFormatters;
   final TextInputType? keyboardType;
-  final IconButton? suffixIcon;
+  final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
+  final Widget? prefixIcon;
+  final bool? readOnly;
+  final IconButton? suffixIcon;
+  final String? Function(String value)? validator;
 
   const CustomValidatedTextField({
     super.key,
     required this.controller,
     required this.labelText,
-    this.validator,
     this.obscureText = false,
+    
+    this.inputFormatters,
     this.keyboardType,
-    this.suffixIcon,
+    this.onChanged,
     this.onSubmitted,
+    this.prefixIcon,
+    this.readOnly = false,
+    this.suffixIcon,
+    this.validator,
   });
 
   @override
@@ -58,13 +69,18 @@ class _CustomValidatedTextFieldState extends State<CustomValidatedTextField> {
     return TextField(
       controller: widget.controller,
       focusNode: _focusNode,
-      obscureText: widget.obscureText,
+      inputFormatters: widget.inputFormatters,
       keyboardType: widget.keyboardType,
+      obscureText: widget.obscureText,
+      onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
+      readOnly: widget.readOnly ?? false,
+      
       decoration: InputDecoration(
-        labelText: widget.labelText,
-        errorText: errorText,
         border: const OutlineInputBorder(),
+        errorText: errorText,
+        labelText: widget.labelText,
+        prefixIcon: widget.prefixIcon,
         suffixIcon: widget.suffixIcon,
       ),
     );

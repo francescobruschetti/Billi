@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
@@ -80,22 +81,24 @@ class _LoginPageState extends State<LoginPage> {
               Image.asset('assets/images/splash-screen-image_v1.png', height: 250),
               
               // Email input field
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               CustomValidatedTextField(
                 controller: _emailController,
-                labelText: 'Email',
                 keyboardType: TextInputType.emailAddress,
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email, size: 24),
                 validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               ),
               
               // Password input field
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               CustomValidatedTextField(
                 controller: _passwordController,
                 labelText: 'Password',
                 obscureText: true,
-                validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
+                prefixIcon: Icon(Icons.key, size: 24),
                 onSubmitted: (_) => _login(),
+                validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               ),
               
               // Error message
@@ -105,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
 
               // Login button
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               if (_loading) ...[
                 const CircularProgressIndicator(),
               ] 
@@ -122,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
               
               // Registration Page Navigation
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');

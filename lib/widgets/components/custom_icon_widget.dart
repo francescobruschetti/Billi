@@ -7,7 +7,7 @@ class CustomIconWidget extends StatelessWidget {
 
   const CustomIconWidget({
     required this.assetPath,
-    this.size = 30,
+    this.size = 24,
     this.color,
     super.key,
   });

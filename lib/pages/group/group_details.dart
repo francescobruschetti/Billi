@@ -3,6 +3,7 @@ import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter/material.dart';
@@ -283,26 +284,30 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Campi di input
-                TextField(
+
+                CustomValidatedTextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Nome gruppo', border: OutlineInputBorder()),
+                  labelText: 'Nome gruppo',
+                  validator: (value) => value.trim().isEmpty ? 'Il nome del gruppo è obbligatorio' : null,
                 ),
-                const SizedBox(height: 8),
-                TextField(
+                
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Descrizione (opzionale)', border: OutlineInputBorder()),
+                  labelText: 'Descrizione',
                 ),
                 // if editing an existing group
+                
                 if (widget.groupId != null) ...[
                   // Link di invito
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
+                        child: CustomValidatedTextField(
                           controller: _linkController,
-                          decoration: const InputDecoration(labelText: 'Link', border: OutlineInputBorder()),
+                          labelText: 'Link',
+                          prefixIcon: const Icon(Icons.link, size: 24),
                           readOnly: true,
                         ),
                       ),
@@ -323,9 +328,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   ),
                 
                   // Aggiunta utenti al gruppo
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   Text('Aggiungi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   Row(
                     children: [
                       Expanded(
@@ -345,7 +351,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   ),
                   
                   // List of users to be added to group
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   if (_selectedUsers.isNotEmpty) ...[
                     Row(
                       children: [
@@ -354,7 +360,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                         Text('(${_selectedUsers.length})'),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppConstants.sizedBoxHeight),
                     Wrap(
                       spacing: 8,
                       children: _selectedUsers.map((u) => Chip(
@@ -369,7 +375,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   ],
 
                   // List of users already in group
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   if (_existingUsers.isEmpty) ...[
                     const Text('Nessun partecipante nel gruppo'),
                   ]
@@ -381,7 +387,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                         Text('(${_existingUsers.length})'),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppConstants.sizedBoxHeight),
                     Wrap(
                       spacing: 8,
                       children: _existingUsers.map((u) => Chip(
@@ -403,7 +409,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 ],
                 
                 // Save/Cancel buttons
-                const SizedBox(height: 8),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

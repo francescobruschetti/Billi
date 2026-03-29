@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -20,7 +21,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             _buildMainGroup(),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Align(
@@ -46,7 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             Card(
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Column(

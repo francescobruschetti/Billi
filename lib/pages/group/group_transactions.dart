@@ -199,7 +199,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       MaterialPageRoute(builder: (context) => widget),
     ).then((result) {
       log.fine('Result from page: $result');
-      if (result?['deleteGroupId'] != null) {
+      if (result?['deleteGroupId'] != null && mounted) {
         Navigator.of(context).pop(result);
       }
     });
@@ -349,7 +349,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                   ),
                 
                   // Page footer
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
                   Row(
                     children: [
                       Expanded(

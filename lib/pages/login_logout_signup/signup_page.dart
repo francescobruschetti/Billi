@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/material.dart';
@@ -98,35 +99,35 @@ class _SignupPageState extends State<SignupPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
+            CustomValidatedTextField(
               controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Nome',
-                border: const OutlineInputBorder(),
-              ),
+              labelText: 'Nome',
+              prefixIcon: Icon(Icons.person, size: 24),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             CustomValidatedTextField(
               controller: _emailController,
-              labelText: 'Email',
-              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               keyboardType: TextInputType.emailAddress,
+              labelText: 'Email',
+              prefixIcon: Icon(Icons.email, size: 24),
+              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             CustomValidatedTextField(
               controller: _usernameController,
               labelText: 'Username',
+              prefixIcon: Icon(Icons.person, size: 24),
               validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             CustomValidatedTextField(
               controller: _passwordController,
               labelText: 'Password',
-              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               obscureText: !_showPassword,
+              prefixIcon: Icon(Icons.key, size: 24),
               suffixIcon: IconButton(
                 icon: CustomIconWidget(
                   assetPath: 'assets/images/icons/${_showPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
@@ -138,13 +139,14 @@ class _SignupPageState extends State<SignupPage> {
                   });
                 },
               ),
+              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             CustomValidatedTextField(
               controller: _repeatPasswordController,
               labelText: 'Ripeti Password',
-              validator: (value) => passwordsMatchErrorValidator(value),
+              prefixIcon: Icon(Icons.key, size: 24),
               suffixIcon: IconButton(
                 icon: CustomIconWidget(
                   assetPath: 'assets/images/icons/${_showRepeatPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
@@ -156,6 +158,7 @@ class _SignupPageState extends State<SignupPage> {
                   });
                 },
               ),
+              validator: (value) => passwordsMatchErrorValidator(value),
             ),
 
             const SizedBox(height: 24),
@@ -164,7 +167,7 @@ class _SignupPageState extends State<SignupPage> {
             ],
 
             // Registration button
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             if (_loading) ...[
               const CircularProgressIndicator(),
             ] 
@@ -181,7 +184,7 @@ class _SignupPageState extends State<SignupPage> {
             ],
 
             // Login Page navigation
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);

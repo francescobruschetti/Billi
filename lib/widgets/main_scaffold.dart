@@ -2,6 +2,7 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/pages/settings.dart';
 import 'package:Billy/pages/ui_prove_page.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/main_app_bar_widget.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
@@ -29,35 +30,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     return Scaffold(
       // debug UI: backgroundColor: Colors.pink[200],
       resizeToAvoidBottomInset: true, // Evita overflow quando la tastiera è aperta
-      // appBar: AppBar(
-      //   title: const Text('Billy - Monitoraggio Spese'),
-      //   actions: [ ],
-      //   // backgroundColor: Colors.red,
-      //   // shape: const RoundedRectangleBorder(
-      //   //   borderRadius: BorderRadius.all(Radius.circular(20)),
-      //   // ),
-      // ),
-      // drawer: Drawer(
-      //   child: ListView(
-      //     padding: EdgeInsets.zero,
-      //     children: [
-      //       const DrawerHeader(
-      //         decoration: BoxDecoration(
-      //           color: Colors.blue,
-      //         ),
-      //         child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
-      //       ),
-      //       ListTile(
-      //         leading: const CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24),
-      //         title: const Text('Logout'),
-      //         onTap: () {
-      //           Navigator.of(context).pop(); // Chiude il drawer
-      //           Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-      //         },
-      //       ),
-      //     ],
-      //   ),
-      // ),
+      // debug: appBar: const MainAppBarWidget(),
+      // debug: drawer: const Drawer(), 
       body: _pages[_currentIndex],
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),

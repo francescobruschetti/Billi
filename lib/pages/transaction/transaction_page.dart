@@ -1,6 +1,8 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -164,59 +166,47 @@ class _TransactionPageState extends State<TransactionPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [ // -- Campi di input
                 // -- Prezzo
-                Row(
-                  children: [
-                    Expanded(
-                      child: CupertinoTextField(
-                        controller: _priceController,
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
-                        ],
-                        placeholder: 'Prezzo',
-                        prefix: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Icon(Icons.euro, size: 20, color: Colors.blueGrey),
-                        ),
-                        onChanged: (value) => _formatPriceInput(),
-                      ),
-                    ),
+                CustomValidatedTextField(
+                  controller: _priceController,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
                   ],
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  labelText: 'Prezzo',
+                  onChanged: (value) => _formatPriceInput(),
+                  prefixIcon: Icon(Icons.euro, size: 24),
                 ),
                 
                 // -- Negozio
                 if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
-                  const SizedBox(height: 8),
-                  CupertinoTextField(
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
                     controller: _merchantController,
-                    placeholder: 'Negozio',
-                    prefix: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 20, color: Colors.blueGrey),
+                    labelText: 'Negozio',
+                    prefixIcon: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                        child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 24),
+                      ),
                     ),
                   ),
                 ],
                 
                 // -- Categorie
-                const SizedBox(height: 8),
-                CupertinoTextField(
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
                   controller: _categoriesController,
-                  placeholder: 'Categorie',
-                  prefix: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
-                  ),
+                  labelText: 'Categorie',
+                  prefixIcon: Icon(Icons.shopping_cart, size: 24),
                 ),
                 
                 // -- Note
-                const SizedBox(height: 8),
-                CupertinoTextField(
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
                   controller: _noteController,
-                  placeholder: 'Note',
-                  prefix: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Icon(Icons.note, size: 20, color: Colors.blueGrey),
-                  ),
+                  labelText: 'Note',
+                  prefixIcon: Icon(Icons.note, size: 24),
                 ),
 
                 // Alert errore
@@ -225,7 +215,7 @@ class _TransactionPageState extends State<TransactionPage> {
                 ],
                 
                 // Save/Cancel buttons
-                const SizedBox(height: 8),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

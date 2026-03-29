@@ -7,20 +7,20 @@ class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
   static final ScrollController _horizontalController = ScrollController();
 
   @override
-  final String? title;
+  final String title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
   TransactionsBalanceBottomSheetWidget({
-    super.key, this.title, required this.participantsSummary
+    super.key, required this.title, required this.participantsSummary
   }) : super( title: title, child: Container());
 
   @override
   Widget build(BuildContext context) {
     return AppBottomSheet(
-      title: "Riepilogo partecipanti",
+      title: title,
       initialSize: 0.5,
-      minSize: 0.2,
-      maxSize: 1.0,
+      minSize: 0.25,
+      maxSize: 0.95,
 
       child: Scrollbar(
         controller: _verticalController,

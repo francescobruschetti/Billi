@@ -8,7 +8,9 @@ class LogoutPage extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     await Supabase.instance.client.auth.signOut();
     // Torna alla pagina di login e rimuovi tutto lo stack
-    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 
   @override

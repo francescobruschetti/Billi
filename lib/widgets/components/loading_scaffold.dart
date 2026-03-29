@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 
 class LoadingScaffold extends StatelessWidget {
@@ -14,7 +15,7 @@ class LoadingScaffold extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
             Text(message, style: const TextStyle(fontSize: 16)),
           ],
         ),

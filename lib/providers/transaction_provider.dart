@@ -1,5 +1,6 @@
 import 'package:Billy/services/transaction_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 final transactionServiceProvider = Provider((ref) => TransactionService());
 
@@ -9,6 +10,9 @@ final transactionProvider = StateNotifierProvider<TransactionsNotifier, AsyncVal
 );
 
 class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+  
+  final Logger log = Logger('TransactionsNotifier');
+  
   final TransactionService _service;
   int _currentPage = 0;
   final int _pageSize;
@@ -21,6 +25,7 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyn
 
   Future<void> _loadFromServer({required int pageIndex, required int pageSize, bool append = false}) async {
     try {
+      log.fine("Caricamento transazioni: pageIndex=$pageIndex, pageSize=$pageSize, append=$append");
       _isLoading = true;
       final transactions = await _service.fetchLatestPersonalTransactions(pageIndex: pageIndex, pageSize: pageSize);
       if (append && state is AsyncData<List<Map<String, dynamic>>>) {
@@ -31,7 +36,10 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyn
        else {
         state = AsyncData(transactions);
       }
+      log.fine("transactions.length: ${transactions.length}, pageSize: $pageSize");
       _hasMore = transactions.length == pageSize;
+      log.fine("_hasMore: $_hasMore");
+
       _isLoading = false;
     } catch (e, st) {
       state = AsyncError(e, st);
