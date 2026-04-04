@@ -19,7 +19,7 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dyn
   bool _isLoading = false;
   bool _hasMore = true;
 
-  TransactionsNotifier(this._service, {int pageSize = 5}) 
+  TransactionsNotifier(this._service, {int pageSize = 5}) // TODO: 5 valore utilizzato per test
     : _pageSize = pageSize,
     super(const AsyncLoading());
 

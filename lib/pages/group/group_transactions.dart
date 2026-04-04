@@ -5,6 +5,7 @@ import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/floating_button_widget.dart';
 import 'package:Billy/widgets/components/group_transaction_card_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   bool _isLoadingContent = false;
   bool _isLoadingPage = false;
   bool _showFilters = false;
+  bool _showSearchBar = false;
   String _searchText = '';
   String _groupName = '-';
   String? _errorMessage;
@@ -59,6 +61,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     setState(() {
       _isLoadingPage = false;
       _showFilters = false;
+      _showSearchBar = false;
     });
 
     _loadData(reset: true);
@@ -234,6 +237,13 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(),
+      floatingActionButton: FloatingButtonWidget(
+        onPressed: () => _navigateToGroupTransactionsPage(groupId: widget.groupId, isEditAllowed: true),
+        iconButton: const CustomIconWidget(
+          assetPath: 'assets/images/icons/add.PNG',
+          size: 24,
+        ),
+      ),
       body: _isLoadingPage
         ? Center(
             child: Column(
@@ -244,31 +254,9 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
         : Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
             child: Column(
-              children: [
-                // Page Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: SelectableText(
-                          'Totale spese (${_groupTransactions.length}): ${_computeBalance()}€',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                    ),
-                    const SizedBox(width: 5),
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Aggiorna',
-                      onPressed: () => _loadData(reset: true),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.filter_list),
-                      tooltip: 'Filtra',
-                      onPressed: () => _filterTransactions(reset: true),
-                    ),
-                  ],
-                ),
-                
+              children: [                
+                _pageHeader(),
+
                 _animatedTimeFilters(),
 
                 // Alert errore
@@ -277,7 +265,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                 ]
                 else ...[
                   // How much user owes or is owed
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -301,6 +289,27 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                     ],
                   ),
                   
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.sort_by_alpha),
+                        tooltip: 'Ordina',
+                        onPressed: () {
+                          // TODO: implement sort action
+                        },
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_month_rounded),
+                        tooltip: 'Calendario',
+                        onPressed: () {
+                          // TODO: implement calendar action
+                        },
+                      ),
+                    ],
+                  ),
+
                   // Page Content
                   Expanded(
                     child: _isLoadingContent
@@ -347,45 +356,36 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                               ),
                             ),
                   ),
-                
-                  // Page footer
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 9,
-                        child: SearchFieldWidget(
-                          hintText: 'Cerca spesa...',
-                          icon: Icons.search,
-                          onChanged: (value) {
-                            setState(() {
-                              _searchText = value;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 1,
-                        child:                      
-                        IconButton(
-                          icon: Image.asset('assets/images/icons/add.png'),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondary,
-                            foregroundColor: Colors.white,
-                            shape: const CircleBorder(),
-                          ),
-                          onPressed: () async {
-                            _navigateToGroupTransactionsPage(groupId: widget.groupId, isEditAllowed: true);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ],
             ),
           ),
+    );
+  }
+
+  Widget _animatedSearchBar() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          axis: Axis.horizontal,
+          child: child,
+        ),
+      ),
+      child: _showSearchBar
+        ? // debug: Container(
+          // debug: color: Colors.redAccent, 
+          // debug: child: 
+            SearchFieldWidget(
+              hintText: 'Cerca spesa...',
+              icon: Icons.search,
+              onChanged: (value) => setState(() => _searchText = value),
+              onClose: () => setState(() => _showSearchBar = false),
+            )
+          // debug: )
+        : Text('Spese: $_groupName'),
     );
   }
 
@@ -420,15 +420,59 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text('Spese: $_groupName'),
+      title: _animatedSearchBar(),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
       actions: [
-        IconButton(
-          icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
-          tooltip: 'Impostazioni Gruppo',
-          onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
-        ),
+        if (!_showSearchBar) ...[
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Cerca',
+            onPressed: () => {
+              setState(() => _showSearchBar = !_showSearchBar),
+            },
+          ),
+          // IconButton( // TODO: valutare se mantenere o spostare nei filtri
+          //   icon: const Icon(Icons.refresh),
+          //   tooltip: 'Aggiorna',
+          //   onPressed: () => _loadData(reset: true),
+          // ),
+          // IconButton( // TODO: valutare se mantenere o spostare nei filtri
+          //   icon: const Icon(Icons.filter_list),
+          //   tooltip: 'Filtra',
+          //   onPressed: () => _filterTransactions(reset: true),
+          // ),
+          IconButton(
+            icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
+            tooltip: 'Impostazioni Gruppo',
+            onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
+          ),        
+        ],
       ],
+    );
+  }
+
+   Widget _pageHeader() {
+    return Container(
+      // debug UI: color: Colors.green,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Bilancio', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 8),
+                SelectableText(
+                  '${_computeBalance()}€',
+                  style: TextStyle(fontSize: 30),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

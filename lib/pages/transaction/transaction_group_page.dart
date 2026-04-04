@@ -5,6 +5,8 @@ import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -276,7 +278,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")),
         data: (groups) {
 
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,30 +307,20 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                 ),
                 
                 // -- Transaction Price
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _priceController,
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Totale Spesa',
-                          suffixIcon: Padding(
-                            padding: EdgeInsets.only(right: 12.0),
-                            child: Text('€', style: TextStyle(fontSize: 18)),
-                          ),
-                          suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                        ),
-                      ),
-                    ),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
+                  controller: _priceController,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
                   ],
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  labelText: 'Prezzo',
+                  onChanged: (value) => _formatPriceInput(),
+                  prefixIcon: Icon(Icons.euro, size: 24),
                 ),
 
                 // -- Split Rate vs Paid Amount
-                SizedBox(height: _defaultSizedBoxHeight),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -382,24 +374,33 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                 ],
 
                 // -- Negozio
-                SizedBox(height: _defaultSizedBoxHeight),
-                TextField(
-                  controller: _merchantController,
-                  decoration: const InputDecoration(labelText: 'Negozio'),
-                ),
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
+                    controller: _merchantController,
+                    labelText: 'Negozio',
+                    prefixIcon: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                        child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 24),
+                      ),
+                    ),
+                  ),
                 
                 // -- Categorie
-                SizedBox(height: _defaultSizedBoxHeight),
-                TextField(
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
                   controller: _categoriesController,
-                  decoration: const InputDecoration(labelText: 'Categorie'),
+                  labelText: 'Categorie',
+                  prefixIcon: Icon(Icons.shopping_cart, size: 24),
                 ),
-                
+                                
                 // -- Note
-                SizedBox(height: _defaultSizedBoxHeight),
-                TextField(
+                const SizedBox(height: AppConstants.sizedBoxHeight),
+                CustomValidatedTextField(
                   controller: _noteController,
-                  decoration: const InputDecoration(labelText: 'Note'),
+                  labelText: 'Note',
+                  prefixIcon: Icon(Icons.note, size: 24),
                 ),
 
                 // Alert errore
@@ -436,20 +437,15 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
 
   Widget _buildFixedRateComponents() {
-    return TextField(
+    return  CustomValidatedTextField(
       controller: _paidAmountController,
-      keyboardType: TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
       ],
-      decoration: const InputDecoration(
-        labelText: 'Quota pagata',
-        suffixIcon: Padding(
-          padding: EdgeInsets.only(right: 12.0),
-          child: Text('€', style: TextStyle(fontSize: 18)),
-        ),
-        suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      labelText: 'Quota pagata',
+      onChanged: (value) => _formatPriceInput(),
+      prefixIcon: Icon(Icons.euro, size: 24),
     );
   }
 

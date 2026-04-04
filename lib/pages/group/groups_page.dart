@@ -1,11 +1,13 @@
 import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/widgets/components/floating_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/pages/group/group_transactions.dart';
 import 'package:Billy/pages/group/group_details.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 class GroupsPage extends ConsumerStatefulWidget {
   const GroupsPage({super.key});
@@ -15,7 +17,24 @@ class GroupsPage extends ConsumerStatefulWidget {
 }
 
 class _GroupsPageState extends ConsumerState<GroupsPage> {
+  final Logger log = Logger('GroupsPage');
+
   String _searchText = '';
+  bool _showSearchBar = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    setState(() {
+      _showSearchBar = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   List<GroupDetailsModel> _filtered(List<GroupDetailsModel> groups) {
     if (_searchText.isEmpty) return groups;
@@ -30,13 +49,9 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
 
     return Scaffold(
       appBar: _buildAppBar(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const GroupDetailsPage()),
-        ),
-        child: const CustomIconWidget(
+      floatingActionButton: FloatingButtonWidget(
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupDetailsPage())),
+        iconButton: const CustomIconWidget(
           assetPath: 'assets/images/icons/add.PNG',
           size: 24,
         ),
@@ -48,7 +63,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
           final filtered = _filtered(groups);
 
           return Column(
-            children: [             
+            children: [
               Expanded(child: _buildList(filtered)),
             ],
           );
@@ -59,21 +74,60 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
-      actions: [
-        Expanded(
-          child: SearchFieldWidget(
-            hintText: 'Cerca gruppo...',
-            icon: Icons.search,
-            onChanged: (value) => setState(() => _searchText = value),
+      // debug: backgroundColor: Colors.yellowAccent,
+      title: _animatedSearchBar(),
+
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 0),
+      actions: [      
+        if (!_showSearchBar) ...[
+          IconButton(
+            // debug: 
+            // style: IconButton.styleFrom(
+            //   backgroundColor: Colors.blue
+            // ),
+            icon: const Icon(Icons.search),
+            tooltip: 'Cerca',
+            onPressed: () => {
+              setState(() => _showSearchBar = !_showSearchBar),
+            },
           ),
-        ),
+        ],
         IconButton(
+          // debug: 
+          // style: IconButton.styleFrom(
+          //   backgroundColor: Colors.green
+          // ),
           icon: const Icon(Icons.refresh),
           tooltip: 'Aggiorna',
           onPressed: () => ref.read(groupsProvider.notifier).refresh(),
         ),
       ],
+    );
+  }
+  
+  Widget _animatedSearchBar() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          axis: Axis.horizontal,
+          child: child,
+        ),
+      ),
+      child: _showSearchBar
+        ? // debug: Container(
+          // debug: color: Colors.redAccent, 
+          // debug: child: 
+            SearchFieldWidget(
+              hintText: 'Cerca gruppo...',
+              icon: Icons.search,
+              onChanged: (value) => setState(() => _searchText = value),
+              onClose: () => setState(() => _showSearchBar = false),
+            )
+          // debug: )
+        : const Text('Gruppi'),
     );
   }
 

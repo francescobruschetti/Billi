@@ -2,7 +2,6 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/pages/settings.dart';
 import 'package:Billy/pages/ui_prove_page.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
-import 'package:Billy/widgets/components/main_app_bar_widget.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
 import '../pages/group/groups_page.dart';
