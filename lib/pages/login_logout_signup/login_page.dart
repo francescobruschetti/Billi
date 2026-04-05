@@ -1,7 +1,9 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/services/signin_signup_service.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginPage extends StatefulWidget {
@@ -12,6 +14,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final Logger log = Logger('LoginPage');
+  late SigninSignupService signinSignupService;
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
@@ -21,6 +26,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    signinSignupService = SigninSignupService();
+
     _emailController.addListener(_onFormChanged);
     _passwordController.addListener(_onFormChanged);
   }
@@ -47,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
     try {
-      final res = await Supabase.instance.client.auth.signInWithPassword(
+      final res = await signinSignupService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );

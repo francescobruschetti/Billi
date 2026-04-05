@@ -1,5 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
@@ -75,6 +76,17 @@ class _TransactionPageState extends State<TransactionPage> {
     setState(() {
       _isSaveEnabled = _priceController.text.isNotEmpty;
     });
+  }
+
+  void _openCategoriesBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+      builder: (BuildContext context) => CategoriesBottomSheetWidget(
+        title: 'Seleziona Categoria',
+      ),
+    );
   }
 
   void _pageTitleSetup() {
@@ -198,6 +210,7 @@ class _TransactionPageState extends State<TransactionPage> {
                   controller: _categoriesController,
                   labelText: 'Categorie',
                   prefixIcon: Icon(Icons.shopping_cart, size: 24),
+                  onTap: _openCategoriesBottomSheet,
                 ),
                 
                 // -- Note

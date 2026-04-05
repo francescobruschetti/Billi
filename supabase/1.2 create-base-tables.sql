@@ -2,7 +2,7 @@
 create table categories (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
-  user_id uuid not null default auth.uid() references auth.users(id),
+  user_id uuid default auth.uid() references auth.users(id),
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );

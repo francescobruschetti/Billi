@@ -30,8 +30,7 @@ class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupDetailsModel>>> 
   // Refresh forzato dall'utente (pull-to-refresh)
   Future<void> refresh() => _loadFromServer();
 
-  // Aggiunta ottimistica — aggiorna la memoria immediatamente
-  // poi sincronizza col server
+  // Aggiunta ottimistica — aggiorna la memoria immediatamente poi sincronizza col server
   Future<void> addGroup({ required String name, String? description }) async {
     try {
       final newGroup = await _service.createGroup(name: name, description: description);

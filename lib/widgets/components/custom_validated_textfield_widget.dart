@@ -12,6 +12,7 @@ class CustomValidatedTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
+  final void Function()? onTap;
   final Widget? prefixIcon;
   final bool? readOnly;
   final IconButton? suffixIcon;
@@ -27,6 +28,7 @@ class CustomValidatedTextField extends StatefulWidget {
     this.keyboardType,
     this.onChanged,
     this.onSubmitted,
+    this.onTap,
     this.prefixIcon,
     this.readOnly = false,
     this.suffixIcon,
@@ -74,6 +76,7 @@ class _CustomValidatedTextFieldState extends State<CustomValidatedTextField> {
       obscureText: widget.obscureText,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
+      onTap: widget.onTap,
       readOnly: widget.readOnly ?? false,
       
       decoration: InputDecoration(

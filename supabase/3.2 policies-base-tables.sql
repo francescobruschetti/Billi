@@ -52,11 +52,12 @@ with check (
   auth.uid() = user_id
 );
 
-create policy "Creator can view own categories"
+drop policy if exists "Creator can view own categories" on categories;
+create policy "Creator can view own categories and default categories"
 on categories
 for select
 using (
-  user_id = auth.uid()
+  user_id = auth.uid() or user_id is null
 );
 
 create policy "Only creator can update categories"

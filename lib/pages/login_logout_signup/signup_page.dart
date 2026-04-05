@@ -1,4 +1,5 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/services/signin_signup_service.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,9 @@ class SignupPage extends StatefulWidget {
   State<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {  
+class _SignupPageState extends State<SignupPage> {
   final Logger log = Logger('SignupPage');
+  late SigninSignupService signinSignupService;
   
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -26,9 +28,11 @@ class _SignupPageState extends State<SignupPage> {
   bool _showRepeatPassword = false;
   String? _error;
 
-   @override
+  @override
   void initState() {
     super.initState();
+    signinSignupService = SigninSignupService();
+
     _nameController.addListener(_onFormChanged);
     _usernameController.addListener(_onFormChanged);
     _emailController.addListener(_onFormChanged);
@@ -62,17 +66,13 @@ class _SignupPageState extends State<SignupPage> {
       _error = null;
     });
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-
-      final res = await supabase.auth.signUp(
+      final res = await signinSignupService.register(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-        data: {
-          'username': _usernameController.text.trim(),
-          'name': _nameController.text.trim(),
-        },
+        username: _usernameController.text.trim(),
+        name: _nameController.text.trim(),
       );
-      
+
       if (res.user == null) {
         setState(() => _error = 'Registrazione fallita');
       }      

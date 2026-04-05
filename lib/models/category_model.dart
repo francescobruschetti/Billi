@@ -1,14 +1,17 @@
+import 'package:Billy/entities/category_local.dart';
+import 'package:Billy/enums/sync_status_enum.dart';
+
 class CategoryModel {
   final String id;
   final String name;
-  final String userId;
+  String? userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   CategoryModel({
     required this.id,
     required this.name,
-    required this.userId,
+    this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -22,4 +25,28 @@ class CategoryModel {
       updatedAt: DateTime.parse(map['updated_at']),
     );
   }
+
+
+  // TODO: ISAR
+  // factory CategoryModel.fromLocal(CategoryLocal local) => CategoryModel(
+  //   id: local.id,
+  //   name: local.name,
+  //   userId: local.userId,
+  //   createdAt: local.createdAt,
+  //   updatedAt: local.updatedAt,
+  // );
+
+  // CategoryLocal toLocal({ required Duration ttl, SyncStatusEnum syncStatus = SyncStatusEnum.synced, }) 
+  // {
+  //   final now = DateTime.now();
+  //   return CategoryLocal()
+  //     ..id = id
+  //     ..name = name
+  //     ..userId = userId
+  //     ..createdAt = createdAt
+  //     ..updatedAt = updatedAt
+  //     ..cachedAt = now
+  //     ..expiresAt = now.add(ttl)
+  //     ..syncStatus = syncStatus;
+  // }
 }

@@ -1,8 +1,10 @@
 import 'package:Billy/languages/app_localizations.dart';
+import 'package:Billy/providers/isar_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
 import 'pages/login_logout_signup/login_page.dart';
@@ -12,14 +14,26 @@ import 'pages/login_logout_signup/logout_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  setupLogging(); // Initialize logging
+
   await Supabase.initialize(
     url: 'https://qislfeuyfqydzocxuwsw.supabase.co',
     anonKey: 'sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd',
   );
 
-  setupLogging(); // Initialize logging
+  // TODO: ISAR
+  // final dir = await getApplicationDocumentsDirectory();
+  // final isar = await Isar.open(
+  //   [CategoryLocalSchema], // aggiungi qui tutti i tuoi schema
+  //   directory: dir.path,
+  // );
+
   runApp(
-    ProviderScope( // *Added in order to use Riverpod providers*
+    ProviderScope( // *Added in order to use Riverpod providers* 
+      // TODO: ISAR
+      // overrides: [
+      //   isarProvider.overrideWithValue(isar), // inietta l'istanza
+      // ],
       child: const BillyApp(),
     ),
   );

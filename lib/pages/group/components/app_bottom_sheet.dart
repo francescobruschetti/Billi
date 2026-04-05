@@ -33,39 +33,48 @@ class AppBottomSheet extends StatelessWidget {
       initialChildSize: initialSize,
       minChildSize: minSize,
       maxChildSize: maxSize,
-      expand: false, // si espande per riempire lo spazio disponibile
+      expand: true, // si espande per riempire lo spazio disponibile
       snap: false, // si aggancia agli snap point
       snapSizes: [minSize, initialSize, maxSize], // punti di aggancio
       snapAnimationDuration: const Duration(milliseconds: 200), // durata animazione snap
       builder: (context, scrollController) {
         return Container(
-          // width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
           decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
+            color: const Color.fromARGB(255, 17, 119, 26), // TODO: da ripristinare: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
+          width: double.infinity,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max, // ! Crucial to allow the sheet to expand fully and avoid "RenderBox was not laid out: RenderRepaintBoundary#2227e NEEDS-LAYOUT NEEDS-PAINT"
             children: [
-              const SizedBox(height: 2),
-              Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              _buildDraggableIndicator(),
+              
               if (title != null) ...[
                 const SizedBox(height: AppConstants.sizedBoxHeight),
                 Text(title!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ],
+              
               const SizedBox(height: AppConstants.sizedBoxHeight),
-              child, // Contenuto personalizzato
+              Expanded(child: child), // Contenuto personalizzato - IMPORTANT! Expanded qui, non nel child, altrimenti: "RenderBox was not laid out: RenderRepaintBoundary#2227e NEEDS-LAYOUT NEEDS-PAINT"
             ],
           ),
         );
       },
+    );
+  }
+  Widget _buildDraggableIndicator() {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Container(
+          width: 40, height: 4,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
     );
   }
 }
