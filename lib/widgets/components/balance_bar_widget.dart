@@ -23,6 +23,7 @@ class BalanceBarWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),
       child: Column(
         children: [
+          if (total > 0) ...[
           Row(
             children: [
               Expanded(
@@ -48,6 +49,16 @@ class BalanceBarWidget extends StatelessWidget {
               ),
             ],
           ),
+          ]
+          else ...[
+            Container(
+              height: 10,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 4),
           Row(

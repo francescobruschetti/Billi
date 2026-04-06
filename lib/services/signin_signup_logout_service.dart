@@ -1,8 +1,8 @@
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SigninSignupService {
-  final Logger _log = Logger('SigninSignupService');
+class SigninSignupLogoutService {
+  final Logger _log = Logger('SigninSignupLogoutService');
   final SupabaseClient _supabase = Supabase.instance.client;
 
   Future<AuthResponse> login({
@@ -22,7 +22,7 @@ class SigninSignupService {
     }
   }
   
-  Future<AuthResponse> register({
+  Future<AuthResponse> signup({
     required String email,
     required String password,
     required String username,
@@ -42,6 +42,16 @@ class SigninSignupService {
     catch (e) {
       _log.severe("Errore registrazione: $e");
       throw Exception("Errore registrazione");
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await _supabase.auth.signOut();
+    } 
+    catch (e) {
+      _log.severe("Errore logout: $e");
+      throw Exception("Errore logout");
     }
   }
 }

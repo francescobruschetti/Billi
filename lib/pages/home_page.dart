@@ -137,8 +137,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _animatedTimeFilters(),
 
                 // Page Content
-                _buildList(transactions),
-                              
+                Expanded(
+                  child: _buildList(transactions),
+                ),
+
                 // Page footer
                 const SizedBox(height: AppConstants.rowVerticalPadding),
                 _footer(),

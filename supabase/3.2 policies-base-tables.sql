@@ -162,18 +162,19 @@ declare
   v_merchant_id uuid;
   v_category_id uuid;
 begin
-  -- Merchant
+  -- Merchant -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
   if p_transaction_type = 'income' then
     v_merchant_id := null;
   else
-    select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) limit 1;
+    select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) and m.user_id = p_user_id limit 1;
     if v_merchant_id is null then
       insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
     end if;
   end if;
 
-  -- Category
-  select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) limit 1;
+  -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
+  -- Category -- Se viene scelta una categoria predefinita, non deve essere possibile modificarla, e non devo crearla per l'utente
+  select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) and (c.user_id = p_user_id or c.user_id is null) limit 1;
   if v_category_id is null then
     insert into categories (name, user_id) values (p_category_name, p_user_id) returning id into v_category_id;
   end if;
@@ -226,14 +227,15 @@ declare
   v_merchant_id uuid;
   v_category_id uuid;
 begin
-  -- Merchant
-  select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) limit 1;
+  -- Merchant -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
+  select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) and m.user_id = p_user_id limit 1;
   if v_merchant_id is null then
     insert into merchants (name, user_id) values (p_merchant_name, p_user_id) returning id into v_merchant_id;
   end if;
 
-  -- Category
-  select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) limit 1;
+  -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
+  -- Category -- Se viene scelta una categoria predefinita, non deve essere possibile modificarla, e non devo crearla per l'utente
+  select c.id into v_category_id from categories c where lower(c.name) = lower(p_category_name) and (c.user_id = p_user_id or c.user_id is null) limit 1;
   if v_category_id is null then
     insert into categories (name, user_id) values (p_category_name, p_user_id) returning id into v_category_id;
   end if;

@@ -1,14 +1,17 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/create_category_response_model.dart';
 import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
+import 'package:logging/logging.dart';
 
 class TransactionPage extends StatefulWidget {
   final String? transactionId;
@@ -22,6 +25,8 @@ class TransactionPage extends StatefulWidget {
 }
 
 class _TransactionPageState extends State<TransactionPage> {
+  final Logger log = Logger('TransactionPage');  
+
   late TextEditingController _priceController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
@@ -78,8 +83,8 @@ class _TransactionPageState extends State<TransactionPage> {
     });
   }
 
-  void _openCategoriesBottomSheet() {
-    showModalBottomSheet(
+  Future<void> _openCategoriesBottomSheet() async {
+    final CreateCategoryResponseModel? categoryResponse = await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
@@ -87,6 +92,10 @@ class _TransactionPageState extends State<TransactionPage> {
         title: 'Seleziona Categoria',
       ),
     );
+
+    if (categoryResponse != null) {
+      _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
+    }
   }
 
   void _pageTitleSetup() {
@@ -121,7 +130,7 @@ class _TransactionPageState extends State<TransactionPage> {
     }
 
     try {
-      if (isEdit) { // Logica di salvataggio modifica gruppo
+      if (isEdit) { // Logica di salvataggio
         await TransactionService().updatePersonalTransaction(
           transactionId: widget.transactionId!,
           price: _formatPriceInput(),
@@ -131,7 +140,7 @@ class _TransactionPageState extends State<TransactionPage> {
           note: _noteController.text.trim(),
         );
       } 
-      else { // Logica di creazione nuovo gruppo
+      else { // Logica di creazione
         await TransactionService().createPersonalTransaction(
           price: _formatPriceInput(),
           transactionType: widget.transactionType,

@@ -1,5 +1,5 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/services/signin_signup_service.dart';
+import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final Logger log = Logger('LoginPage');
-  late SigninSignupService signinSignupService;
+  late SigninSignupLogoutService signinSignupLogoutService;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    signinSignupService = SigninSignupService();
+    signinSignupLogoutService = SigninSignupLogoutService();
 
     _emailController.addListener(_onFormChanged);
     _passwordController.addListener(_onFormChanged);
@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
     try {
-      final res = await signinSignupService.login(
+      final res = await signinSignupLogoutService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -66,8 +66,8 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.of(context).pushReplacementNamed('/');
       }
     } 
-    on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+    catch (e) {
+      setState(() => _errorMessage = e.toString());
     } 
     finally {
       setState(() => _loading = false);

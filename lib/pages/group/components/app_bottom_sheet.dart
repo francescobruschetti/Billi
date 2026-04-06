@@ -33,7 +33,7 @@ class AppBottomSheet extends StatelessWidget {
       initialChildSize: initialSize,
       minChildSize: minSize,
       maxChildSize: maxSize,
-      expand: true, // si espande per riempire lo spazio disponibile
+      expand: false, // false se usato con "showModalBottomSheet "; si espande per riempire lo spazio disponibile
       snap: false, // si aggancia agli snap point
       snapSizes: [minSize, initialSize, maxSize], // punti di aggancio
       snapAnimationDuration: const Duration(milliseconds: 200), // durata animazione snap
@@ -63,6 +63,7 @@ class AppBottomSheet extends StatelessWidget {
       },
     );
   }
+
   Widget _buildDraggableIndicator() {
     return Column(
       children: [

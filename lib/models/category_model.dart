@@ -1,6 +1,3 @@
-import 'package:Billy/entities/category_local.dart';
-import 'package:Billy/enums/sync_status_enum.dart';
-
 class CategoryModel {
   final String id;
   final String name;

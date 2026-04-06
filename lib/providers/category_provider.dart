@@ -1,8 +1,8 @@
 import 'package:Billy/models/category_model.dart';
-import 'package:Billy/services/cache/category_cache_service.dart';
+// TODO: ISAR: import 'package:Billy/services/cache/category_cache_service.dart';
 import 'package:Billy/services/category_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// TODO: ISAR: import 'package:supabase_flutter/supabase_flutter.dart';
 
 final categoryServiceProvider = Provider((ref) => CategoryService());
 
@@ -24,7 +24,6 @@ final categoryProvider = StateNotifierProvider<CategoryNotifier, AsyncValue<List
 // TODO: ISAR
 // class CategoryNotifier extends AsyncNotifier<List<CategoryModel>> {
 class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-
   final CategoryService _service;
 
   CategoryNotifier(this._service) : super(const AsyncLoading()) {

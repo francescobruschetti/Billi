@@ -18,9 +18,9 @@ class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
   Widget build(BuildContext context) {
     return AppBottomSheet(
       title: title,
-      initialSize: 0.5,
-      minSize: 0.25,
-      maxSize: 0.95,
+     initialSize: 0.9,
+      minSize: 0.5,
+      maxSize: 1.0,
 
       child: Scrollbar(
         controller: _verticalController,
