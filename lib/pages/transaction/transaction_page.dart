@@ -5,7 +5,6 @@ import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widge
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Billy/services/transaction_service.dart';
@@ -18,7 +17,7 @@ class TransactionPage extends StatefulWidget {
   final TransactionTypeEnum transactionType;
   final bool isEditAllowed;
 
-  const TransactionPage({super.key, this.transactionId, required this.transactionType, this.isEditAllowed = false});
+  const TransactionPage({super.key, required this.transactionType, this.transactionId, this.isEditAllowed = false});
 
   @override
   State<TransactionPage> createState() => _TransactionPageState();
@@ -30,6 +29,7 @@ class _TransactionPageState extends State<TransactionPage> {
   late TextEditingController _priceController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
+  late TextEditingController _paymentMethodController; // TODO: da implementare
   late TextEditingController _noteController;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
@@ -44,6 +44,7 @@ class _TransactionPageState extends State<TransactionPage> {
     _priceController = TextEditingController(text: '');
     _merchantController = TextEditingController(text: '');
     _categoriesController = TextEditingController(text: '');
+    _paymentMethodController = TextEditingController(text: '');
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
 
@@ -61,6 +62,7 @@ class _TransactionPageState extends State<TransactionPage> {
     _priceController.dispose();
     _merchantController.dispose();
     _categoriesController.dispose();
+    _paymentMethodController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -84,18 +86,55 @@ class _TransactionPageState extends State<TransactionPage> {
   }
 
   Future<void> _openCategoriesBottomSheet() async {
-    final CreateCategoryResponseModel? categoryResponse = await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
-      backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
-      builder: (BuildContext context) => CategoriesBottomSheetWidget(
-        title: 'Seleziona Categoria',
-      ),
-    );
+    // log.fine("Platform: ${Platform.operatingSystem}"); // Debug: stampa il sistema operativo
+    // if (Platform.isIOS) { // TODO: da implementare
+    //   showCupertinoModalPopup(
+    //     context: context,
+    //     builder: (context) => CupertinoActionSheet(
+    //       // oppure un widget custom con stile iOS
+    //       message: Text('Seleziona Categoria', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    //       actions: [
+    //         CupertinoActionSheetAction(
+    //           onPressed: () async {
+    //             Navigator.pop(context); // Chiudi l'action sheet prima di aprire il bottom sheet
+    //             final CreateCategoryResponseModel? categoryResponse = await showModalBottomSheet(
+    //               context: context,
+    //               isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+    //               showDragHandle: true,
+    //               backgroundColor: Colors.transparent,
+    //               builder: (BuildContext context) => CategoriesBottomSheetWidget(
+    //                 title: 'Seleziona Categoria',
+    //               ),
+    //             );
 
-    if (categoryResponse != null) {
-      _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
-    }
+    //             if (categoryResponse != null) {
+    //               _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
+    //             }
+    //           },
+    //           child: const Text('Scegli Categoria'),
+    //         ),
+    //       ],
+    //       cancelButton: CupertinoActionSheetAction(
+    //         onPressed: () => Navigator.pop(context),
+    //         child: const Text('Annulla'),
+    //       ),
+    //     ),
+    //   );
+    // } 
+    // else {
+      final CreateCategoryResponseModel? categoryResponse = await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) => CategoriesBottomSheetWidget(
+          title: 'Seleziona Categoria',
+        ),
+      );
+
+      if (categoryResponse != null) {
+        _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
+      }
+    // }
   }
 
   void _pageTitleSetup() {
@@ -136,7 +175,7 @@ class _TransactionPageState extends State<TransactionPage> {
           price: _formatPriceInput(),
           transactionType: widget.transactionType,
           merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
-          categories: _categoriesController.text.trim(),
+          categories: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _categoriesController.text.trim() : 'INCOME',
           note: _noteController.text.trim(),
         );
       } 
@@ -145,7 +184,7 @@ class _TransactionPageState extends State<TransactionPage> {
           price: _formatPriceInput(),
           transactionType: widget.transactionType,
           merchant: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _merchantController.text.trim() : null,
-          categories: _categoriesController.text.trim(),
+          categories: (widget.transactionType == TransactionTypeEnum.EXPENSE) ? _categoriesController.text.trim() : 'INCOME',
           note: _noteController.text.trim(),
         );
       }
@@ -211,16 +250,25 @@ class _TransactionPageState extends State<TransactionPage> {
                       ),
                     ),
                   ),
-                ],
                 
-                // -- Categorie
-                const SizedBox(height: AppConstants.sizedBoxHeight),
-                CustomValidatedTextField(
-                  controller: _categoriesController,
-                  labelText: 'Categorie',
-                  prefixIcon: Icon(Icons.shopping_cart, size: 24),
-                  onTap: _openCategoriesBottomSheet,
-                ),
+                  // -- Categorie
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
+                    controller: _categoriesController,
+                    labelText: 'Categorie',
+                    prefixIcon: Icon(Icons.shopping_cart, size: 24),
+                    onTap: _openCategoriesBottomSheet,
+                  ),
+
+                  // -- Payment method (TODO: da implementare)
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
+                    controller: _paymentMethodController,
+                    labelText: 'Metodo di pagamento',
+                    prefixIcon: Icon(Icons.payment, size: 24),
+                    // TODO: implementare onTap: _openPaymentMethodsBottomSheet
+                  ),
+                ],
                 
                 // -- Note
                 const SizedBox(height: AppConstants.sizedBoxHeight),

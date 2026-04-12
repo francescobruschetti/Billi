@@ -159,50 +159,53 @@ class GroupTransactionsUtil {
 
   // Compute final movements to balance the transactions, combining the movements of each participant and optimizing the transactions
   static void computeParticipantsFinalMovements(List<GroupParticipantSummaryModel> balanceMovements, Map<String, GroupParticipantSummaryModel> summary) {
+
     for (int i = 0; i < balanceMovements.length; i++) {
       GroupParticipantSummaryModel currentUser = balanceMovements[i];
       GroupParticipantSummaryModel lastUser = balanceMovements.last;
 
-      /* IMPORTANTE: Questa funzione gestisce MALE gli arrotondamenti. 
-      * Il controll if (diff.abs() <= 0.01) permette di considerare resti di 0.01 come bilanciati */
+      if (currentUser.userId != lastUser.userId) {
+        /* IMPORTANTE: Questa funzione gestisce MALE gli arrotondamenti. 
+        * Il controll if (diff.abs() <= 0.01) permette di considerare resti di 0.01 come bilanciati */
 
-      double diff = NumberUtil.roundToDecimals(value: currentUser.toReceiveNet + lastUser.toReceiveNet);
-      if (diff.abs() <= 0.01) {
-        diff = 0; // Considera il debito come completamente bilanciato se la differenza è inferiore a 1 centesimo
-      }
-      
-      if (diff < 0) {
-        summary[currentUser.userId]?.balanceMovements.add(
-          GroupTransactionSummaryBalanceMovementModel(
-            otherUserId: lastUser.userId,
-            amount: lastUser.toReceiveNet.abs(),
-            isToPay: true
-          )
-        );
-        currentUser.toReceiveNet = diff;
-        lastUser.toReceiveNet = 0;
-      }
-      else {
-        summary[currentUser.userId]?.balanceMovements.add(
-          GroupTransactionSummaryBalanceMovementModel(
-            otherUserId: lastUser.userId,
-            amount: (diff == 0) ? lastUser.toReceiveNet.abs() : currentUser.toReceiveNet.abs(),
-            isToPay: true
-          )
-        );
-        currentUser.toReceiveNet = 0;
-        lastUser.toReceiveNet = diff;
-      }
+        double diff = NumberUtil.roundToDecimals(value: currentUser.toReceiveNet + lastUser.toReceiveNet);
+        if (diff.abs() <= 0.01) {
+          diff = 0; // Considera il debito come completamente bilanciato se la differenza è inferiore a 1 centesimo
+        }
+        
+        if (diff < 0) {
+          summary[currentUser.userId]?.balanceMovements.add(
+            GroupTransactionSummaryBalanceMovementModel(
+              otherUserId: lastUser.userId,
+              amount: lastUser.toReceiveNet.abs(),
+              isToPay: true
+            )
+          );
+          currentUser.toReceiveNet = diff;
+          lastUser.toReceiveNet = 0;
+        }
+        else {
+          summary[currentUser.userId]?.balanceMovements.add(
+            GroupTransactionSummaryBalanceMovementModel(
+              otherUserId: lastUser.userId,
+              amount: (diff == 0) ? lastUser.toReceiveNet.abs() : currentUser.toReceiveNet.abs(),
+              isToPay: true
+            )
+          );
+          currentUser.toReceiveNet = 0;
+          lastUser.toReceiveNet = diff;
+        }
 
-      if (currentUser.toReceiveNet != 0) {
-        i -= 1; // Re-evaluate the same user in the next iteration to further optimize transactions
-      }
-      else {
-        balanceMovements.removeAt(i); // Current user is balanced, remove it from the summary
-        i -= 1; // Adjust index after removal
-      }
-      if (lastUser.toReceiveNet == 0) {
-        balanceMovements.removeLast(); // Last user is balanced, remove it from the summary
+        if (currentUser.toReceiveNet != 0) {
+          i -= 1; // Re-evaluate the same user in the next iteration to further optimize transactions
+        }
+        else {
+          balanceMovements.removeAt(i); // Current user is balanced, remove it from the summary
+          i -= 1; // Adjust index after removal
+        }
+        if (lastUser.toReceiveNet == 0) {
+          balanceMovements.removeLast(); // Last user is balanced, remove it from the summary
+        }
       }
     }
 

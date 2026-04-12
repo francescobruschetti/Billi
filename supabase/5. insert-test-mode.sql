@@ -34,6 +34,9 @@ insert into group_transactions (group_id, user_id, merchant_id, category_id, tot
 ((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'f'), (select id from merchants where name = 'Negozio 2'), (select id from categories where name = 'Categoria 2'), 500.00, 250.00, '5 hotel', 'expense'),
 ((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'f'), (select id from merchants where name = 'Negozio 3'), (select id from categories where name = 'Categoria 3'), 600.00, 300.00, '6 hotel', 'expense');
 
+insert into group_transactions (group_id, user_id, total_amount, paid_amount, note, transaction_type) values
+((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'f'), 100.00, 100.00, '1 hotel', 'income');
+
 
 insert into transactions (user_id, merchant_id, category_id, note, total_amount, transaction_type) values
 ('63e05ec7-7e60-49ff-a68b-04bf2ec3a64b', (select id from merchants where name = 'Negozio 1'), (select id from categories where name = 'Categoria 1'), 'A', 2.34, 'expense'),

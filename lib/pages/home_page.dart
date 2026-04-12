@@ -137,9 +137,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _animatedTimeFilters(),
 
                 // Page Content
-                Expanded(
-                  child: _buildList(transactions),
-                ),
+                _buildList(transactions),
 
                 // Page footer
                 const SizedBox(height: AppConstants.rowVerticalPadding),
@@ -193,7 +191,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           }
           return false;
         },
-        child: RefreshIndicator(
+        child: RefreshIndicator( // Pull from top to refresh
           onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
           child: ListView.builder(
             controller: _scrollController,
@@ -300,12 +298,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ),
 
-          const SizedBox(width: 5),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Aggiorna',
-            onPressed: () => ref.read(transactionProvider.notifier).refresh(),
-          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filtra',

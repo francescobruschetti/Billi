@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SearchFieldWidget extends StatelessWidget {
+class SearchFieldWidget extends StatefulWidget {
   final String hintText;
   final IconData? icon;
   final ValueChanged<String> onChanged;
@@ -15,21 +15,42 @@ class SearchFieldWidget extends StatelessWidget {
   });
 
   @override
+  State<SearchFieldWidget> createState() => _SearchFieldWidgetState();
+}
+
+class _SearchFieldWidgetState extends State<SearchFieldWidget> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onClose() {
+    _controller.clear(); // svuota il campo
+    widget.onChanged(''); // notifica il parent che il testo è vuoto
+    widget.onClose?.call(); // chiama il callback onClose se è stato fornito
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SearchBar(
       autoFocus: true,
-      hintText: hintText,
-      leading: icon != null ? Icon(icon) : const Icon(Icons.search),
-      onChanged: onChanged,
+      controller: _controller,
+      hintText: widget.hintText,
+      leading: widget.icon != null ? Icon(widget.icon) : const Icon(Icons.search),
+      onChanged: widget.onChanged,
+      shadowColor: WidgetStateProperty.all(Colors.transparent), // Remove shadow
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20),        
         ),
       ),
       trailing: [
           IconButton(
             icon: const Icon(Icons.close),
-            onPressed: onClose,
+            onPressed: _onClose,
             tooltip: 'Chiudi',
           ),
       ],

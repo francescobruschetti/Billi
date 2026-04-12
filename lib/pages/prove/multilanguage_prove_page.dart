@@ -2,14 +2,14 @@ import 'package:Billy/languages/app_localizations.dart';
 import 'package:Billy/main.dart';
 import 'package:flutter/material.dart';
 
-class UIProvePage extends StatefulWidget {
-  const UIProvePage({super.key});
+class MultiLinguaProvePage extends StatefulWidget {
+  const MultiLinguaProvePage({super.key});
 
   @override
-  State<UIProvePage> createState() => _UIProvePageState();
+  State<MultiLinguaProvePage> createState() => _MultiLinguaProvePageState();
 }
 
-class _UIProvePageState extends State<UIProvePage> {
+class _MultiLinguaProvePageState extends State<MultiLinguaProvePage> {
   late String currentLanguage;
 
   @override
@@ -28,10 +28,24 @@ class _UIProvePageState extends State<UIProvePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Text('Current language: $currentLanguage'),
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(title: const Text('Prova Multi-lingua')),
+      body: Center(
+        child: Column(
+          children: [
+            // --- Prova Multi-lingua ---
+            Expanded(child: _buildMultiLinguaTest(context)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMultiLinguaTest(BuildContext context) {
+    return Column(
+      children: [
+        Text('Current language: $currentLanguage'),
           ElevatedButton(
             onPressed: () {
               changeLanguage(context, currentLanguage == 'en' ? 'it' : 'en');
@@ -45,8 +59,7 @@ class _UIProvePageState extends State<UIProvePage> {
           // Returns '5 wombats'
           Text(AppLocalizations.of(context)!.nWombats(5)),
           Text(AppLocalizations.of(context)!.helloWorldOn(DateTime.utc(1959, 7, 9))),
-        ],
-      ),
+      ],
     );
   }
 }

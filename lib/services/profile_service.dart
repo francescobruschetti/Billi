@@ -4,14 +4,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileService {
   final Logger _log = Logger('ProfileService');
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final SupabaseClient supabase = Supabase.instance.client;
 
   Future<ProfileModel> getUserByEmailOrUsername(String key) async {
-    final res = await _supabase.rpc('get_user_by_email_or_username', params: {
+    final res = await supabase.rpc('get_user_by_email_or_username', params: {
       'p_email': key,
       'p_username': key,
     });
     _log.fine("Fetched user by email or username '$key': $res");
+
+    if (res == null || (res is List && res.isEmpty)) {
+      _log.warning("No user found with email or username '$key'. Returning empty profile.");
+      return ProfileModel.empty();
+    }
 
     return ProfileModel.fromMap((res as List).first);
   }

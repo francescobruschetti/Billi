@@ -1,10 +1,8 @@
 import 'package:Billy/languages/app_localizations.dart';
-import 'package:Billy/providers/isar_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/main_scaffold.dart';
 import 'pages/login_logout_signup/login_page.dart';
@@ -85,25 +83,29 @@ class _BillyAppState extends State<BillyApp> {
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
+          
           onPrimary: Colors.black,
           primaryContainer: Colors.blue[300],
+          
           secondary: Colors.orange,
           onSecondary: Colors.black,
-          secondaryContainer: Colors.orange[400],
+          secondaryContainer: Colors.orange[300],
+
           onSecondaryContainer: Colors.black,
         ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
+          brightness: Brightness.dark,
+          
           seedColor: Colors.blue,
           onPrimary: Colors.black,
           primaryContainer: Colors.blue[300],
           secondary: Colors.orange,
           onSecondary: Colors.black,
-          secondaryContainer: Colors.blue[400],
+          secondaryContainer: Colors.orange[300],
           onSecondaryContainer: Colors.black,
-          brightness: Brightness.dark,
         ),
       ),
       themeMode: ThemeMode.system, // automatico: system

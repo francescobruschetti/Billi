@@ -1,3 +1,6 @@
+import 'package:Billy/extentions/category_enum_extention.dart';
+import 'package:flutter/material.dart';
+
 class CategoryModel {
   final String id;
   final String name;
@@ -23,6 +26,9 @@ class CategoryModel {
     );
   }
 
+  Widget get icon {
+    return CategoryEnumParsing(name).toCategoryEnum().toIcon();
+  }
 
   // TODO: ISAR
   // factory CategoryModel.fromLocal(CategoryLocal local) => CategoryModel(
@@ -33,7 +39,7 @@ class CategoryModel {
   //   updatedAt: local.updatedAt,
   // );
 
-  // CategoryLocal toLocal({ required Duration ttl, SyncStatusEnum syncStatus = SyncStatusEnum.synced, }) 
+  // CategoryLocal toLocal({ required Duration ttl, SyncStatusEnum syncStatus = SyncStatusEnum.SYNCED, }) 
   // {
   //   final now = DateTime.now();
   //   return CategoryLocal()

@@ -123,8 +123,11 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
             SearchFieldWidget(
               hintText: 'Cerca gruppo...',
               icon: Icons.search,
-              onChanged: (value) => setState(() => _searchText = value),
-              onClose: () => setState(() => _showSearchBar = false),
+              onChanged: (value) => setState(() => _searchText = value), // Nota: quando SearchFieldWidget._onClose().widget.onChanged('') viene chiamato, _searchText viene resettato a ''
+              onClose: () => setState(() { // Aggiunto per sicurezza
+                _searchText = '';
+                _showSearchBar = false;
+              }),
             )
           // debug: )
         : const Text('Gruppi'),
@@ -164,7 +167,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       return const Center(child: Text('Nessun gruppo trovato'));
     }
 
-    return RefreshIndicator(
+    return RefreshIndicator( // Pull from top to refresh
       onRefresh: () => ref.read(groupsProvider.notifier).refresh(),
       child: ListView.builder(
         itemCount: groups.length,

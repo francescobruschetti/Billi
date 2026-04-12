@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/pages/prove/ui_prove_page.dart';
 import 'package:Billy/pages/settings.dart';
-import 'package:Billy/pages/ui_prove_page.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
@@ -21,7 +21,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     HomePage(),
     GroupsPage(),
     SettingsPage(),
-    UIProvePage(),
+    UIProvePageX(),
   ];
 
   @override

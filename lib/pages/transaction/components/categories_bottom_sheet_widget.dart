@@ -6,6 +6,7 @@ import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
+import 'package:Billy/widgets/components/floating_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -55,6 +56,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
       initialSize: 0.9,
       minSize: 0.5,
       maxSize: 1.0,
+      
       child: categoriesState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Errore: $e')),
@@ -93,19 +95,40 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                 ],
 
                 const SizedBox(height: 8),
-                ListView.builder(
+                GridView.builder(
                   controller: _scrollListController,
-                  shrinkWrap: true, // necessario senza Expanded
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 4,
+                    crossAxisSpacing: 4,
+                    childAspectRatio: 1.5, // più largo che alto
+                  ),
                   itemCount: filteredCategories.length,
                   itemBuilder: (context, index) {
                     final category = filteredCategories[index];
-                    return ListTile(
-                      leading: const Icon(Icons.shopping_cart), // TODO: setup icona categoria
-                      title: Text(category.name),
+                    return GestureDetector(
                       onTap: () {
-                        log.fine('Categoria selezionata: ${category.name}');
                         Navigator.of(context).pop(CreateCategoryResponseModel(category: category, isNew: false));
                       },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            category.icon,
+                            const SizedBox(height: 4),
+                            Text(
+                              category.name,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),

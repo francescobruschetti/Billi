@@ -10,6 +10,7 @@ insert into categories (name) values
 ('GROCERIES'),
 ('HOME'),
 ('HEALTH'),
+('INCOME'),
 ('OTHER'),
 ('PENSION'),
 ('PHONE'),

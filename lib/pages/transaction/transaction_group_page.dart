@@ -1,7 +1,9 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_insert_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/create_category_response_model.dart';
 import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -18,9 +20,10 @@ import 'package:logging/logging.dart';
 class TransactionGroupPage extends ConsumerStatefulWidget {
   final String? groupId;
   final String? transactionId;
+  final TransactionTypeEnum transactionType;
   final bool isEditAllowed;
 
-  const TransactionGroupPage({super.key, this.groupId, this.transactionId, this.isEditAllowed = false});
+  const TransactionGroupPage({super.key, required this.transactionType, this.groupId, this.transactionId, this.isEditAllowed = false});
 
   @override
   ConsumerState<TransactionGroupPage> createState() => _TransactionGroupPageState();
@@ -35,6 +38,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   late TextEditingController _splitRateController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
+  late TextEditingController _paymentMethodController; // TODO: da implementare
   late TextEditingController _noteController;
   GroupDetailsModel? _selectedGroup;
   bool _isLoading = false;
@@ -55,6 +59,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     _splitRateController = TextEditingController(text: '');
     _merchantController = TextEditingController(text: '');
     _categoriesController = TextEditingController(text: '');
+    _paymentMethodController = TextEditingController(text: '');
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
     _paidAmountController.addListener(_onFieldChanged);
@@ -78,6 +83,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     _splitRateController.dispose();
     _merchantController.dispose();
     _categoriesController.dispose();
+    _paymentMethodController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -93,6 +99,16 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       // Se non trova il gruppo, ritorna null
       return null;
     }
+  }
+
+  Future<bool> _confirmSave({required String message}) async {
+    // Mostra dialog di conferma
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => _buildConfirmDialog(context, message: message),
+    );
+
+    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
   }
 
   bool _filterGroups(GroupDetailsModel item, String filter) {
@@ -132,33 +148,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     });
   }
 
-  void _onGroupChanged(GroupDetailsModel? selected) {
-    setState(() {
-      _selectedGroup = selected!;
-    });
-    _onFieldChanged();
-  }
-
-  void _onFieldChanged() {
-    setState(() {
-      _isSaveEnabled = (_selectedGroup != null && (_paidAmountController.text.isNotEmpty || _selectedSplitRateValue != null) && _priceController.text.isNotEmpty);
-    });
-  }
-
-  void _pageTitleSetup() {
-    pageTitle = isEdit ? 'Modifica Spesa di Gruppo' : 'Inserisci Spesa Gruppo';
-  }
-
-  Future<bool> _confirmSave({required String message}) async {
-    // Mostra dialog di conferma
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => _buildConfirmDialog(context, message: message),
-    );
-
-    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
-  }
-
   Future<void> _loadExistingTransaction(String transactionId) async {
     setState(() {
       _isLoading = true;
@@ -193,7 +182,49 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     }
   }
   
-  Future<void> _saveTransaction() async {
+  void _onGroupChanged(GroupDetailsModel? selected) {
+    setState(() {
+      _selectedGroup = selected!;
+    });
+    _onFieldChanged();
+  }
+
+  void _onFieldChanged() {
+    setState(() {
+      if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
+        _isSaveEnabled = (_selectedGroup != null && (_paidAmountController.text.isNotEmpty || _selectedSplitRateValue != null) && _priceController.text.isNotEmpty);
+      }
+      else {
+        _isSaveEnabled = (_selectedGroup != null && _priceController.text.isNotEmpty);
+      }
+    });
+  }
+
+  Future<void> _openCategoriesBottomSheet() async {
+    final CreateCategoryResponseModel? categoryResponse = await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) => CategoriesBottomSheetWidget(
+        title: 'Seleziona Categoria',
+      ),
+    );
+
+    if (categoryResponse != null) {
+      _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
+    }
+  }
+
+  void _pageTitleSetup() {
+    if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
+      pageTitle = isEdit ? 'Modifica Spesa' : 'Inserisci Spesa';
+    }
+    else if (widget.transactionType == TransactionTypeEnum.INCOME) {
+      pageTitle = isEdit ? 'Modifica Entrata' : 'Inserisci Entrata';
+    }
+  }
+
+  Future<void> _saveExpenseTransaction() async {
     if (mounted) {
       setState(() {
         _errorMessage = null;
@@ -222,25 +253,65 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       }
 
       if (isEdit) { // Logica di salvataggio modifica gruppo
-        await TransactionService().updateGroupTransaction(
+        await TransactionService().updateGroupExpenseTransaction(
           groupId: _selectedGroup!.id,
           transactionId: widget.transactionId!,
           price: formattedPrice,
-          transactionType: TransactionTypeEnum.EXPENSE, // TODO: da impostare in base alla selezione dell'utente
           merchant: _merchantController.text.trim(),
           categories: _categoriesController.text.trim(),
           note: _noteController.text.trim(),
         );
       } 
       else { // Logica di creazione nuovo gruppo
-        await TransactionService().createGroupTransaction(
+        await TransactionService().createGroupExpenseTransaction(
           groupId: _selectedGroup!.id,
           price: formattedPrice,
-          transactionType: TransactionTypeEnum.EXPENSE, // TODO: da impostare in base alla selezione dell'utente
           splitRate: _selectedSplitRateValue,
           paidAmount: paidAmount,
           merchant: _merchantController.text.trim(),
           categories: _categoriesController.text.trim(),
+          note: _noteController.text.trim(),
+        );
+      }
+    
+      if (mounted) {
+        GenericUtil.showSnackbar(context, isEdit ? "Dati aggiornati" : "Dati salvati");
+        Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
+      }
+    }
+    catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Errore durante il salvataggio';
+          _isSaveEnabled = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveIncomeTransaction() async {
+    if (mounted) {
+      setState(() {
+        _errorMessage = null;
+        _isSaveEnabled = false;
+      });
+    }
+
+    try {
+      double formattedPrice = _formatPriceInput();
+
+      if (isEdit) { // Logica di salvataggio modifica gruppo
+        await TransactionService().updateGroupIncomeTransaction(
+          groupId: _selectedGroup!.id,
+          transactionId: widget.transactionId!,
+          price: formattedPrice,
+          note: _noteController.text.trim(),
+        );
+      } 
+      else { // Logica di creazione nuovo gruppo
+        await TransactionService().createGroupIncomeTransaction(
+          groupId: _selectedGroup!.id,
+          price: formattedPrice,
           note: _noteController.text.trim(),
         );
       }
@@ -320,62 +391,63 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                 ),
 
                 // -- Split Rate vs Paid Amount
-                const SizedBox(height: AppConstants.sizedBoxHeight),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
+                if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
+                              ),
+                              backgroundColor: const Color.fromARGB(255, 225, 250, 2),
+                              foregroundColor: Colors.black87,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            backgroundColor: const Color.fromARGB(255, 225, 250, 2),
-                            foregroundColor: Colors.black87,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
+                            child: const Text('Specifica quota'),
                           ),
-                          onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
-                          child: const Text('Specifica quota'),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
+                              ),
+                              backgroundColor: const Color.fromARGB(255, 11, 250, 238),
+                              foregroundColor: Colors.black87,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
-                            backgroundColor: const Color.fromARGB(255, 11, 250, 238),
-                            foregroundColor: Colors.black87,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
+                            child: const Text('Dividi spesa'),
                           ),
-                          onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
-                          child: const Text('Dividi spesa'),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+
+                  if (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID) ...[
+                    SizedBox(height: _defaultSizedBoxHeight),
+                    _buildFixedRateComponents(),
+                  ]
+                  else if (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE) ...[
+                    _buildSplitRateComponents(),
                   ],
-                ),
 
-                if (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID) ...[
-                  SizedBox(height: _defaultSizedBoxHeight),
-                  _buildFixedRateComponents(),
-                ]
-                else if (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE) ...[
-                  _buildSplitRateComponents(),
-                ],
-
-                // -- Negozio
-                const SizedBox(height: AppConstants.sizedBoxHeight),
-                CustomValidatedTextField(
+                  // -- Negozio
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
                     controller: _merchantController,
                     labelText: 'Negozio',
                     prefixIcon: SizedBox(
@@ -386,15 +458,26 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                       ),
                     ),
                   ),
-                
-                // -- Categorie
-                const SizedBox(height: AppConstants.sizedBoxHeight),
-                CustomValidatedTextField(
-                  controller: _categoriesController,
-                  labelText: 'Categorie',
-                  prefixIcon: Icon(Icons.shopping_cart, size: 24),
-                ),
-                                
+
+                  // -- Categorie
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
+                    controller: _categoriesController,
+                    labelText: 'Categorie',
+                    prefixIcon: Icon(Icons.shopping_cart, size: 24),
+                    onTap: _openCategoriesBottomSheet,
+                  ),
+
+                  // -- Payment method (TODO: da implementare)
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  CustomValidatedTextField(
+                    controller: _paymentMethodController,
+                    labelText: 'Metodo di pagamento',
+                    prefixIcon: Icon(Icons.payment, size: 24),
+                    // TODO: implementare onTap: _openPaymentMethodsBottomSheet
+                  ),
+                ],
+
                 // -- Note
                 const SizedBox(height: AppConstants.sizedBoxHeight),
                 CustomValidatedTextField(
@@ -405,7 +488,11 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
 
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  ErrorAlertWidget(errorMessage: _errorMessage!),
+                  ErrorAlertWidget(errorMessage: _errorMessage!, onClose: () {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }),
                 ],
                 
                 // Save/Cancel buttons
@@ -678,11 +765,11 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
-          onPressed: _isSaveEnabled ? 
-          () { // Salva o crea gruppo
-            _saveTransaction();
-          } 
-          : null, // Disabilita il pulsante se il nome è vuoto
+          onPressed: _isSaveEnabled 
+            ? () => widget.transactionType == TransactionTypeEnum.EXPENSE 
+              ? _saveExpenseTransaction() 
+              : _saveIncomeTransaction()
+            : null, // Salva o crea gruppo
           child: const Text('Salva'),
         ),
         const SizedBox(width: 16),

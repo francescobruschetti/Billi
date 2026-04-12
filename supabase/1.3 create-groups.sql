@@ -44,7 +44,8 @@ create table group_transactions (
   updated_at timestamp with time zone default now(),
   constraint fk_group_transactions_profiles foreign key (user_id) references profiles(id) on delete cascade,
   constraint chk_paid_or_split_only check (
-    (paid_amount is not null and split_rate is null) or (paid_amount is null and split_rate is not null)
+    (paid_amount is not null and split_rate is null) 
+    or (paid_amount is null and split_rate is not null)
   )
 );
 

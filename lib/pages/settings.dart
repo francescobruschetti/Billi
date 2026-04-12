@@ -62,7 +62,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

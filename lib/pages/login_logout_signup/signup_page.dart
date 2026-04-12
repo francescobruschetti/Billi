@@ -3,7 +3,6 @@ import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logging/logging.dart';
 
 class SignupPage extends StatefulWidget {

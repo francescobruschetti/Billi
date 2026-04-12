@@ -200,10 +200,10 @@ class CategoryCacheService {
 
 ```dart
 class CategoryService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final SupabaseClient supabase = Supabase.instance.client;
 
   Future<List<CategoryModel>> fetchCategories() async {
-    final res = await _supabase
+    final res = await supabase
       .from('categories')
       .select()
       .order('name');
@@ -211,7 +211,7 @@ class CategoryService {
   }
 
   Future<CategoryModel> createCategory(String name) async {
-    final res = await _supabase
+    final res = await supabase
       .from('categories')
       .insert({'name': name})
       .select()

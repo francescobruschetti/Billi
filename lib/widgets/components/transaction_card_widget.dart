@@ -1,31 +1,54 @@
+import 'package:Billy/enums/category_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
+import 'package:Billy/extentions/category_enum_extention.dart';
 
-class TransactionCardWidget extends StatelessWidget {
-  final String? merchantName;
-  final String? categoryName;
+class TransactionCardWidget extends StatefulWidget {
   final String formattedDateTime;
   final double totalAmount;
   final TransactionTypeEnum transactionType;
-  final ProfileModel? profileModel;
+  final String? categoryName;
+  final String? groupId;
+  final String? merchantName;
   final String? note;
   final String? splitRate;
   final double? paidAmount;
+  final ProfileModel? profileModel;
 
   const TransactionCardWidget({
     super.key,
-    this.merchantName,
-    this.categoryName,
     required this.formattedDateTime,
     required this.totalAmount,
     required this.transactionType,
+    this.categoryName,
+    this.groupId,
+    this.merchantName,
     this.note,
-    this.profileModel,
-    this.paidAmount,
     this.splitRate,
+    this.paidAmount,
+    this.profileModel,
   });
+
+  @override
+  State<TransactionCardWidget> createState() => _TransactionCardWidgetState();
+}
+
+class _TransactionCardWidgetState extends State<TransactionCardWidget> {
+
+  late CategoryEnum categoryEnum;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.categoryName != null) {
+      setState(() {
+        categoryEnum = CategoryEnumParsing(widget.categoryName!).toCategoryEnum();        
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,49 +59,72 @@ class TransactionCardWidget extends StatelessWidget {
             spacing: 4, // Spaziatura tra gli elementi
             runSpacing: 2, // Spaziatura tra le righe
             children: [
+              // --- Category entry
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // --- Transaction entry
-                  CustomIconWidget(assetPath: 'assets/images/icons/sell-filled.PNG', color: Colors.orange),
+                  if (widget.categoryName != null) ...[
+                    categoryEnum.toIcon(),
+                  ] 
+                  else ...[
+                    CustomIconWidget(assetPath: 'assets/images/icons/sell-filled.PNG', color: Colors.orange),
+                  ],
+                  
                   const SizedBox(width: 4),
-                  if (categoryName != null) Text(categoryName!, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  if (widget.categoryName != null) ...[
+                    Text(widget.categoryName!, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ]
+                  else ...[
+                    const Text('-'),
+                  ]
                 ],
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
-                  const SizedBox(width: 4),
-                  if (merchantName != null) Text(merchantName!, style: const TextStyle(fontWeight: FontWeight.w500)),
-                ],
-              ),
-              if (profileModel != null) ...[
+
+              // -- Merchant entry
+              if (categoryEnum != CategoryEnum.INCOME) ...[
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
+                    const SizedBox(width: 4),
+                    if (widget.merchantName != null) ...[
+                      Text(widget.merchantName!, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    ]
+                    else ...[
+                      const Text('-'),
+                    ]
+                  ],
+                ),
+              ],
+
+              // -- Profile entry
+              if (widget.profileModel != null) ...[
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.person, size: 20, color: Colors.green),
                     const SizedBox(width: 4),
-                    Text(profileModel!.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(widget.profileModel!.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ],
             ],
           ),
-          subtitle: Text(formattedDateTime, style: const TextStyle(fontSize: 12)),
+          subtitle: Text(widget.formattedDateTime, style: const TextStyle(fontSize: 12)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (note != null && note!.isNotEmpty) ...[
+              if (widget.note != null && widget.note!.isNotEmpty) ...[
                 Icon(Icons.note, color: Colors.yellow[700], size: 20),
               ],
               const SizedBox(width: 4),
               Text(
-                _formatAmount(totalAmount, transactionType), 
+                _formatAmount(widget.totalAmount, widget.transactionType), 
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: transactionType == TransactionTypeEnum.INCOME ? Colors.green : Colors.red,
+                  color: widget.transactionType == TransactionTypeEnum.INCOME ? Colors.green : Colors.red,
                 )
               ),
             ],
@@ -98,13 +144,57 @@ class TransactionCardWidget extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        
+                        // --- Group Entry
+                        if (widget.groupId != null) ...[
+                          if (widget.paidAmount != null) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: 
+                                  SelectableText('Importo pagato: €${widget.paidAmount!.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    )
+                                  ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: 
+                                  SelectableText('Importo mancante: €${(widget.totalAmount - (widget.paidAmount ?? 0)).toStringAsFixed(2)}', 
+                                    textAlign: TextAlign.left, 
+                                    style: TextStyle(
+                                      color: (widget.totalAmount - (widget.paidAmount ?? 0)) > 0 ? Colors.red : Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    )
+                                  ),
+                              ),
+                            ),
+                          ],
+                          if (widget.splitRate != null) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text('Percentuale di suddivisione: ${widget.splitRate}', textAlign: TextAlign.left),
+                              ),
+                            ),
+                          ],
+                        ],
+
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: SelectableText((note != null && note!.isNotEmpty) ? 'Nota: $note' : 'Nessuna nota', textAlign: TextAlign.left),
+                            child: SelectableText((widget.note != null && widget.note!.isNotEmpty) ? 'Nota: ${widget.note}' : 'Nessuna nota', textAlign: TextAlign.left),
                           ),
                         ),
+
                       ],
                     ),
                   ),

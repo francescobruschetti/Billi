@@ -5,9 +5,8 @@ import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
-import 'package:Billy/widgets/components/floating_button_widget.dart';
-import 'package:Billy/widgets/components/group_transaction_card_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
+import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
@@ -91,7 +90,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     return count;
   }
 
-  void _filterTransactions({bool reset = false}) {
+  void _filterTransactions() {
     setState(() {
       _showFilters = !_showFilters;
     });
@@ -121,7 +120,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     });
   }
 
-  void _loadData({bool reset = false}) async {
+  Future<void> _loadData({bool reset = false}) async {
     if (_isLoadingPage || _isLoadingContent) return;
     if (mounted) {
       setState(() {
@@ -173,8 +172,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     }
   }
 
-  void _navigateToGroupTransactionsPage({required String groupId, required bool isEditAllowed}) async {
-    var page = TransactionGroupPage(groupId: groupId, isEditAllowed: isEditAllowed);
+  void _navigateToGroupTransactionPage({required String groupId, required TransactionTypeEnum transactionType, required bool isEditAllowed}) async {
+    var page = TransactionGroupPage(groupId: groupId, transactionType: transactionType, isEditAllowed: isEditAllowed);
 
     await Navigator.push(
       context,
@@ -226,7 +225,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
       builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
-        title: 'Riepilogo saldo',
+        title: 'Compensa saldo',
         participantsSummary: _participantsSummary,
       ),
     );
@@ -236,14 +235,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   Widget build(BuildContext context) {    
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      // UI AppBar: v1: 
       appBar: _buildAppBar(),
-      floatingActionButton: FloatingButtonWidget(
-        onPressed: () => _navigateToGroupTransactionsPage(groupId: widget.groupId, isEditAllowed: true),
-        iconButton: const CustomIconWidget(
-          assetPath: 'assets/images/icons/add.PNG',
-          size: 24,
-        ),
-      ),
       body: _isLoadingPage
         ? Center(
             child: Column(
@@ -261,10 +254,14 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  ErrorAlertWidget(errorMessage: _errorMessage!),
+                  ErrorAlertWidget(errorMessage: _errorMessage!, onClose: () {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }),
                 ]
                 else ...[
-                  // How much user owes or is owed
+                  // --- How much user owes or is owed
                   const SizedBox(height: 2),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -289,6 +286,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                     ],
                   ),
                   
+                  // -- Azioni di ordinamento e filtro
                   const SizedBox(height: 2),
                   Row(
                     children: [
@@ -323,40 +321,46 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                               }
                               return false;
                             },
-                            child:
-                              ListView.builder(
-                                controller: _scrollController,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _groupTransactions.length + (_isLoadingContent ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index >= _groupTransactions.length) {
-                                    return const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 16),
-                                      child: Center(child: Text('Carico altre spese...')),
-                                    );
-                                  }
-                                  final e = _groupTransactions[index];
-                                  final formattedDateTime = _formatDateTime(e.updatedAt.toString());
-                                  final totalAmount = e.totalAmount;
-                                  final merchant = e.merchant;
-                                  final category = e.category;
+                            child: RefreshIndicator( // Pull from top to refresh
+                              onRefresh: () => _loadData(reset: true),
+                              child:
+                                ListView.builder(
+                                  controller: _scrollController,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  itemCount: _groupTransactions.length + (_isLoadingContent ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index >= _groupTransactions.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(child: Text('Carico altre spese...')),
+                                      );
+                                    }
+                                    final e = _groupTransactions[index];
+                                    final formattedDateTime = _formatDateTime(e.updatedAt.toString());
+                                    final totalAmount = e.totalAmount;
+                                    final merchant = e.merchant;
+                                    final category = e.category;
 
-                                  return GroupTransactionCardWidget(
-                                    merchantName: merchant?.name,
-                                    categoryName: category?.name,
-                                    formattedDateTime: formattedDateTime,
-                                    totalAmount: totalAmount,
-                                    transactionType: e.transactionType,
-                                    note: e.note,
-                                    profileModel: e.profileModel,
-                                    paidAmount: e.paidAmount,
-                                    splitRate: e.splitRate,
-                                  );
-                                },
+                                    return TransactionCardWidget(
+                                      formattedDateTime: formattedDateTime,
+                                      totalAmount: totalAmount,
+                                      transactionType: e.transactionType,
+                                      categoryName: category?.name,
+                                      groupId: widget.groupId,
+                                      merchantName: merchant?.name,
+                                      note: e.note,
+                                      splitRate: e.splitRate,
+                                      paidAmount: e.paidAmount,
+                                      profileModel: e.profileModel,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                   ),
                 ],
+              
+                _footer(),
               ],
             ),
           ),
@@ -378,11 +382,14 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
         ? // debug: Container(
           // debug: color: Colors.redAccent, 
           // debug: child: 
-            SearchFieldWidget(
+            SearchFieldWidget( // TODO: da implementare
               hintText: 'Cerca spesa...',
               icon: Icons.search,
-              onChanged: (value) => setState(() => _searchText = value),
-              onClose: () => setState(() => _showSearchBar = false),
+              onChanged: (value) => setState(() => _searchText = value), // Nota: quando SearchFieldWidget._onClose().widget.onChanged('') viene chiamato, _searchText viene resettato a ''
+              onClose: () => setState(() { // Aggiunto per sicurezza
+                _searchText = '';
+                _showSearchBar = false;
+              }),
             )
           // debug: )
         : Text('Spese: $_groupName'),
@@ -418,6 +425,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     );
   }
 
+  // UI AppBar: v1:
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: _animatedSearchBar(),
@@ -445,13 +453,47 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
             icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
             tooltip: 'Impostazioni Gruppo',
             onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
-          ),        
+          ),
         ],
       ],
     );
   }
 
-   Widget _pageHeader() {
+  Widget _footer() {
+    return Container(
+      // debug UI: color: Colors.red,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.rowVerticalPadding),
+      child: Row(
+        children: [
+          Expanded(
+            child: CustomButtonWidget(
+                onPressed: () async {
+                _navigateToGroupTransactionPage(groupId: widget.groupId, transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
+              },
+              text: 'Uscite',
+              customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
+              backgroundColor: AppConstants.defaultExpenseColor,
+            ),
+          ),
+          const SizedBox(width: AppConstants.sizedBoxWidth),
+          Expanded(
+            child: 
+              CustomButtonWidget(
+                onPressed: () async {
+                  _navigateToGroupTransactionPage(groupId: widget.groupId, transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
+                },
+                text: 'Entrate',
+                iconData: Icons.login,
+                backgroundColor: AppConstants.defaultIncomeColor,
+              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // UI AppBar: v1:
+  Widget _pageHeader() {
     return Container(
       // debug UI: color: Colors.green,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
@@ -475,4 +517,66 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       ),
     );
   }
+  // UI AppBar: v2:
+  // Widget _pageHeader() {
+  //   return Container(
+  //     // debug UI: color: Colors.green,
+  //     padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         // -- Back button
+  //         IconButton(
+  //           icon: const Icon(Icons.arrow_back),
+  //           tooltip: 'Indietro',
+  //           onPressed: () => Navigator.of(context).pop(),
+  //         ),
+
+  //         // -- Title + Balance
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text('Bilancio: $_groupName', style: TextStyle(fontSize: 16)),
+  //               const SizedBox(width: 8),
+  //               SelectableText(
+  //                 '${_computeBalance()} €',
+  //                 style: TextStyle(fontSize: 28),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+
+  //         // -- Search bar
+  //         _animatedSearchBar(),
+
+  //         // -- Actions
+  //         if (!_showSearchBar) ...[
+  //           IconButton(
+  //             icon: const Icon(Icons.search),
+  //             tooltip: 'Cerca',
+  //             onPressed: () => {
+  //               setState(() => _showSearchBar = !_showSearchBar),
+  //             },
+  //           ),
+  //           // IconButton( // TODO: valutare se mantenere o spostare nei filtri
+  //           //   icon: const Icon(Icons.refresh),
+  //           //   tooltip: 'Aggiorna',
+  //           //   onPressed: () => _loadData(reset: true),
+  //           // ),
+  //           // IconButton( // TODO: valutare se mantenere o spostare nei filtri
+  //           //   icon: const Icon(Icons.filter_list),
+  //           //   tooltip: 'Filtra',
+  //           //   onPressed: () => _filterTransactions(reset: true),
+  //           // ),
+  //           IconButton(
+  //             icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
+  //             tooltip: 'Impostazioni Gruppo',
+  //             onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
+  //           ),
+  //         ],
+  //       ],
+  //     ),
+  //   );
+  // }
 }

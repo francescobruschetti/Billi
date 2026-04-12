@@ -73,11 +73,14 @@ grant execute on function public.is_user_in_group(uuid) to authenticated;
 
 --------------------------------------------------------------------------
 -- Funzione custom per ottenere tutti i membri del gruppo solo se abilitato
+DROP FUNCTION get_group_members(uuid);
 create or replace function get_group_members(p_group_id uuid)
 returns table (
   user_id uuid,
   username text,
-  email text
+  email text,
+  created_at timestamptz,
+  updated_at timestamptz
 )
 as $$
 begin
@@ -88,7 +91,7 @@ begin
       and is_enabled = true
   ) then
     return query
-      select gp.user_id, p.username, p.email
+      select gp.user_id, p.username, p.email, p.created_at, p.updated_at
       from group_participants gp
       left join profiles p on p.id = gp.user_id
       where gp.group_id = p_group_id;
@@ -99,7 +102,8 @@ grant execute on function public.get_group_members(uuid) to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
--- Get user by email or username
+-- Get Profile by email or username
+DROP FUNCTION get_user_by_email_or_username(varchar, text);
 create or replace function public.get_user_by_email_or_username(
   p_email varchar(255),
   p_username text
@@ -108,15 +112,19 @@ returns table (
   id uuid,
   email varchar(255),
   username text,
-  name text
+  name text,
+  created_at timestamptz,
+  updated_at timestamptz
 )
 as $$
 begin
   return query
-  select u.id, u.email, p.username, p.name
+  
+  select u.id, u.email, p.username, p.name, p.created_at, p.updated_at
   from auth.users u
   left join profiles p on p.id = u.id
   where u.email = p_email or p.username = p_username;
+
 end;
 $$ language plpgsql security definer;
 

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ErrorAlertWidget extends StatelessWidget {
   final String errorMessage;
   final IconData? icon;
+  final VoidCallback? onClose;
 
   const ErrorAlertWidget({
     super.key,
     required this.errorMessage,
     this.icon,
+    this.onClose,
   });
 
   @override
@@ -31,6 +33,17 @@ class ErrorAlertWidget extends StatelessWidget {
               style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
           ),
+          if (onClose != null) ...[
+            const SizedBox(width: 4),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.red),
+              tooltip: 'Chiudi',
+              onPressed: onClose,
+              splashRadius: 8,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+          ],
         ],
       ),
     );

@@ -107,6 +107,17 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     try {
       final res = await ProfileService().getUserByEmailOrUsername(key);
       log.fine("User search result: $res");
+      
+      if (res.id.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Nessun utente trovato con email o username "$key"';
+            _showOnlyError = true;
+          });
+        }
+        return;
+      }
+      
       if (mounted) {
         setState(() {
           if (_existingUsers.any((u) => u.id == res.id)) {
@@ -120,9 +131,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       }
     } 
     catch (e) {
+      log.severe("Errore durante la ricerca dell'utente: $e");
       if (mounted) {
         setState(() {
-          _errorMessage = 'Errore durante la ricerca dell\'utente: $e';
+          _errorMessage = 'Errore durante la ricerca dell\'utente';
           _showOnlyError = true;
         });
       }
@@ -187,6 +199,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   void _onNameChanged() {
     setState(() {
       _isSaveEnabled = _nameController.text.trim().isNotEmpty;
+    });
+  }
+
+  void _onCloseSearchUser() {
+    log.fine("Search user closed. Resetting search state.");
+    setState(() {
+      _searchUser = '';
     });
   }
 
@@ -337,9 +356,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       Expanded(
                         child: SearchFieldWidget(
                           hintText: 'Cerca utente per username o email',
-                          onChanged: (value) {
-                            setState(() => _searchUser = value);
-                          },
+                          onChanged: (value) => setState(() => _searchUser = value), // Nota: quando SearchFieldWidget._onClose().widget.onChanged('') viene chiamato, _searchText viene resettato a ''
+                          onClose: () => setState(() { // Aggiunto per sicurezza
+                            _searchUser = '';
+                          }),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -405,7 +425,11 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       
                 // Alert errore
                 if (_errorMessage != null) ...[
-                  ErrorAlertWidget(errorMessage: _errorMessage!),
+                  ErrorAlertWidget(errorMessage: _errorMessage!, onClose: () {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }),
                 ],
                 
                 // Save/Cancel buttons

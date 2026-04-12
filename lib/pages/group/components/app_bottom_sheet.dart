@@ -40,7 +40,7 @@ class AppBottomSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 17, 119, 26), // TODO: da ripristinare: Theme.of(context).scaffoldBackgroundColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding),
@@ -48,7 +48,7 @@ class AppBottomSheet extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.max, // ! Crucial to allow the sheet to expand fully and avoid "RenderBox was not laid out: RenderRepaintBoundary#2227e NEEDS-LAYOUT NEEDS-PAINT"
             children: [
-              _buildDraggableIndicator(),
+              _buildDraggableIndicator(context),
               
               if (title != null) ...[
                 const SizedBox(height: AppConstants.sizedBoxHeight),
@@ -64,14 +64,14 @@ class AppBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDraggableIndicator() {
+  Widget _buildDraggableIndicator(BuildContext context) {
     return Column(
       children: [
         const SizedBox(height: 8),
         Container(
           width: 40, height: 4,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: Theme.of(context).colorScheme.onPrimary, // TODO: da sistemare. é sempre nero
             borderRadius: BorderRadius.circular(2),
           ),
         ),

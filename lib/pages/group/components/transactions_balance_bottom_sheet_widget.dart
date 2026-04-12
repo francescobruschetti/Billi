@@ -14,40 +14,57 @@ class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
     super.key, required this.title, required this.participantsSummary
   }) : super( title: title, child: Container());
 
+  static const WidgetStateProperty<Icon> thumbIcon = WidgetStateProperty<Icon>.fromMap(<WidgetStatesConstraint, Icon>{
+    WidgetState.selected: Icon(Icons.check),
+    WidgetState.any: Icon(Icons.close),
+  });
+
   @override
   Widget build(BuildContext context) {
     return AppBottomSheet(
       title: title,
-     initialSize: 0.9,
+      initialSize: 0.9,
       minSize: 0.5,
       maxSize: 1.0,
 
-      child: Scrollbar(
-        controller: _verticalController,
-        thumbVisibility: true,
-        child: Scrollbar(
-          controller: _horizontalController,
-          thumbVisibility: true,
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-          child: SingleChildScrollView(
+      child: Column(
+        children: [
+          // TODO: mostra versione "intelligente", mostra "tutti i movimenti" in un secondo sheet?
+          
+          const SizedBox(height: 4),
+          Scrollbar(
             controller: _verticalController,
-            scrollDirection: Axis.vertical,
-            child: SingleChildScrollView(
+            thumbVisibility: true,
+            child: Scrollbar(
               controller: _horizontalController,
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Chi deve pagare a chi')),
-                  DataColumn(label: Text('Importo')),
-                ],
-                rows: participantsSummary.values.expand((summary) => summary.balanceMovements.map((movement) => DataRow(cells: [
-                  DataCell(Text('${summary.profile.name} → ${participantsSummary[movement.otherUserId]?.profile.name ?? 'Utente sconosciuto'}')),
-                  DataCell(Text('${movement.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold))),
-                ]))).toList(),
+              thumbVisibility: true,
+              notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _verticalController,
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                controller: _horizontalController,
+                scrollDirection: Axis.horizontal,
+                child:
+                  /* TODO: v1: use all horizontal space: 
+                  * ConstrainedBox(
+                  *   constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                  * child: */
+                  DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Chi deve pagare a chi')),
+                      DataColumn(label: Text('Importo')),
+                    ],
+                    rows: participantsSummary.values.expand((summary) => summary.balanceMovements.map((movement) => DataRow(cells: [
+                      DataCell(Text('${summary.profile.name} → ${participantsSummary[movement.otherUserId]?.profile.name ?? 'Utente sconosciuto'}')),
+                      DataCell(Text('${movement.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold))),
+                    ]))).toList(),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -2,22 +2,22 @@ import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SigninSignupLogoutService {
-  final Logger _log = Logger('SigninSignupLogoutService');
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final Logger log = Logger('SigninSignupLogoutService');
+  final SupabaseClient supabase = Supabase.instance.client;
 
   Future<AuthResponse> login({
     required String email,
     required String password,
   }) async {
     try {
-      return await _supabase.auth.signInWithPassword(
+      return await supabase.auth.signInWithPassword(
         email: email.trim(),
         password: password.trim(),
       );
       
     }
     catch (e) {
-      _log.severe("Errore login: $e");
+      log.severe("Errore login: $e");
       throw Exception("Errore login");
     }
   }
@@ -29,7 +29,7 @@ class SigninSignupLogoutService {
     required String name,
   }) async {
     try {
-      return await _supabase.auth.signUp(
+      return await supabase.auth.signUp(
         email: email.trim(),
         password: password.trim(),
         data: {
@@ -40,17 +40,17 @@ class SigninSignupLogoutService {
       
     }
     catch (e) {
-      _log.severe("Errore registrazione: $e");
+      log.severe("Errore registrazione: $e");
       throw Exception("Errore registrazione");
     }
   }
 
   Future<void> logout() async {
     try {
-      await _supabase.auth.signOut();
+      await supabase.auth.signOut();
     } 
     catch (e) {
-      _log.severe("Errore logout: $e");
+      log.severe("Errore logout: $e");
       throw Exception("Errore logout");
     }
   }

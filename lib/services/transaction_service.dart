@@ -4,8 +4,46 @@ import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TransactionService {
-  final Logger _log = Logger('TransactionService');
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final Logger log = Logger('TransactionService');
+  final SupabaseClient supabase = Supabase.instance.client;
+
+  Future<Map<String, dynamic>> createGroupExpenseTransaction({
+    required String groupId,
+    required double price,
+    String? splitRate,
+    double? paidAmount,
+    String? merchant,
+    String? categories,
+    String? note,
+  }) async {
+    return createGroupTransaction(
+      groupId: groupId,
+      price: price,
+      transactionType: TransactionTypeEnum.EXPENSE,
+      splitRate: splitRate,
+      paidAmount: paidAmount,
+      merchant: merchant,
+      categories: categories,
+      note: note,
+    );
+  }
+
+  Future<Map<String, dynamic>> createGroupIncomeTransaction({
+    required String groupId,
+    required double price,
+    String? note,
+  }) async {
+    return createGroupTransaction(
+      groupId: groupId,
+      price: price,
+      transactionType: TransactionTypeEnum.INCOME,
+      splitRate: null,
+      paidAmount: price,
+      merchant: null,
+      categories: 'INCOME',
+      note: note,
+    );
+  }
 
   Future<Map<String, dynamic>> createGroupTransaction({
     required String groupId,
@@ -18,9 +56,9 @@ class TransactionService {
     String? note,
   }) async {
     
-    final userId = _supabase.auth.currentUser!.id;
+    final userId = supabase.auth.currentUser!.id;
     try {
-      final result = await _supabase.rpc('insert_group_transaction_with_merchant_category', params: {
+      final result = await supabase.rpc('insert_group_transaction_with_merchant_category', params: {
         'p_group_id': groupId,
         'p_user_id': userId,
         'p_paid_amount': paidAmount,
@@ -36,7 +74,7 @@ class TransactionService {
       return result;
     } 
     catch (e) {
-      _log.severe("Errore salvataggio spesa: $e");
+      log.severe("Errore salvataggio spesa: $e");
       throw Exception("Errore salvataggio spesa");
     }
   }
@@ -49,9 +87,9 @@ class TransactionService {
     String? note,
   }) async {
     
-    final userId = _supabase.auth.currentUser!.id;
+    final userId = supabase.auth.currentUser!.id;
     try {
-      final result = await _supabase.rpc('insert_transaction_with_merchant_category', params: {
+      final result = await supabase.rpc('insert_transaction_with_merchant_category', params: {
         'p_user_id': userId,
         'p_total_amount': price,
         'p_merchant_name': merchant,
@@ -62,18 +100,18 @@ class TransactionService {
       return result;
     } 
     catch (e) {
-      _log.severe("Errore salvataggio spesa: $e");
+      log.severe("Errore salvataggio spesa: $e");
       throw Exception("Errore salvataggio spesa");
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchLatestPersonalTransactions({required int pageIndex, int pageSize = 50}) async {
-    final userId = _supabase.auth.currentUser!.id;
+    final userId = supabase.auth.currentUser!.id;
 
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
 
-    final rows = await _supabase
+    final rows = await supabase
       .from('transactions')
       .select('*, merchant:merchants(*), category:categories(*)')
       .eq('user_id', userId)
@@ -86,7 +124,7 @@ class TransactionService {
   Future<GroupDetailsModel> fetchGroup({required String groupId}) async {
     try {
       // Example: group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(id, username, name))
-      final result = await _supabase
+      final result = await supabase
         .from('groups')
         .select('''
           id,
@@ -107,9 +145,47 @@ class TransactionService {
       return group;
     }
     catch (e) {
-      _log.severe("Error fetching group details: $e");
+      log.severe("Error fetching group details: $e");
       throw Exception("Error fetching group details: $e");
     }
+  }
+
+  Future<Map<String, dynamic>> updateGroupExpenseTransaction({
+    required String groupId,
+    required String transactionId, 
+    required double price,
+    String? merchant, // TODO: da implementare
+    String? categories, // TODO: da implementare
+    String? note,
+  })
+  async {
+    return updateGroupTransaction(
+      groupId: groupId,
+      transactionId: transactionId,
+      price: price,
+      transactionType: TransactionTypeEnum.EXPENSE,
+      merchant: merchant,
+      categories: categories,
+      note: note,
+    );
+  }
+
+  Future<Map<String, dynamic>> updateGroupIncomeTransaction({
+    required String groupId,
+    required String transactionId, 
+    required double price,
+    String? note,
+  })
+  async {
+    return updateGroupTransaction(
+      groupId: groupId,
+      transactionId: transactionId,
+      price: price,
+      transactionType: TransactionTypeEnum.INCOME,
+      merchant: null,
+      categories: null,
+      note: note,
+    );
   }
 
   Future<Map<String, dynamic>> updateGroupTransaction({
@@ -123,7 +199,7 @@ class TransactionService {
   })
   async {
     // try {
-    //   final res = await _supabase.rpc('update_group_and_participants', params: {
+    //   final res = await supabase.rpc('update_group_and_participants', params: {
     //     'p_group_id': id,
     //     'p_name': name,
     //     'p_description': description,
@@ -134,7 +210,7 @@ class TransactionService {
     //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     // } 
     // catch (e) {
-    //   _log.severe("Errore creazione gruppo: $e");
+    //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
     throw Exception("Not implemented yet");
@@ -150,7 +226,7 @@ class TransactionService {
   })
   async {
     // try {
-    //   final res = await _supabase.rpc('update_group_and_participants', params: {
+    //   final res = await supabase.rpc('update_group_and_participants', params: {
     //     'p_group_id': id,
     //     'p_name': name,
     //     'p_description': description,
@@ -161,7 +237,7 @@ class TransactionService {
     //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
     // } 
     // catch (e) {
-    //   _log.severe("Errore creazione gruppo: $e");
+    //   log.severe("Errore creazione gruppo: $e");
     //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
     // }
     throw Exception("Not implemented yet");

@@ -14,7 +14,7 @@
 //   Future<List<CategoryModel>?> getCategories() async {
 //     final cached = await _isar.categoryLocals
 //       .filter()
-//       .syncStatusEqualTo(SyncStatusEnum.synced)
+//       .syncStatusEqualTo(SyncStatusEnum.SYNCED)
 //       .findAll();
 
 //     if (cached.isEmpty) return null;
@@ -34,7 +34,7 @@
 //       // Rimuovi solo i synced, tieni i pending
 //       await _isar.categoryLocals
 //         .filter()
-//         .syncStatusEqualTo(SyncStatusEnum.synced)
+//         .syncStatusEqualTo(SyncStatusEnum.SYNCED)
 //         .deleteAll();
 
 //       await _isar.categoryLocals.putAll(
@@ -47,7 +47,7 @@
 //   Future<void> savePending(CategoryModel category) async {
 //     await _isar.writeTxn(() async {
 //       await _isar.categoryLocals.put(
-//         category.toLocal(ttl: ttl, syncStatus: SyncStatusEnum.pending),
+//         category.toLocal(ttl: ttl, syncStatus: SyncStatusEnum.PENDING),
 //       );
 //     });
 //   }
@@ -56,7 +56,7 @@
 //   Future<List<CategoryModel>> getPending() async {
 //     final pending = await _isar.categoryLocals
 //       .filter()
-//       .syncStatusEqualTo(SyncStatusEnum.pending)
+//       .syncStatusEqualTo(SyncStatusEnum.PENDING)
 //       .findAll();
 //     return pending.map(CategoryModel.fromLocal).toList();
 //   }
@@ -69,7 +69,7 @@
 //         .idEqualTo(id)
 //         .findFirst();
 //       if (local != null) {
-//         local.syncStatus = SyncStatusEnum.synced;
+//         local.syncStatus = SyncStatusEnum.SYNCED;
 //         local.expiresAt = DateTime.now().add(ttl);
 //         await _isar.categoryLocals.put(local);
 //       }
