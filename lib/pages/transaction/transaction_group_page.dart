@@ -43,13 +43,12 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   GroupDetailsModel? _selectedGroup;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
+  late final bool isEdit;
   TransactionInsertModeEnum? _transactionInsertMode;
   String? _errorMessage;
   String pageTitle = 'Inserisci Spesa';
   String? _selectedSplitRateValue;
   SplitRateModeEnum? _selectedSplitRateValueButton;
-
-  late final bool isEdit;
 
   @override
   void initState() {
@@ -406,7 +405,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                                 side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: const Color.fromARGB(255, 225, 250, 2),
-                              foregroundColor: Colors.black87,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
@@ -425,7 +424,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                                 side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
                               ),
                               backgroundColor: const Color.fromARGB(255, 11, 250, 238),
-                              foregroundColor: Colors.black87,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             ),
@@ -542,6 +541,8 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       children: [
         SizedBox(height: _defaultSizedBoxHeight),
         Text('Quanto paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
+        
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -552,10 +553,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -571,10 +572,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -590,10 +591,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -609,10 +610,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -629,10 +630,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
                   ),
@@ -669,10 +670,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -688,10 +689,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -707,10 +708,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -726,10 +727,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? BorderSide(color: Colors.black) : BorderSide.none),
+                      side: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
                     ),
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),

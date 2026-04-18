@@ -1,3 +1,4 @@
+import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/languages/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
@@ -52,16 +53,48 @@ class BillyApp extends StatefulWidget {
     _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
     return state?.currentLanguage ?? 'en';
   }
+
+  static ThemeMode getThemeMode(BuildContext context) {
+    _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
+    return state?._themeMode ?? ThemeMode.system;
+  }
+
+  static void setToggleThemeMode(BuildContext context, ThemeEnum selectedTheme) {
+    _BillyAppState? state = context.findAncestorStateOfType<_BillyAppState>();
+    if (state != null) {
+      ThemeMode newMode;
+      switch (selectedTheme) {
+        case ThemeEnum.LIGHT:
+          newMode = ThemeMode.light;
+          break;
+        case ThemeEnum.DARK:
+          newMode = ThemeMode.dark;
+          break;
+        case ThemeEnum.SYSTEM:
+          newMode = ThemeMode.system;
+          break;
+      }
+
+      state.setThemeMode(newMode);
+    }
+  }
 }
 
 class _BillyAppState extends State<BillyApp> {
   String currentLanguage = 'en';
   late Locale _locale = Locale(currentLanguage);
+  ThemeMode _themeMode = ThemeMode.system; // automatico: system
 
   void changeLocale(Locale locale) {
     setState(() {
       _locale = locale;
       currentLanguage = locale.languageCode;
+    });
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
     });
   }
 
@@ -84,14 +117,16 @@ class _BillyAppState extends State<BillyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
           
-          onPrimary: Colors.black,
           primaryContainer: Colors.blue[300],
+          onPrimary: Colors.black,
+          onPrimaryContainer: Colors.white,
           
-          secondary: Colors.orange,
+          secondary: Colors.black,
           onSecondary: Colors.black,
-          secondaryContainer: Colors.orange[300],
 
-          onSecondaryContainer: Colors.black,
+          secondaryContainer: Colors.orange[300],
+          onSecondaryContainer: Colors.orange[300],
+
         ),
       ),
       darkTheme: ThemeData(
@@ -100,15 +135,20 @@ class _BillyAppState extends State<BillyApp> {
           brightness: Brightness.dark,
           
           seedColor: Colors.blue,
-          onPrimary: Colors.black,
+
           primaryContainer: Colors.blue[300],
+          onPrimary: Colors.black,
+          onPrimaryContainer: Colors.white,
+
           secondary: Colors.orange,
           onSecondary: Colors.black,
+
           secondaryContainer: Colors.orange[300],
           onSecondaryContainer: Colors.black,
+        
         ),
       ),
-      themeMode: ThemeMode.system, // automatico: system
+      themeMode: _themeMode,
 
       // Configure Language (localization)
       localizationsDelegates: [

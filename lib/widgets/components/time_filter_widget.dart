@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
-import 'package:flutter/material.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
+import 'package:flutter/material.dart';
 
 class TimeFilterWidget extends StatelessWidget {
   final List<TimeFilterEnum> timeFilters;

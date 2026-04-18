@@ -1,5 +1,5 @@
 import 'package:Billy/models/group_participant_summary_model.dart';
-import 'package:Billy/pages/group/components/app_bottom_sheet.dart';
+import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class TransactionsDetailsBottomSheetWidget extends AppBottomSheet {

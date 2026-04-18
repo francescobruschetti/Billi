@@ -1,4 +1,4 @@
-import 'package:Billy/constants.dart';
+import 'package:Billy/pages/prove/button_group_prove_page.dart';
 import 'package:Billy/pages/prove/multilanguage_prove_page.dart';
 import 'package:Billy/pages/prove/tab_controller_prove_page.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +74,13 @@ class _UIProvePageXState extends State<UIProvePageX> {
             icon: Icon(Icons.share, color: Colors.orange[700]), 
             title: 'TabController',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TabControllerProvePage())),
+          ),
+          
+          const Divider(height: 1),
+          _buildListTile(
+            icon: Icon(Icons.group, color: Colors.orange[700]), 
+            title: 'ButtonGroup',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ButtonGroupProvePage())),
           ),
           
         ],
