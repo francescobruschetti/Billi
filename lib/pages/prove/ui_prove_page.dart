@@ -1,16 +1,20 @@
 import 'package:Billy/pages/prove/button_group_prove_page.dart';
 import 'package:Billy/pages/prove/multilanguage_prove_page.dart';
+import 'package:Billy/pages/prove/segment/segment_page_prove.dart';
 import 'package:Billy/pages/prove/tab_controller_prove_page.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
-class UIProvePageX extends StatefulWidget {
-  const UIProvePageX({super.key});
+class UIProvePage extends StatefulWidget {
+  const UIProvePage({super.key});
 
   @override
-  State<UIProvePageX> createState() => _UIProvePageXState();
+  State<UIProvePage> createState() => _UIProvePageState();
 }
 
-class _UIProvePageXState extends State<UIProvePageX> {
+class _UIProvePageState extends State<UIProvePage> {
+  final Logger log = Logger('UIProvePage');
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +87,12 @@ class _UIProvePageXState extends State<UIProvePageX> {
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ButtonGroupProvePage())),
           ),
           
+          const Divider(height: 1),
+           _buildListTile(
+            icon: Icon(Icons.swipe, color: Colors.orange[700]), 
+            title: 'Segment Control',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SegmentPageProve())),
+          ),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/profile_model.dart';
+import 'package:Billy/utils/number_util.dart';
 
 class GroupParticipantSummaryModel {
   final String userId;
@@ -73,22 +74,22 @@ class GroupParticipantSummaryModel {
 
   // --- Methods to increment values
   void increasePaidAmountGroup(double amount) {
-    paidAmountGroup += amount;
+    paidAmountGroup = NumberUtil.roundToDecimals(value: paidAmountGroup + amount);
   }
 
   void increasePaidAmountItself(double amount) {
-    paidAmountItself += amount;
+    paidAmountItself = NumberUtil.roundToDecimals(value: paidAmountItself + amount);
   }
 
   void increasetoReceiveNet(double amount) {
-    toReceiveNet += amount;
+    toReceiveNet = NumberUtil.roundToDecimals(value: toReceiveNet + amount);
   }
 
   void increasetoReceiveGross(double amount) {
-    toReceiveGross += amount;
+    toReceiveGross = NumberUtil.roundToDecimals(value: toReceiveGross + amount);
   }
 
   void increaseExpectedtoReceiveNet(double amount) {
-    expectedtoReceiveNet += amount;
+    expectedtoReceiveNet = NumberUtil.roundToDecimals(value: expectedtoReceiveNet + amount);
   }
 }

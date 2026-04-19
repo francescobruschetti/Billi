@@ -22,6 +22,7 @@
       "devDependencies": [
         "build_runner",
         "flutter_lints",
+        "flutter_native_splash",
         "flutter_test",
         "isar_generator"
       ]
@@ -39,6 +40,23 @@
         "path",
         "source_gen",
         "xxh3"
+      ]
+    },
+    {
+      "name": "flutter_native_splash",
+      "version": "2.4.7",
+      "dependencies": [
+        "ansicolor",
+        "args",
+        "flutter",
+        "flutter_web_plugins",
+        "html",
+        "image",
+        "meta",
+        "path",
+        "universal_io",
+        "xml",
+        "yaml"
       ]
     },
     {
@@ -298,8 +316,8 @@
       ]
     },
     {
-      "name": "lints",
-      "version": "6.1.0",
+      "name": "ansicolor",
+      "version": "2.0.3",
       "dependencies": []
     },
     {
@@ -310,6 +328,63 @@
         "source_span",
         "string_scanner"
       ]
+    },
+    {
+      "name": "xml",
+      "version": "6.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "petitparser"
+      ]
+    },
+    {
+      "name": "universal_io",
+      "version": "2.3.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "typed_data"
+      ]
+    },
+    {
+      "name": "meta",
+      "version": "1.17.0",
+      "dependencies": []
+    },
+    {
+      "name": "image",
+      "version": "4.8.0",
+      "dependencies": [
+        "archive",
+        "meta",
+        "xml"
+      ]
+    },
+    {
+      "name": "html",
+      "version": "0.15.6",
+      "dependencies": [
+        "csslib",
+        "source_span"
+      ]
+    },
+    {
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "args",
+      "version": "2.7.0",
+      "dependencies": []
+    },
+    {
+      "name": "lints",
+      "version": "6.1.0",
+      "dependencies": []
     },
     {
       "name": "web_socket_channel",
@@ -406,11 +481,6 @@
     {
       "name": "mime",
       "version": "2.0.0",
-      "dependencies": []
-    },
-    {
-      "name": "meta",
-      "version": "1.17.0",
       "dependencies": []
     },
     {
@@ -554,11 +624,6 @@
         "collection",
         "meta"
       ]
-    },
-    {
-      "name": "args",
-      "version": "2.7.0",
-      "dependencies": []
     },
     {
       "name": "stream_channel",
@@ -786,6 +851,36 @@
       ]
     },
     {
+      "name": "petitparser",
+      "version": "7.0.2",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
+      "name": "typed_data",
+      "version": "1.4.0",
+      "dependencies": [
+        "collection"
+      ]
+    },
+    {
+      "name": "archive",
+      "version": "4.0.9",
+      "dependencies": [
+        "path",
+        "posix"
+      ]
+    },
+    {
+      "name": "csslib",
+      "version": "1.0.2",
+      "dependencies": [
+        "source_span"
+      ]
+    },
+    {
       "name": "web_socket",
       "version": "1.0.1",
       "dependencies": [
@@ -809,13 +904,6 @@
         "json_annotation",
         "source_span",
         "yaml"
-      ]
-    },
-    {
-      "name": "typed_data",
-      "version": "1.4.0",
-      "dependencies": [
-        "collection"
       ]
     },
     {
@@ -1128,6 +1216,15 @@
       ]
     },
     {
+      "name": "posix",
+      "version": "6.5.0",
+      "dependencies": [
+        "ffi",
+        "meta",
+        "path"
+      ]
+    },
+    {
       "name": "fixnum",
       "version": "1.1.1",
       "dependencies": []
@@ -1136,13 +1233,6 @@
       "name": "vm_service",
       "version": "15.0.2",
       "dependencies": []
-    },
-    {
-      "name": "flutter_web_plugins",
-      "version": "0.0.0",
-      "dependencies": [
-        "flutter"
-      ]
     },
     {
       "name": "plugin_platform_interface",

@@ -21,7 +21,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     HomePage(),
     GroupsPage(),
     SettingsPage(),
-    UIProvePageX(),
+    UIProvePage(),
   ];
 
   @override
@@ -59,7 +59,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   label: 'Gruppi',
                 ),
                 BottomNavigationBarItem(
-                  icon: CustomIconWidget(assetPath: 'assets/images/icons/settings-filled.PNG', size: 24),
+                  icon: CustomIconWidget(assetPath: 'assets/images/icons/settings_filled.PNG', size: 24),
                   label: 'Impostazioni',
                 ),
                 BottomNavigationBarItem(

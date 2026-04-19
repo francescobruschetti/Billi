@@ -68,7 +68,7 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
                     categoryEnum.toIcon(),
                   ] 
                   else ...[
-                    CustomIconWidget(assetPath: 'assets/images/icons/sell-filled.PNG', color: Colors.orange),
+                    CustomIconWidget(assetPath: 'assets/images/icons/sell_filled.PNG', color: Colors.orange),
                   ],
                   
                   const SizedBox(width: 4),

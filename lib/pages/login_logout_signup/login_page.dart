@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/splash-screen-image_v1.png', height: 250),
+              Image.asset('assets/images/splash_screen_image_v1.png', height: 250),
               
               // Email input field
               const SizedBox(height: AppConstants.sizedBoxHeight),

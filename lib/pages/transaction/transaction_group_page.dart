@@ -3,10 +3,14 @@ import 'package:Billy/enums/transaction_insert_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/create_category_response_model.dart';
 import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group_expense_split_response_model.dart';
 import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
+import 'package:Billy/pages/transaction/components/splitrate_vs_paidamount_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
+import 'package:Billy/providers/ui_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
@@ -49,6 +53,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   String pageTitle = 'Inserisci Spesa';
   String? _selectedSplitRateValue;
   SplitRateModeEnum? _selectedSplitRateValueButton;
+  String? _prova; // TODO:
 
   @override
   void initState() {
@@ -77,6 +82,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     _priceController.removeListener(_onFieldChanged);
     _paidAmountController.removeListener(_onFieldChanged);
     _splitRateController.removeListener(_onFieldChanged);
+
     _priceController.dispose();
     _paidAmountController.dispose();
     _splitRateController.dispose();
@@ -211,6 +217,22 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
 
     if (categoryResponse != null) {
       _categoriesController.text = categoryResponse.category?.name ?? categoryResponse.newName ?? '';
+    }
+  }
+
+  Future<void> _openSplitRateVsPaidAmountBottomSheet() async {
+    final GroupExpenseSplitResponseModel? response = await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) => SplitrateVsPaidamountBottomSheetWidget(),
+    );
+
+    if (response != null) {
+      log.fine("SplitRate vs PaidAmount response: $response");
+      setState(() {
+        _prova = response.filterSelected?.value; // TODO: da rimuovere
+      });
     }
   }
 
@@ -354,127 +376,46 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [ // -- Campi di input
                 // -- Gruppo
-                DropdownSearch<GroupDetailsModel>(
-                  items: groups,
-                  itemAsString: (g) => g.name,
-                  selectedItem: _selectedGroup,
-                  onChanged: _onGroupChanged,
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      labelText: 'Seleziona Gruppo',
-                    ),
-                  ),
-                  filterFn: (item, filter) => _filterGroups(item, filter),
-                  popupProps: PopupProps.menu(
-                    showSearchBox: true,
-                    searchFieldProps: TextFieldProps(
-                      decoration: const InputDecoration(
-                        labelText: 'Cerca gruppo...',
-                        suffixIcon: Icon(Icons.search),
-                      ),                      
-                    ),
-                  ),
-                ),
-                
+                _buildDropDownGroup(groups),
+
                 // -- Transaction Price
                 const SizedBox(height: AppConstants.sizedBoxHeight),
-                CustomValidatedTextField(
-                  controller: _priceController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
-                  ],
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  labelText: 'Prezzo',
-                  onChanged: (value) => _formatPriceInput(),
-                  prefixIcon: Icon(Icons.euro, size: 24),
-                ),
-
-                // -- Split Rate vs Paid Amount
-                if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
-                              ),
-                              backgroundColor: const Color.fromARGB(255, 225, 250, 2),
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                            ),
-                            onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
-                            child: const Text('Specifica quota'),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
-                              ),
-                              backgroundColor: const Color.fromARGB(255, 11, 250, 238),
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                            ),
-                            onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
-                            child: const Text('Dividi spesa'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  if (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID) ...[
-                    SizedBox(height: _defaultSizedBoxHeight),
-                    _buildFixedRateComponents(),
-                  ]
-                  else if (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE) ...[
-                    _buildSplitRateComponents(),
-                  ],
-
-                  // -- Negozio
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  CustomValidatedTextField(
-                    controller: _merchantController,
-                    labelText: 'Negozio',
-                    prefixIcon: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomValidatedTextField(
+                        controller: _priceController,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
+                        ],
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        labelText: 'Prezzo',
+                        onChanged: (value) => _formatPriceInput(),
+                        prefixIcon: Icon(Icons.euro, size: 24),
                       ),
                     ),
-                  ),
+                    
+                    // -- Split Rate vs Paid Amount
+                    if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
+                      const SizedBox(width: 8),
+                      CustomButtonWidget(
+                        onPressed: _openSplitRateVsPaidAmountBottomSheet,
+                        text: _prova ?? 'Split/Paid',
+                        isIconPrefix: false,
+                        customIcon: CustomIconWidget(assetPath: 'assets/images/icons/vertical_dots.PNG', size: 20, color: Theme.of(context).colorScheme.onSecondary),
+                      ),
+                    ],
+                  ],
+                ),
+                
+                // TODO: da ripristinare: 
+                // // -- Split Rate vs Paid Amount
+                // if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
+                //   _buildSplitRateVsPaidAmount(),
+                // ],
 
-                  // -- Categorie
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  CustomValidatedTextField(
-                    controller: _categoriesController,
-                    labelText: 'Categorie',
-                    prefixIcon: Icon(Icons.shopping_cart, size: 24),
-                    onTap: _openCategoriesBottomSheet,
-                  ),
-
-                  // -- Payment method (TODO: da implementare)
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  CustomValidatedTextField(
-                    controller: _paymentMethodController,
-                    labelText: 'Metodo di pagamento',
-                    prefixIcon: Icon(Icons.payment, size: 24),
-                    // TODO: implementare onTap: _openPaymentMethodsBottomSheet
-                  ),
+                if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
+                  _buildTextFiels()
                 ],
 
                 // -- Note
@@ -502,7 +443,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
           );
         }
       ),    
-    );      
+    );
   }
 
   Widget _buildConfirmDialog(BuildContext context, {required String message}) {
@@ -522,8 +463,33 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     );
   }
 
+  Widget _buildDropDownGroup(List<GroupDetailsModel> groups) {
+    return DropdownSearch<GroupDetailsModel>(
+      items: groups,
+      itemAsString: (g) => g.name,
+      selectedItem: _selectedGroup,
+      onChanged: _onGroupChanged,
+      dropdownDecoratorProps: const DropDownDecoratorProps(
+        dropdownSearchDecoration: InputDecoration(
+          labelText: 'Seleziona Gruppo',
+        ),
+      ),
+      filterFn: (item, filter) => _filterGroups(item, filter),
+      popupProps: PopupProps.menu(
+        showSearchBox: true,
+        searchFieldProps: TextFieldProps(
+          decoration: const InputDecoration(
+            labelText: 'Cerca gruppo...',
+            suffixIcon: Icon(Icons.search),
+          ),                      
+        ),
+      ),
+    );
+                
+  }
+
   Widget _buildFixedRateComponents() {
-    return  CustomValidatedTextField(
+    return CustomValidatedTextField(
       controller: _paidAmountController,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*[.,]?[0-9]*$')),
@@ -761,6 +727,66 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     );
   }
   
+  Widget _buildSplitRateVsPaidAmount() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID ? BorderSide(color: Colors.black) : BorderSide.none),
+                    ),
+                    backgroundColor: const Color.fromARGB(255, 225, 250, 2),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                  ),
+                  onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.FIX_PAID),
+                  child: const Text('Specifica quota'),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE ? BorderSide(color: Colors.black) : BorderSide.none),
+                    ),
+                    backgroundColor: const Color.fromARGB(255, 11, 250, 238),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                  ),
+                  onPressed: () => _handleTransactionInsertModeValue(TransactionInsertModeEnum.SPLIT_RATE),
+                  child: const Text('Dividi spesa'),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        if (_transactionInsertMode == TransactionInsertModeEnum.FIX_PAID) ...[
+          SizedBox(height: _defaultSizedBoxHeight),
+          _buildFixedRateComponents(),
+        ]
+        else if (_transactionInsertMode == TransactionInsertModeEnum.SPLIT_RATE) ...[
+          _buildSplitRateComponents(),
+        ],
+      ],
+    );
+  }
+
   Widget _buildSaveCancelButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -777,6 +803,45 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Annulla'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextFiels() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // -- Negozio
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        CustomValidatedTextField(
+          controller: _merchantController,
+          labelText: 'Negozio',
+          prefixIcon: SizedBox(
+            width: 24,
+            height: 24,
+            child: Center(
+              child: CustomIconWidget(assetPath: 'assets/images/icons/sell.PNG', size: 24),
+            ),
+          ),
+        ),
+
+        // -- Categorie
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        CustomValidatedTextField(
+          controller: _categoriesController,
+          labelText: 'Categorie',
+          prefixIcon: Icon(Icons.shopping_cart, size: 24),
+          onTap: _openCategoriesBottomSheet,
+        ),
+
+        // -- Payment method (TODO: da implementare)
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        CustomValidatedTextField(
+          controller: _paymentMethodController,
+          labelText: 'Metodo di pagamento',
+          prefixIcon: Icon(Icons.payment, size: 24),
+          // TODO: implementare onTap: _openPaymentMethodsBottomSheet
         ),
       ],
     );

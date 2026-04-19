@@ -6,7 +6,8 @@ class CustomButtonWidget extends StatelessWidget {
   final Color? backgroundColor;
   final IconData? iconData;
   final CustomIconWidget? customIcon;
-  final VoidCallback onPressed;
+  final bool isIconPrefix;
+  final VoidCallback? onPressed;
 
   const CustomButtonWidget({
     super.key,
@@ -14,7 +15,8 @@ class CustomButtonWidget extends StatelessWidget {
     this.backgroundColor,
     this.iconData,
     this.customIcon,
-    required this.onPressed,
+    this.isIconPrefix = true,
+    this.onPressed,
   });
 
   @override
@@ -28,22 +30,44 @@ class CustomButtonWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (iconData != null) ...[
-            Icon(iconData, color: Theme.of(context).colorScheme.onSecondary, size: text == null ? 30 : 24),
-          ],
-          if (iconData == null && customIcon != null) ...[
-            customIcon!,
-          ],
-          if (text != null) ...[
-            if (iconData != null || customIcon != null)
-              const SizedBox(width: 8),
-            Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), // es. , fontWeight: FontWeight.bold)),
-          ],
+      child: isIconPrefix ? _buildIsIconPrefix(context) : _buildIsIconSuffix(context),
+    );
+  }
+
+  Widget _buildIsIconPrefix(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (iconData != null) ...[
+          Icon(iconData, color: Theme.of(context).colorScheme.onSecondary, size: text == null ? 30 : 24),
         ],
-      ),
+        if (iconData == null && customIcon != null) ...[
+          customIcon!,
+        ],
+        if (text != null) ...[
+          if (iconData != null || customIcon != null) ...[
+            const SizedBox(width: 8),
+          ],
+
+          Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), // es. , fontWeight: FontWeight.bold)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildIsIconSuffix(BuildContext context) {
+    return Row(      
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), 
+
+        if (iconData != null) ...[
+          Icon(iconData, color: Theme.of(context).colorScheme.onSecondary, size: text == null ? 30 : 24),
+        ],
+        if (iconData == null && customIcon != null) ...[
+          customIcon!,
+        ],
+      ],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/languages/app_localizations.dart';
+import 'package:Billy/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -109,12 +110,13 @@ class _BillyAppState extends State<BillyApp> {
         '/register': (context) => const SignupPage(),
         '/logout': (context) => const LogoutPage(),
       },
-      home: AuthGate(),
+      home: SplashScreen(),
       
       // Setup ThemeData con ColorScheme personalizzato
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
+          brightness: Brightness.light,
           seedColor: Colors.blue,
           
           primaryContainer: Colors.blue[300],
@@ -133,7 +135,6 @@ class _BillyAppState extends State<BillyApp> {
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
-          
           seedColor: Colors.blue,
 
           primaryContainer: Colors.blue[300],
@@ -162,21 +163,5 @@ class _BillyAppState extends State<BillyApp> {
         Locale('it'), // Italian
       ],
     );
-  }
-}
-
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final session = Supabase.instance.client.auth.currentSession;
-    log.fine("Current session: $session");
-    if (session == null) {
-      return const LoginPage();
-    }
-    else {
-      return const MainScaffold();
-    }
   }
 }

@@ -67,7 +67,7 @@ class TransactionService {
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,
-        'p_transaction_type': transactionType.toValue(),
+        'p_transaction_type': transactionType.value,
       }).select().single();
 
       
@@ -95,7 +95,7 @@ class TransactionService {
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,
-        'p_transaction_type': transactionType.toValue(),
+        'p_transaction_type': transactionType.value,
       }).select().single();
       return result;
     } 

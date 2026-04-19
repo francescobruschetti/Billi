@@ -2,6 +2,7 @@ import 'package:Billy/enums/category_enum.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 
+// TODO: spostare nell'enum?
 extension CategoryEnumParsing on String {
   CategoryEnum toCategoryEnum() {
     switch (toUpperCase()) {
@@ -56,6 +57,7 @@ extension CategoryEnumParsing on String {
   }
 }
 
+// TODO: spostare nell'enum?
 extension CategoryEnumIcon on CategoryEnum {
   Widget toIcon() {
     switch (this) {
@@ -103,7 +105,7 @@ extension CategoryEnumIcon on CategoryEnum {
         return Icon(Icons.flight);
       
       case CategoryEnum.OTHER:
-        return CustomIconWidget(assetPath: 'assets/images/icons/sell-filled.PNG', color: Colors.orange);
+        return CustomIconWidget(assetPath: 'assets/images/icons/sell_filled.PNG', color: Colors.orange);
     }
   }
 }

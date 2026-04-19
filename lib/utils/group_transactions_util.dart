@@ -1,7 +1,9 @@
+import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/group_transaction_model.dart';
+import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/utils/number_util.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/models/group_participant_model.dart';
@@ -57,7 +59,7 @@ class GroupTransactionsUtil {
     }
 
     // Step 2 - Compute total amount and update summary with active payments
-    double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, transactions);
+    double totalAmount = computeTotalAmountAndUpdateSummaryActivePayment(summary, transactions, participants.length);
     log.fine("Total amount for group: $totalAmount. Number of participants: ${summary.length}.");
 
     // Step 3 - Compute user's movements to balance the transactions
@@ -84,15 +86,17 @@ class GroupTransactionsUtil {
   // Compute how much each participant has anticipated to the group and its share of those transactions
   static double computeTotalAmountAndUpdateSummaryActivePayment(
       Map<String, GroupParticipantSummaryModel> summary,
-      List<GroupTransactionModel> transactions)
+      List<GroupTransactionModel> transactions,
+      int participantsCount)
    {
     double totalAmount = 0;
     for (var transaction in transactions) {
-      final profileModel = transaction.profileModel;
-      final userId = profileModel.id;
-      final paidAmountItself = transaction.paidAmount ?? 0;
-      final paidAmountGroup = transaction.totalAmount;
-      final splitRate = transaction.splitRate;
+      final ProfileModel profileModel = transaction.profileModel;
+      final String userId = profileModel.id;
+      double paidAmountItself = transaction.paidAmount ?? 0;
+      double paidAmountGroup = transaction.totalAmount;
+      String? splitRate = transaction.splitRate;
+      double? receiveGrossAmount;
 
       if (!summary.containsKey(userId)) {
         log.fine("Transaction ${transaction.id} has user_id $userId which is not in group participants yet.");
@@ -103,18 +107,64 @@ class GroupTransactionsUtil {
       }
 
       if (splitRate != null) {
-        // TODO: da implementare
-        log.fine("Transaction ${transaction.id} has a split rate defined.");
-        // switch (splitRate.runtimeType) {
-        //   case String:
-        //     log.warning("Transaction ${transaction.id} has split rate as String. Expected Map. Defaulting to equal split.");
-        //     break;
-        //   case Map<String, dynamic>:
-        //     log.warning("Transaction ${transaction.id} has split rate as Map. Split rate handling is not implemented yet, defaulting to equal split.");
-        //     break;
-        //   default:
-        //     log.warning("Transaction ${transaction.id} has split rate of unexpected type ${splitRate.runtimeType}. Defaulting to equal split.");
-        // }
+        SplitRateModeEnum splitRateEnum = SplitRateModeEnumExtension.fromValue(splitRate);
+        log.fine("Transaction ${transaction.id} has a split rate defined: $splitRate. Enum: ${splitRateEnum.value}.");
+        
+        switch (splitRateEnum) {
+          case SplitRateModeEnum.ONE_QUARTER:
+            paidAmountItself = paidAmountGroup * 0.25;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.THREE_QUARTERS:
+            paidAmountItself = paidAmountGroup * 0.75;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.HALF:
+            paidAmountItself = paidAmountGroup * 0.5;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.ZERO:
+            paidAmountItself = 0;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.EQUALLY:
+            paidAmountItself = paidAmountGroup / participantsCount;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+
+          case SplitRateModeEnum.FIXED_1:
+            paidAmountItself = paidAmountGroup / participantsCount;
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.FIXED_2:
+            paidAmountItself = (paidAmountGroup / participantsCount) * 2; // TODO: gestire caso in cui FIXED_2 è maggiore del numero di partecipanti
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.FIXED_3:
+            paidAmountItself = (paidAmountGroup / participantsCount) * 3; // TODO: gestire caso in cui FIXED_3 è maggiore del numero di partecipanti
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+          case SplitRateModeEnum.FIXED_4:
+            paidAmountItself = (paidAmountGroup / participantsCount) * 4; // TODO: gestire caso in cui FIXED_4 è maggiore del numero di partecipanti
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+
+          default:
+          // TODO: da implementare
+            throw Exception("Split rate ${splitRateEnum.value} not implemented yet.");
+          //   int participantsCount = summary.length;
+          //   if (participantsCount == 0) {
+          //     log.warning("Number of participants is zero or negative. Defaulting to 1 to avoid division by zero.");
+          //     participantsCount = 1;
+          //   }
+          //   summary[userId]?.increasePaidAmountGroup(paidAmountGroup);
+          //   summary[userId]?.increasePaidAmountItself(paidAmountItself);
+          //   summary[userId]?.increasetoReceiveGross(NumberUtil.roundToDecimals(value: paidAmountGroup * (participantsCount - 1) / participantsCount - paidAmountItself));
+        }
+
+        summary[userId]?.increasePaidAmountGroup(NumberUtil.roundToDecimals(value: paidAmountGroup));
+        summary[userId]?.increasePaidAmountItself(NumberUtil.roundToDecimals(value: paidAmountItself));
+        summary[userId]?.increasetoReceiveGross(NumberUtil.roundToDecimals(value: receiveGrossAmount));
       }
       else {
         log.fine("Transaction ${transaction.id} has NO split rate.");

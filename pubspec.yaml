@@ -66,6 +66,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Splash screen
+  flutter_native_splash: ^2.3.10
+
   isar_generator: ^3.1.0 # local structored database
 
   # json_serializable: ^6.7.1
@@ -114,3 +117,10 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
+# Note: Run "flutter pub run flutter_native_splash:create" to generate splash screen
+flutter_native_splash:
+  color: "#FF0000"
+  image: assets/images/splash_screen_image_v1.png
+  android: true
+  ios: true
+  web: true
