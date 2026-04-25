@@ -22,15 +22,15 @@ create table transactions (
   category_id uuid references categories(id),
   note text,
   total_amount numeric(10,2) not null check (total_amount >= 0),
-  transaction_type transaction_type not null default 'expense',
+  transaction_type transaction_type_enum not null default 'EXPENSE',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 
   -- Constraint to ensure that merchant_id is only required for expenses
   -- constraint merchant_only_for_expense check (
-  --   (transaction_type = 'expense' and merchant_id is not null) 
+  --   (transaction_type = 'EXPENSE' and merchant_id is not null) 
   --   or
-  --   (transaction_type = 'income' and merchant_id is null)
+  --   (transaction_type = 'INCOME' and merchant_id is null)
   -- )
 );
 

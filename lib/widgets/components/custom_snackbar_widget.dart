@@ -19,7 +19,7 @@ class CustomSnackBarWidget extends StatelessWidget {
     return SnackBar(content: 
       Text(text),
       behavior: SnackBarBehavior.floating,
-      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.onPrimaryContainer,
+      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.secondary,
       duration: Duration(seconds: durationSeconds ?? 2),
       showCloseIcon: showIcon ?? true,
     );

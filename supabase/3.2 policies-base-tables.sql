@@ -146,7 +146,7 @@ create or replace function insert_transaction_with_merchant_category(
   p_merchant_name text,
   p_category_name text,
   p_note text,
-  p_transaction_type transaction_type
+  p_transaction_type transaction_type_enum
 )
 returns table (
   transaction_id uuid, -- id transaction
@@ -155,7 +155,7 @@ returns table (
   merchant_id uuid,
   category_id uuid,
   note text,
-  transaction_type transaction_type,
+  transaction_type transaction_type_enum,
   created_at timestamptz
 ) as $$
 declare
@@ -163,7 +163,7 @@ declare
   v_category_id uuid;
 begin
   -- Merchant -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
-  if p_transaction_type = 'income' then
+  if p_transaction_type = 'INCOME' then
     v_merchant_id := null;
   else
     select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) and m.user_id = p_user_id limit 1;
@@ -195,32 +195,43 @@ begin
 
 end;
 $$ language plpgsql security definer;
-grant execute on function public.insert_transaction_with_merchant_category(uuid, numeric, text, text, text, transaction_type) to authenticated;
+grant execute on function public.insert_transaction_with_merchant_category(uuid, numeric, text, text, text, transaction_type_enum) to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
 -- Trigger Insert Group Transactions with default category and merchant
+drop function if exists insert_group_transaction_with_merchant_category(
+  p_group_id uuid,
+  p_user_id uuid,
+  p_paid_amount numeric,
+  p_total_amount numeric,
+  p_split_rate split_rate_enum,
+  p_merchant_name text,
+  p_category_name text,
+  p_note text,
+  p_transaction_type transaction_type_enum
+);
 create or replace function insert_group_transaction_with_merchant_category(
   p_group_id uuid,
   p_user_id uuid,
   p_paid_amount numeric,
   p_total_amount numeric,
-  p_split_rate text,
+  p_split_rate split_rate_enum,
   p_merchant_name text,
   p_category_name text,
   p_note text,
-  p_transaction_type transaction_type
+  p_transaction_type transaction_type_enum
 )
 returns table (
   transaction_id uuid, -- id transaction
   user_id uuid, -- id utente
   paid_amount numeric,
   total_amount numeric,
-  split_rate text,
+  split_rate split_rate_enum,
   merchant_id uuid,
   category_id uuid,
   note text,
-  transaction_type transaction_type,
+  transaction_type transaction_type_enum,
   created_at timestamptz
 ) as $$
 declare
@@ -228,7 +239,7 @@ declare
   v_category_id uuid;
 begin
   -- Merchant -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
-  if p_transaction_type = 'income' then
+  if p_transaction_type = 'INCOME' then
     v_merchant_id := null;
   else
     select m.id into v_merchant_id from merchants m where lower(m.name) = lower(p_merchant_name) and m.user_id = p_user_id limit 1;
@@ -262,6 +273,6 @@ begin
 end;
 $$ language plpgsql security definer;
 grant execute on function public.insert_group_transaction_with_merchant_category(
-  uuid, uuid, numeric, numeric, text, text, text, text, transaction_type
+  uuid, uuid, numeric, numeric, split_rate_enum, text, text, text, transaction_type_enum
 ) to authenticated;
 --------------------------------------------------------------------------

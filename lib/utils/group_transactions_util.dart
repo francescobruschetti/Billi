@@ -127,7 +127,7 @@ class GroupTransactionsUtil {
             paidAmountItself = 0;
             receiveGrossAmount = paidAmountGroup - paidAmountItself;
             break;
-          case SplitRateModeEnum.EQUALLY:
+          case SplitRateModeEnum.EVENLY:
             paidAmountItself = paidAmountGroup / participantsCount;
             receiveGrossAmount = paidAmountGroup - paidAmountItself;
             break;

@@ -80,7 +80,7 @@ on group_participants
 for delete
 using (
   user_id = auth.uid()
-  AND role <> 'creator'
+  AND role <> 'CREATOR'
 );
 
 -- Policy: each participant can see other participants of their groups (including themselves)

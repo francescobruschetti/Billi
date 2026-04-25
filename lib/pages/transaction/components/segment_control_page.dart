@@ -16,36 +16,72 @@ class SegmentedControl extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(999), // Pill-shaped: Usa il valore massimo possibile rispetto alla dimensione del widget // TODO: provare ad usarlo sempre
+        borderRadius: BorderRadius.circular(999),
       ),
-      child: Row(
-        children: [
-          _buildItem("Dividi spesa", 0),
-          _buildItem("Specifica quota", 1),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+
+          return Stack(
+            children: [
+              // PILLA ANIMATA
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(
+                  begin: 0,
+                  end: selectedIndex.toDouble(),
+                ),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOutCubic,
+                builder: (context, value, child) {
+                  final left = (width / 2) * value;
+
+                  return Positioned(
+                    left: left,
+                    top: 0,
+                    bottom: 0,
+                    width: width / 2,
+                    child: Container(
+                      margin: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 8,
+                            color: Colors.black12, // black with 12% opacity
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              Row(
+                children: [
+                  _buildItem("Dividi spesa", 0),
+                  _buildItem("Specifica quota", 1),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildItem(String text, int index) {
-    final isSelected = selectedIndex == index;
-
     return Expanded(
       child: GestureDetector(
         onTap: () => onChanged(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-          ),
           child: Center(
             child: Text(
               text,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.black, // isSelected ? Colors.black : Colors.grey,
+                color: Colors.black,
               ),
             ),
           ),

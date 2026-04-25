@@ -13,10 +13,3 @@ create table profiles (
 --------------------------------------------------------------------------
 -- Row Level Security (RLS)
 alter table profiles enable row level security;
-
---------------------------------------------------------------------------
--- GroupRoles (ENUMS)
-create type group_role as enum ('admin', 'creator', 'member');
-
--- TransactionTypes (ENUMS)
-create type transaction_type as enum ('income', 'expense');

@@ -256,10 +256,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                 // Alert errore
                 if (_errorMessage != null) ...[
                   ErrorAlertWidget(errorMessage: _errorMessage!, onClose: () {
-                    setState(() {
-                      _errorMessage = null;
-                    });
-                  }),
+                      setState(() {
+                        _errorMessage = null;
+                      });
+                    }),
                 ]
                 else ...[
                   // --- How much user owes or is owed

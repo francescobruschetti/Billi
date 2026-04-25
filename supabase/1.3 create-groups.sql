@@ -16,7 +16,7 @@ create table group_participants (
   user_id uuid default auth.uid() references auth.users(id) on delete cascade,
   group_id uuid references groups(id) on delete cascade,
   group_user_id uuid not null, -- campo aggiuntivo per ottimizzare le policy di accesso ai partecipanti
-  role group_role not null default 'member',
+  role group_role_enum not null default 'MEMBER',
 
   has_confirmed boolean default false,
   is_enabled boolean default true,
@@ -37,9 +37,9 @@ create table group_transactions (
   category_id uuid references categories(id),
   paid_amount numeric(10,2) check (paid_amount >= 0),
   total_amount numeric(10,2) not null check (total_amount >= 0),
-  split_rate text,
+  split_rate split_rate_enum,
   note text,
-  transaction_type transaction_type not null default 'expense',
+  transaction_type transaction_type_enum not null default 'EXPENSE',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
   constraint fk_group_transactions_profiles foreign key (user_id) references profiles(id) on delete cascade,

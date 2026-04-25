@@ -1,9 +1,13 @@
 // Solo scaffolding visivo, nessuna logica
 import 'package:Billy/constants.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 
 class AppBottomSheet extends StatelessWidget {
   final String? title;
+  // TODO: v1final bool showCloseButton;
+  // TODO: v1final bool showSaveButton;
+  // TODO: v1final bool showDraggableIndicator;
   final Widget child;
 
   /* 
@@ -24,8 +28,16 @@ class AppBottomSheet extends StatelessWidget {
     this.initialSize = 0.5,
     this.minSize = 0.2,
     this.maxSize = 1.0,
+    // TODO: v1final bool showCloseButton = false,
+    // TODO: v1final bool showSaveButton = false,
+    // TODO: v1final bool showDraggableIndicator = true,
     required this.child,
   });
+
+  // TODO: v1
+  // void _close(BuildContext context) {
+  //   Navigator.of(context).pop();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +83,36 @@ class AppBottomSheet extends StatelessWidget {
         Container(
           width: 40, height: 4,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onPrimary, // TODO: da sistemare. é sempre nero
+            color: Theme.of(context).colorScheme.onPrimary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
       ],
     );
   }
+
+  // TODO: v1
+  // Widget _buildCloseAndSaveButton(BuildContext context) {
+  //   return Row(
+  //     children: [
+  //       Align(
+  //         alignment: Alignment.centerLeft,
+  //         child: CustomButtonWidget(
+  //           onPressed: () => _close(context),
+  //           text: 'Chiudi',
+  //         ),
+  //       ),
+  //       if (showSaveButton) ...[
+  //         Spacer(),
+  //         Align(
+  //           alignment: Alignment.centerRight,
+  //           child: CustomButtonWidget(
+  //             onPressed: null,
+  //             text: 'Salva',
+  //           ),
+  //         ),
+  //       ]
+  //     ],
+  //   );
+  // }
 }

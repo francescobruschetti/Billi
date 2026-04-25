@@ -2,7 +2,7 @@
 -- FUNCTIONS -------------------------------------------------------------
 --------------------------------------------------------------------------
 -- Get all groups cotaining the user as participant or creator, and the total amount of each group
-DROP FUNCTION get_user_groups();
+drop function if exists get_user_groups();
 create or replace function public.get_user_groups()
 returns table (
   id uuid,
@@ -29,7 +29,7 @@ begin
     coalesce((
       select sum(
         case
-          when e.transaction_type = 'income' then e.total_amount
+          when e.transaction_type = 'INCOME' then e.total_amount
           else -e.total_amount
         end
       )
@@ -54,6 +54,7 @@ grant execute on function public.get_user_groups() to authenticated;
 
 --------------------------------------------------------------------------
 -- Check if user is participant of a group
+drop function if exists is_user_in_group(uuid);
 create or replace function public.is_user_in_group(p_group_id uuid)
 returns boolean
 language sql
@@ -73,7 +74,7 @@ grant execute on function public.is_user_in_group(uuid) to authenticated;
 
 --------------------------------------------------------------------------
 -- Funzione custom per ottenere tutti i membri del gruppo solo se abilitato
-DROP FUNCTION get_group_members(uuid);
+drop function if exists get_group_members(uuid);
 create or replace function get_group_members(p_group_id uuid)
 returns table (
   user_id uuid,
@@ -103,7 +104,7 @@ grant execute on function public.get_group_members(uuid) to authenticated;
 
 --------------------------------------------------------------------------
 -- Get Profile by email or username
-DROP FUNCTION get_user_by_email_or_username(varchar, text);
+drop function if exists get_user_by_email_or_username(varchar, text);
 create or replace function public.get_user_by_email_or_username(
   p_email varchar(255),
   p_username text
@@ -192,6 +193,7 @@ grant execute on function public.update_group_and_participants(uuid, text, text,
 -- TRIGGERS --------------------------------------------------------------
 --------------------------------------------------------------------------
 -- Trigger per propagare user_id da groups a group_participants
+drop function if exists set_group_user_id();
 create or replace function set_group_user_id()
 returns trigger as $$
 begin
@@ -207,6 +209,7 @@ for each row execute function set_group_user_id();
 --------------------------------------------------------------------------
 
 -- Trigger: aggiungi automaticamente il creator come partecipante
+drop function if exists add_creator_as_participant();
 create or replace function add_creator_as_participant()
 returns trigger as $$
 begin
@@ -224,7 +227,7 @@ begin
     new.user_id,
     new.id,
     new.user_id,
-    'creator',
+    'CREATOR',
     true,
     true,
     now(),

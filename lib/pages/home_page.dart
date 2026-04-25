@@ -11,7 +11,6 @@ import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';

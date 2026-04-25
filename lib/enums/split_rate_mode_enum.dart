@@ -1,19 +1,21 @@
 // ignore_for_file: constant_identifier_names -- This is to allow enum values to be in uppercase, which is a common convention for enums in Dart.
 enum SplitRateModeEnum { 
-  // TODO: ci sono tutti?
-  ONE_QUARTER("ONE_QUARTER"), 
-  THREE_QUARTERS("THREE_QUARTERS"),
-  HALF("HALF"),
-
-  ZERO("ZERO"), // Hai anticipato per gli altri (es. hai speso 100, ti devono rimborsare 100)
-  EQUALLY("EQUALLY"),
-
-  FIXED_1("FIXED_1"), // Paga 1 quota fissa (es. hai speso 100 ed eravate 5, paghi: 100/5 = 20)
-  FIXED_2("FIXED_2"), // Paga 2 quote fisse (es. hai speso 100 ed eravate 5, paghi: 100/5 * 2 = 40)
-  FIXED_3("FIXED_3"), // Paga 3 quote fisse (es. hai speso 100 ed eravate 5, paghi: 100/5 * 3 = 60)
-  FIXED_4("FIXED_4"), // Paga 4 quote fisse (es. hai speso 100 ed eravate 5, paghi: 100/5 * 4 = 80)
+  // Tab: Split Rate
+  ONE_QUARTER('ONE_QUARTER'),
+  HALF('HALF'),
+  THREE_QUARTERS('THREE_QUARTERS'),
+  EVENLY('EVENLY'),
+  ZERO('ZERO'),
+  CUSTOM_PERCENTAGE('CUSTOM_PERCENTAGE'),
   
-  CUSTOM("CUSTOM");
+  FIXED_1('FIXED_1'), // Paga 1 quota fissa (es. hai speso 100 ed eravate 5, paghi: 100/5 = 20)
+  FIXED_2('FIXED_2'), // Paga 2 quote fisse (es. hai speso 100 ed eravate 5, paghi: 100/5 * 2 = 40)
+  FIXED_3('FIXED_3'), 
+  FIXED_4('FIXED_4'),
+  CUSTOM_FIXED('CUSTOM_FIXED'),
+
+  // Tab: Paid Amount
+  FIXED_AMOUNT('FIXED_AMOUNT');
   
   final String value;  
   const SplitRateModeEnum(this.value);

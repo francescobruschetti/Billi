@@ -1,3 +1,4 @@
+import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
 import 'package:logging/logging.dart';
@@ -10,7 +11,7 @@ class TransactionService {
   Future<Map<String, dynamic>> createGroupExpenseTransaction({
     required String groupId,
     required double price,
-    String? splitRate,
+    SplitRateModeEnum? splitRateEnum,
     double? paidAmount,
     String? merchant,
     String? categories,
@@ -20,7 +21,7 @@ class TransactionService {
       groupId: groupId,
       price: price,
       transactionType: TransactionTypeEnum.EXPENSE,
-      splitRate: splitRate,
+      splitRateEnum: splitRateEnum,
       paidAmount: paidAmount,
       merchant: merchant,
       categories: categories,
@@ -37,7 +38,7 @@ class TransactionService {
       groupId: groupId,
       price: price,
       transactionType: TransactionTypeEnum.INCOME,
-      splitRate: null,
+      splitRateEnum: null,
       paidAmount: price,
       merchant: null,
       categories: 'INCOME',
@@ -49,7 +50,7 @@ class TransactionService {
     required String groupId,
     required double price,
     required TransactionTypeEnum transactionType,
-    String? splitRate,
+    SplitRateModeEnum? splitRateEnum,
     double? paidAmount,
     String? merchant,
     String? categories,
@@ -63,7 +64,7 @@ class TransactionService {
         'p_user_id': userId,
         'p_paid_amount': paidAmount,
         'p_total_amount': price,
-        'p_split_rate': splitRate,
+        'p_split_rate': splitRateEnum?.value,
         'p_merchant_name': merchant,
         'p_category_name': categories,
         'p_note': note,

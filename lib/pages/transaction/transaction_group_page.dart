@@ -38,8 +38,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   final double _defaultSizedBoxHeight = 6.0;
 
   late TextEditingController _priceController;
-  late TextEditingController _paidAmountController;
-  late TextEditingController _splitRateController;
   late TextEditingController _merchantController;
   late TextEditingController _categoriesController;
   late TextEditingController _paymentMethodController; // TODO: da implementare
@@ -48,26 +46,20 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   bool _isLoading = false;
   bool _isSaveEnabled = false;
   late final bool isEdit;
-  TransactionInsertModeEnum? _transactionInsertMode;
   String? _errorMessage;
   String pageTitle = 'Inserisci Spesa';
-  String? _selectedSplitRateValue;
-  SplitRateModeEnum? _selectedSplitRateValueButton;
-  String? _prova; // TODO:
+  SplitRateModeEnum? _selectedSplitRateValueEnum;
+  GroupExpenseSplitResponseModel? _groupExpenseSplitResponseModel;
 
   @override
   void initState() {
     super.initState();
     _priceController = TextEditingController(text: '');
-    _paidAmountController = TextEditingController(text: '');
-    _splitRateController = TextEditingController(text: '');
     _merchantController = TextEditingController(text: '');
     _categoriesController = TextEditingController(text: '');
     _paymentMethodController = TextEditingController(text: '');
     _noteController = TextEditingController(text: '');
     _priceController.addListener(_onFieldChanged);
-    _paidAmountController.addListener(_onFieldChanged);
-    _splitRateController.addListener(_onFieldChanged);
 
     isEdit = widget.transactionId != null && widget.isEditAllowed;
     _pageTitleSetup();
@@ -80,12 +72,8 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   @override
   void dispose() {
     _priceController.removeListener(_onFieldChanged);
-    _paidAmountController.removeListener(_onFieldChanged);
-    _splitRateController.removeListener(_onFieldChanged);
 
     _priceController.dispose();
-    _paidAmountController.dispose();
-    _splitRateController.dispose();
     _merchantController.dispose();
     _categoriesController.dispose();
     _paymentMethodController.dispose();
@@ -94,7 +82,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
 
   GroupDetailsModel? _computeSelectedGroup(List<GroupDetailsModel> groups) {
-    log.fine("Computing selected group for groupId ${widget.groupId} from groups: $groups");
     if (widget.groupId == null) return null;
     try {
       return groups.firstWhere((g) => g.id == widget.groupId);
@@ -129,28 +116,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       selection: TextSelection.collapsed(offset: text.length),
     );
     return double.tryParse(text) ?? 0.0;
-  }
-
-  void _handleTransactionInsertModeValue(TransactionInsertModeEnum value) {
-    setState(() {
-      _selectedSplitRateValueButton = null;
-      _selectedSplitRateValue = null;
-      _transactionInsertMode = value;
-    });
-  }
-
-  void _handleSplitRateValue(SplitRateModeEnum value) {
-    setState(() {
-      _paidAmountController.text = '';
-      if (_selectedSplitRateValueButton == value) {
-        _selectedSplitRateValueButton = null; // Deseleziona se già selezionato
-      } 
-      else {
-        _selectedSplitRateValueButton = value;
-      }
-      _selectedSplitRateValue = _selectedSplitRateValueButton?.name;
-      _onFieldChanged();
-    });
   }
 
   Future<void> _loadExistingTransaction(String transactionId) async {
@@ -197,7 +162,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   void _onFieldChanged() {
     setState(() {
       if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
-        _isSaveEnabled = (_selectedGroup != null && (_paidAmountController.text.isNotEmpty || _selectedSplitRateValue != null) && _priceController.text.isNotEmpty);
+        _isSaveEnabled = (
+          _selectedGroup != null 
+          && (_selectedSplitRateValueEnum != null || _groupExpenseSplitResponseModel?.splitRateModeEnum != null)
+          && _priceController.text.isNotEmpty);
       }
       else {
         _isSaveEnabled = (_selectedGroup != null && _priceController.text.isNotEmpty);
@@ -221,18 +189,21 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
 
   Future<void> _openSplitRateVsPaidAmountBottomSheet() async {
-    final GroupExpenseSplitResponseModel? response = await showModalBottomSheet(
+    GroupExpenseSplitResponseModel? response = await showModalBottomSheet(
       context: context,
+      //enableDrag: false, // disabilita il drag per evitare chiusure accidentali
+      //isDismissible: false, // disabilita la chiusura toccando fuori dal bottom sheet
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) => SplitrateVsPaidamountBottomSheetWidget(),
+      builder: (BuildContext context) => SplitrateVsPaidamountBottomSheetWidget(
+        splitRateModeEnum: _selectedSplitRateValueEnum, 
+        groupExpenseSplitResponseModel: _groupExpenseSplitResponseModel,
+      ),
     );
 
-    if (response != null) {
-      log.fine("SplitRate vs PaidAmount response: $response");
-      setState(() {
-        _prova = response.filterSelected?.value; // TODO: da rimuovere
-      });
+    if (response != null) { // is null when user cancels/closes the bottom sheet without saving
+      _groupExpenseSplitResponseModel = response;
+      setState(() => _selectedSplitRateValueEnum = _groupExpenseSplitResponseModel!.splitRateModeEnum);
     }
   }
 
@@ -254,15 +225,15 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     }
 
     try {
-      if (_paidAmountController.text.isEmpty && _selectedSplitRateValue == null) {
+      if (_selectedSplitRateValueEnum == null) {
         throw Exception("Devi specificare una quota pagata o un tasso di divisione");
       }
 
       double formattedPrice = _formatPriceInput();
       double? paidAmount;
-      if (_paidAmountController.text.isNotEmpty) {
-        paidAmount = double.tryParse(_paidAmountController.text.replaceAll(',', '.')) ?? 0.0;
-        if (paidAmount > formattedPrice) {
+      if (_groupExpenseSplitResponseModel?.fixedAmount != null) {
+        paidAmount = _groupExpenseSplitResponseModel?.fixedAmount;
+        if (paidAmount! > formattedPrice) {
           final bool proceed = await _confirmSave(message: "La quota pagata è maggiore del totale. Vuoi procedere comunque?");
           if (!proceed) {
             setState(() {
@@ -274,20 +245,21 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       }
 
       if (isEdit) { // Logica di salvataggio modifica gruppo
-        await TransactionService().updateGroupExpenseTransaction(
-          groupId: _selectedGroup!.id,
-          transactionId: widget.transactionId!,
-          price: formattedPrice,
-          merchant: _merchantController.text.trim(),
-          categories: _categoriesController.text.trim(),
-          note: _noteController.text.trim(),
-        );
+      // TODO:
+        // await TransactionService().updateGroupExpenseTransaction(
+        //   groupId: _selectedGroup!.id,
+        //   transactionId: widget.transactionId!,
+        //   price: formattedPrice,
+        //   merchant: _merchantController.text.trim(),
+        //   categories: _categoriesController.text.trim(),
+        //   note: _noteController.text.trim(),
+        // );
       } 
       else { // Logica di creazione nuovo gruppo
         await TransactionService().createGroupExpenseTransaction(
           groupId: _selectedGroup!.id,
           price: formattedPrice,
-          splitRate: _selectedSplitRateValue,
+          splitRateEnum: _selectedSplitRateValueEnum,
           paidAmount: paidAmount,
           merchant: _merchantController.text.trim(),
           categories: _categoriesController.text.trim(),
@@ -400,7 +372,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                       const SizedBox(width: 8),
                       CustomButtonWidget(
                         onPressed: _openSplitRateVsPaidAmountBottomSheet,
-                        text: _prova ?? 'Split/Paid',
+                        text: _selectedSplitRateValueEnum?.value ?? 'Configura quota',
                         isIconPrefix: false,
                         backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
                         customIcon: CustomIconWidget(assetPath: 'assets/images/icons/vertical_dots.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondaryContainer),

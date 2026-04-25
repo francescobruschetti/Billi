@@ -1,4 +1,5 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/models/group_expense_split_response_model.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/providers/ui_provider.dart';
@@ -8,70 +9,114 @@ import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 
 class SplitrateVsPaidamountBottomSheetWidget extends ConsumerStatefulWidget {
-  final String? title;
-  const SplitrateVsPaidamountBottomSheetWidget({super.key, this.title});
+  final SplitRateModeEnum? splitRateModeEnum;
+  final GroupExpenseSplitResponseModel? groupExpenseSplitResponseModel;
+  const SplitrateVsPaidamountBottomSheetWidget({super.key, this.splitRateModeEnum, this.groupExpenseSplitResponseModel});
 
   @override
   ConsumerState<SplitrateVsPaidamountBottomSheetWidget> createState() => _SplitrateVsPaidamountBottomSheetWidgetState();
 }
 
 class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<SplitrateVsPaidamountBottomSheetWidget> {
+  final Logger log = Logger('SplitrateVsPaidamountBottomSheetWidget');
   static final ScrollController _verticalController = ScrollController();
   late final PageController _controller;
 
-  late TextEditingController _priceController;
+  late TextEditingController _customPercentageController;
+  late TextEditingController _customFixedController;
   late TextEditingController _paidAmountController;
-  late TextEditingController _splitRateController;
 
   @override
   void initState() {
     super.initState();
-    _controller = PageController();
-    _priceController = TextEditingController(text: '');
-    _paidAmountController = TextEditingController();
-    _splitRateController = TextEditingController();
+    _controller = PageController(initialPage: widget.groupExpenseSplitResponseModel?.tabSelectedIndex ?? 0);
+    _customPercentageController = TextEditingController(text: '');
+    _customFixedController = TextEditingController(text: '');
+    _paidAmountController = TextEditingController(text: '');
+
+    _customPercentageController.addListener(() => _onFieldChanged(SplitRateModeEnum.CUSTOM_PERCENTAGE, textValue: _customPercentageController.text));
+    _customFixedController.addListener(() => _onFieldChanged(SplitRateModeEnum.CUSTOM_FIXED, textValue: _customFixedController.text));
+    _paidAmountController.addListener(() => _onFieldChanged(SplitRateModeEnum.FIXED_AMOUNT, textValue: _paidAmountController.text));
+
+    if (widget.groupExpenseSplitResponseModel != null) {
+      Future.microtask(() {
+        ref.read(splitRateModeProvider.notifier).state = widget.groupExpenseSplitResponseModel?.splitRateModeEnum;
+        ref.read(splitRateAndPaidAmountTabProvider.notifier).state = widget.groupExpenseSplitResponseModel?.tabSelectedIndex ?? 0;
+        log.info('Initialized splitRateModeProvider with ${widget.groupExpenseSplitResponseModel?.splitRateModeEnum} and splitRateAndPaidAmountTabProvider with ${widget.groupExpenseSplitResponseModel?.tabSelectedIndex}');
+
+        _customPercentageController.text = widget.groupExpenseSplitResponseModel?.customPercentage?.toString() ?? '';
+        _customFixedController.text = widget.groupExpenseSplitResponseModel?.customFixedValue?.toString() ?? '';
+        _paidAmountController.text = widget.groupExpenseSplitResponseModel?.fixedAmount?.toString() ?? '';
+      });
+    }
+    else if (widget.splitRateModeEnum != null) {
+      Future.microtask(() {
+        ref.read(splitRateModeProvider.notifier).state = widget.splitRateModeEnum!;
+      });
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _priceController.removeListener(_onFieldChanged);
-    _paidAmountController.removeListener(_onFieldChanged);
-    _splitRateController.removeListener(_onFieldChanged);
+    _customPercentageController.removeListener(() => _onFieldChanged(SplitRateModeEnum.CUSTOM_PERCENTAGE, textValue: _customPercentageController.text));
+    _customFixedController.removeListener(() => _onFieldChanged(SplitRateModeEnum.CUSTOM_FIXED, textValue: _customFixedController.text));
+    _paidAmountController.removeListener(() => _onFieldChanged(SplitRateModeEnum.FIXED_AMOUNT, textValue: _paidAmountController.text));
     
-    _priceController.dispose();
+    _customPercentageController.dispose();
+    _customFixedController.dispose();
     _paidAmountController.dispose();
-    _splitRateController.dispose();
     super.dispose();
   }
 
-  double _formatPriceInput() {
-    String text = _priceController.text;
-    text = text.replaceAll(',', '.');
-    _priceController.value = _priceController.value.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
+  double _formatPriceInput(String value) {
+    value = value.replaceAll(',', '.');
+    _paidAmountController.value = _paidAmountController.value.copyWith(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
     );
-    return double.tryParse(text) ?? 0.0;
+    return double.tryParse(value) ?? 0.0;
   }
 
-  void _handleSplitRateValue(FilterSelection value) {
-    ref.read(filterProvider.notifier).state = value;
+  void _handleSplitRateValue(SplitRateModeEnum value) {
+    ref.read(splitRateModeProvider.notifier).state = value;
+  }
+  
+  void _onFieldChanged(SplitRateModeEnum value, {String? textValue}) {
+    if (textValue != null && textValue.isNotEmpty) {
+      _handleSplitRateValue(value);
+
+      setState(() {
+        switch (value) {
+          case SplitRateModeEnum.CUSTOM_PERCENTAGE:
+            _customFixedController.text = '';
+            _paidAmountController.text = '';
+            break;
+          case SplitRateModeEnum.CUSTOM_FIXED:
+            _customPercentageController.text = '';
+            _paidAmountController.text = '';
+            break;
+          case SplitRateModeEnum.FIXED_AMOUNT:
+            _customPercentageController.text = '';
+            _customFixedController.text = '';
+            break;
+          default:
+            break;
+        }
+      });
+    }
   }
 
-  void _onFieldChanged() {
-    // TODO: 
-    // setState(() {
-    //   if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
-    //     _isSaveEnabled = (_selectedGroup != null && (_paidAmountController.text.isNotEmpty || _selectedSplitRateValue != null) && _priceController.text.isNotEmpty);
-    //   }
-    //   else {
-    //     _isSaveEnabled = (_selectedGroup != null && _priceController.text.isNotEmpty);
-    //   }
-    // });
+  void _onSplitRateChanged(SplitRateModeEnum value) {
+    _handleSplitRateValue(value);
+
+    _customFixedController.text = '';
+    _customPercentageController.text = '';
+    _paidAmountController.text = '';
   }
 
   void _onTabChanged(int index) {
@@ -86,20 +131,22 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
     }
   }
 
-  void _onPageChanged(int index) {
-    ref.read(splitRateAndPaidAmountTabProvider.notifier).state = index;
-  }
-
-  // void _handleThemeChange(BuildContext context, int index) {
-  //   Navigator.of(context).pop(ThemeEnum.values[index]);
-  // }
-
   void _save() {
+
+    int tabIndexResponse;
+    if (widget.groupExpenseSplitResponseModel?.splitRateModeEnum != ref.read(splitRateModeProvider.notifier).state!) {
+      tabIndexResponse = ref.read(splitRateAndPaidAmountTabProvider.notifier).state;
+    }
+    else {
+      tabIndexResponse = widget.groupExpenseSplitResponseModel?.tabSelectedIndex ?? 0;
+    }
+
     GroupExpenseSplitResponseModel response = GroupExpenseSplitResponseModel(
-      filterSelected: ref.read(filterProvider.notifier).state,
-      customPercentage: ref.read(filterProvider.notifier).state == FilterSelection.customPercentage ? int.tryParse(_splitRateController.text) : null,
-      customFixedValue: ref.read(filterProvider.notifier).state == FilterSelection.customFixed ? int.tryParse(_splitRateController.text) : null,
-      fixedAmount: ref.read(filterProvider.notifier).state == FilterSelection.fixedAmount ? _formatPriceInput() : null,
+      splitRateModeEnum: ref.read(splitRateModeProvider.notifier).state!,
+      customPercentage: _customPercentageController.text.isNotEmpty ? int.tryParse(_customPercentageController.text) : null,
+      customFixedValue: _customFixedController.text.isNotEmpty ? int.tryParse(_customFixedController.text) : null,
+      fixedAmount: _paidAmountController.text.isNotEmpty ? _formatPriceInput(_paidAmountController.text) : null,
+      tabSelectedIndex: tabIndexResponse
     );
 
     Navigator.of(context).pop(response);
@@ -108,34 +155,26 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
   @override
   Widget build(BuildContext context) {
     final int tabSelectedIndex = ref.watch(splitRateAndPaidAmountTabProvider);
-    final FilterSelection? filterSelected = ref.watch(filterProvider);
+    final SplitRateModeEnum? filterSelected = ref.watch(splitRateModeProvider);
 
     return AppBottomSheet(
-      title: widget.title,
       initialSize: 0.9,
       minSize: 0.5,
       maxSize: 1.0,
-      child: Scrollbar(
+      child: SingleChildScrollView(
         controller: _verticalController,
-        thumbVisibility: true,
-        child: Scrollbar(
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-          child: SingleChildScrollView(
-            controller: _verticalController,
-            scrollDirection: Axis.vertical,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Pass filterSelected to _buildSegmentController
-                return _buildSegmentController(tabSelectedIndex, filterSelected: filterSelected);
-              },
-            ),
-          ),
+        scrollDirection: Axis.vertical,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Pass splitRateModeEnum to _buildSegmentController
+            return _buildSegmentController(tabSelectedIndex, splitRateModeEnum: filterSelected);
+          },
         ),
       ),
     );
   }
 
-  Widget _buildSegmentController(int tabSelectedIndex, {required FilterSelection? filterSelected}) {
+  Widget _buildSegmentController(int tabSelectedIndex, {required SplitRateModeEnum? splitRateModeEnum}) {
     return Column(
       children: [
         // Segmented control
@@ -149,18 +188,18 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
 
         // PageView
         SizedBox(
-          height: 400, // TODO: da sistamre
+          height: 400, // TODO: da sistemare
           child: PageView(
             controller: _controller,
-            onPageChanged: _onPageChanged,
+            onPageChanged: _onTabChanged,
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                child: _buildSplitRateComponents(filterSelected)
+                child: _buildSplitRateComponents(splitRateModeEnum)
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 16, left: 16, right: 16), 
-                child: _buildFixedRateComponents(filterSelected)
+                child: _buildFixedRateComponents(splitRateModeEnum)
               ),
             ],
           ),
@@ -169,7 +208,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
     );
   }
 
-  Widget _buildFixedRateComponents(FilterSelection? filterSelected) {
+  Widget _buildFixedRateComponents(SplitRateModeEnum? splitRateModeEnum) {
     return Column(
       children: [
         CustomValidatedTextField(
@@ -179,7 +218,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           ],
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           labelText: 'Quota pagata',
-          onChanged: (value) => _formatPriceInput(),
+          onChanged: (value) => _formatPriceInput(value),
           prefixIcon: Icon(Icons.euro, size: 24),
         ),
 
@@ -187,13 +226,13 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
         CustomButtonWidget(
           onPressed: _save,
           text: 'Salva',
-          isEnabled: filterSelected != null,
+          isEnabled: splitRateModeEnum != null,
         )
       ],
     );
   }
 
-  Widget _buildSplitRateComponents(FilterSelection? filterSelected) {
+  Widget _buildSplitRateComponents(SplitRateModeEnum? splitRateModeEnum) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,14 +248,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.oneQuarter ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none, 
+                      side: splitRateModeEnum == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none, 
                     ),
-                    backgroundColor: filterSelected == FilterSelection.oneQuarter ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.ONE_QUARTER ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.oneQuarter),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.ONE_QUARTER),
                   child: const Text('25%'),
                 ),
               ),
@@ -228,14 +267,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.half ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.HALF ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.half ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.HALF ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.half),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.HALF),
                   child: const Text('50%'),
                 ),
               ),
@@ -247,14 +286,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.threeQuarters ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.THREE_QUARTERS ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.threeQuarters ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.THREE_QUARTERS ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.threeQuarters),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.THREE_QUARTERS),
                   child: const Text('75%'),
                 ),
               ),
@@ -266,14 +305,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.evenly ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.EVENLY ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.evenly ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.EVENLY ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.evenly),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.EVENLY),
                   child: const Text('Evenly'),
                 ),
               ),
@@ -285,37 +324,37 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.zero ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.ZERO ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.zero ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.ZERO ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.zero),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.ZERO),
                   child: const Text('Hai anticipato tu'),
                 ),
               ),
             ),
+            
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: '%',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
+                child: CustomValidatedTextField(
+                  controller: _customPercentageController,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      final text = newValue.text;
+                      if (text.isEmpty) return newValue;
+                      final value = int.tryParse(text);
+                      if (value == null) return oldValue;
+                      if (value < 0 || value > 100) return oldValue;
+                      return newValue;
+                    }),
                   ],
-                  onChanged: (value) {
-                    int? parsedValue = int.tryParse(value);
-                    if (parsedValue != null) {
-                      _handleSplitRateValue(FilterSelection.customPercentage);
-                    }
-                  },
+                  keyboardType: const TextInputType.numberWithOptions(decimal: false),
+                  labelText: '%',
                 ),
               ),
             ),
@@ -334,14 +373,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed1 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.FIXED_1 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed1 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.FIXED_1 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.fixed1),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.FIXED_1),
                   child: const Text('1'),
                 ),
               ),
@@ -353,14 +392,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed2 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.FIXED_2 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed2 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.FIXED_2 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.fixed2),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.FIXED_2),
                   child: const Text('2'),
                 ),
               ),
@@ -372,14 +411,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed3 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.FIXED_3 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed3 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.FIXED_3 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.fixed3),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.FIXED_3),
                   child: const Text('3'),
                 ),
               ),
@@ -391,14 +430,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed4 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                      side: splitRateModeEnum == SplitRateModeEnum.FIXED_4 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed4 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.FIXED_4 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
                     foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
-                  onPressed: () => _handleSplitRateValue(FilterSelection.fixed4),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.FIXED_4),
                   child: const Text('4'),
                 ),
               ),
@@ -406,22 +445,21 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: 'Altro',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
+                child: CustomValidatedTextField(
+                  controller: _customFixedController,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      final text = newValue.text;
+                      if (text.isEmpty) return newValue;
+                      final value = int.tryParse(text);
+                      if (value == null) return oldValue;
+                      if (value < 0 || value > 10) return oldValue;
+                      return newValue;
+                    }),
                   ],
-                  onChanged: (value) {
-                    int? parsedValue = int.tryParse(value);
-                    if (parsedValue != null) {
-                      _handleSplitRateValue(FilterSelection.customFixed);
-                    }
-                  },
+                  keyboardType: const TextInputType.numberWithOptions(decimal: false),
+                  labelText: 'Altro',
                 ),
               ),
             ),
@@ -432,7 +470,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
         CustomButtonWidget(
           onPressed: _save,
           text: 'Salva',
-          isEnabled: filterSelected != null,
+          isEnabled: splitRateModeEnum != null,
         )
       ]
     );
