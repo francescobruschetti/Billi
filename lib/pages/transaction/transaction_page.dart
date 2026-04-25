@@ -3,6 +3,7 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/create_category_response_model.dart';
 import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
 import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:flutter/material.dart';
@@ -288,12 +289,14 @@ class _TransactionPageState extends State<TransactionPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
+                    CustomButtonWidget(
+                      onPressed: () { // Salva o crea gruppo
                         _saveTransaction();
-                      } : null, // Disabilita il pulsante se il nome è vuoto
-                      child: const Text('Salva'),
+                      },
+                      text: isEdit ? 'Salva' : 'Crea',
+                      isEnabled: _isSaveEnabled,
                     ),
+
                     const SizedBox(width: 16),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),

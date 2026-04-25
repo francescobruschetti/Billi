@@ -51,9 +51,10 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       appBar: _buildAppBar(),
       floatingActionButton: FloatingButtonWidget(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupDetailsPage())),
-        iconButton: const CustomIconWidget(
+        iconButton: CustomIconWidget(
           assetPath: 'assets/images/icons/add.PNG',
           size: 24,
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
         ),
       ),
       body: groupsState.when(

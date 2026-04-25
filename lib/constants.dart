@@ -11,4 +11,7 @@ class AppConstants {
   static const Color red = Colors.red;
   static const Color defaultExpenseColor = Colors.redAccent;
   static const Color defaultIncomeColor = Color.fromARGB(255, 79, 167, 124);
+
+  static const Color defaultButtonColor = Colors.white;
+  static const Color disabledButtonColor = Color.fromARGB(255, 114, 114, 114);
 }

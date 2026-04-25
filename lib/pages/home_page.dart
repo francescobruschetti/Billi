@@ -257,7 +257,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _navigateToTransactionPage(transactionType: TransactionTypeEnum.EXPENSE, isEditAllowed: true);
               },
               text: 'Uscite',
-              customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
+              customIcon: CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24, color: Theme.of(context).colorScheme.onPrimaryContainer),
               backgroundColor: AppConstants.defaultExpenseColor,
             ),
           ),

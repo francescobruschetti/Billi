@@ -75,7 +75,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: CustomValidatedTextField(
                     controller: _searchController,
-                    labelText: 'Cerca categoria',
+                    labelText: 'Cerca o digita per creare',
                     prefixIcon: const Icon(Icons.search, size: 24),
                     onChanged: (_) => setState(() {}), // forza rebuild per aggiornare il filtro
                   ),
@@ -88,8 +88,9 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                   const SizedBox(height: 8),
                   CustomButtonWidget(
                     onPressed: () => Navigator.of(context).pop(CreateCategoryResponseModel(newName: _searchControllerText, isNew: true)),
-                    text: 'Crea nuova categoria',
-                    customIcon: CustomIconWidget(assetPath: 'assets/images/icons/add.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondary),
+                    text: 'Crea nuova categoria "$_searchControllerText"',
+                    customIcon: CustomIconWidget(assetPath: 'assets/images/icons/add.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondaryContainer),
+                    isEnabled: true,
                   ),
                 ],
 

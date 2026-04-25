@@ -116,11 +116,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
-# Note: Run "flutter pub run flutter_native_splash:create" to generate splash screen
-flutter_native_splash:
-  color: "#FF0000"
-  image: assets/images/splash_screen_image_v1.png
-  android: true
-  ios: true
-  web: true

@@ -1,7 +1,7 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/main.dart';
-import 'package:Billy/pages/settings/components/theme_bottom_sheet_widget.dart';
+import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/transaction_provider.dart';
@@ -63,7 +63,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       context: context,
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
-      builder: (BuildContext context) => ThemeBottomSheetWidget(
+      builder: (BuildContext context) => ThemeSettingBottomSheetWidget(
         title: 'Seleziona tema',
       ),
     );

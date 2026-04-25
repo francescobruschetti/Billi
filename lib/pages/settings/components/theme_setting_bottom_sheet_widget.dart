@@ -3,15 +3,15 @@ import 'package:Billy/main.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
-class ThemeBottomSheetWidget extends StatefulWidget {
+class ThemeSettingBottomSheetWidget extends StatefulWidget {
   final String title;
-  const ThemeBottomSheetWidget({super.key, required this.title});
+  const ThemeSettingBottomSheetWidget({super.key, required this.title});
 
   @override
-  State<ThemeBottomSheetWidget> createState() => _ThemeBottomSheetWidgetState();
+  State<ThemeSettingBottomSheetWidget> createState() => _ThemeSettingBottomSheetWidgetState();
 }
 
-class _ThemeBottomSheetWidgetState extends State<ThemeBottomSheetWidget> {
+class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetWidget> {
   static final ScrollController _verticalController = ScrollController();
 
   late List<bool> _selectedThemes;

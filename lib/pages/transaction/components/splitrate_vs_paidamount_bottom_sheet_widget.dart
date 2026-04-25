@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/models/group_expense_split_response_model.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/providers/ui_provider.dart';
@@ -7,7 +8,6 @@ import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 
 
 class SplitrateVsPaidamountBottomSheetWidget extends ConsumerStatefulWidget {
@@ -185,14 +185,14 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
 
         const SizedBox(height: 8),
         CustomButtonWidget(
-          onPressed: filterSelected != null ? _save : null,
+          onPressed: _save,
           text: 'Salva',
+          isEnabled: filterSelected != null,
         )
       ],
     );
   }
 
-  // v3
   Widget _buildSplitRateComponents(FilterSelection? filterSelected) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,10 +209,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.oneQuarter ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.oneQuarter ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none, 
                     ),
-                    backgroundColor: filterSelected == FilterSelection.oneQuarter ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.oneQuarter ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -228,10 +228,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.half ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.half ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.half ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.half ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -247,10 +247,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.threeQuarters ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.threeQuarters ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.threeQuarters ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.threeQuarters ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -266,10 +266,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.evenly ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.evenly ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.evenly ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.evenly ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -285,10 +285,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.zero ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.zero ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.zero ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.zero ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -334,10 +334,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed1 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.fixed1 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed1 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.fixed1 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -353,10 +353,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed2 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.fixed2 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed2 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.fixed2 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -372,10 +372,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed3 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.fixed3 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed3 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.fixed3 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -391,10 +391,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: filterSelected == FilterSelection.fixed4 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none, // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
+                      side: filterSelected == FilterSelection.fixed4 ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
-                    backgroundColor: filterSelected == FilterSelection.fixed4 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: filterSelected == FilterSelection.fixed4 ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                   ),
@@ -430,237 +430,11 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
       
         const SizedBox(height: 8),
         CustomButtonWidget(
-          onPressed: filterSelected != null ? _save : null,
+          onPressed: _save,
           text: 'Salva',
+          isEnabled: filterSelected != null,
         )
       ]
     );
   }
-
-  // old version v1:
-  /*Widget _buildSplitRateComponents() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        Text('Quanto paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.ONE_QUARTER ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.ONE_QUARTER),
-                  child: const Text('25%'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.HALF ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.HALF),
-                  child: const Text('50%'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.THREE_QUARTERS ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.THREE_QUARTERS),
-                  child: const Text('75%'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.EQUALLY ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.EQUALLY),
-                  child: const Text('Equally'),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 2, // Bottone più largo per il 100%
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.ZERO ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.ZERO),
-                  child: const Text('Hai anticipato tu'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: '%',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [ FilteringTextInputFormatter.digitsOnly, ],
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 8),
-        Text('Per quanti paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_1 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.FIXED_1),
-                  child: const Text('1'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_2 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.FIXED_2),
-                  child: const Text('2'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_3 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.FIXED_3),
-                  child: const Text('3'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide.none // TODO (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? BorderSide(color: Theme.of(context).colorScheme.secondary) : BorderSide.none),
-                    ),
-                    backgroundColor: Colors.grey.shade200, // TODO: (_selectedSplitRateValueButton == SplitRateModeEnum.FIXED_4 ? Theme.of(context).colorScheme.secondary : Colors.grey.shade200),
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => {}, // TODO: _handleSplitRateValue(SplitRateModeEnum.FIXED_4),
-                  child: const Text('4'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: 'Altro',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ]
-    );
-  }*/
-  
 }

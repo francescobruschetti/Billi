@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/splash_screen_image_v1.png', height: 250),
+              Image.asset('assets/images/logo.png', height: 250),
               
               // Email input field
               const SizedBox(height: AppConstants.sizedBoxHeight),
@@ -122,8 +122,8 @@ class _LoginPageState extends State<LoginPage> {
                 ElevatedButton(
                   onPressed: _isFormValid ? _login : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer, // dark;
                     minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
                   ),
                   child: const Text('Login'),

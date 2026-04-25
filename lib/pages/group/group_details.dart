@@ -3,6 +3,8 @@ import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group_participant_model.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
@@ -437,12 +439,14 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: _isSaveEnabled ? () { // Salva o crea gruppo
+                    CustomButtonWidget(
+                      onPressed: () { // Salva o crea gruppo
                         _saveGroup();
-                      } : null, // Disabilita il pulsante se il nome è vuoto
-                      child: Text(isEdit ? 'Salva' : 'Crea'),
+                      },
+                      text: isEdit ? 'Salva' : 'Crea',
+                      isEnabled: _isSaveEnabled,
                     ),
+
                     const SizedBox(width: 16),
                     TextButton(
                       onPressed: () => _navigatePop(),

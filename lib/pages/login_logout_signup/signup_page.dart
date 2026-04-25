@@ -174,8 +174,8 @@ class _SignupPageState extends State<SignupPage> {
               ElevatedButton(
                 onPressed: _isFormValid ? _register : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer, // dark;
                   minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
                 ),
                 child: const Text('Registrati'),

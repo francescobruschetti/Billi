@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +8,7 @@ class CustomButtonWidget extends StatelessWidget {
   final IconData? iconData;
   final CustomIconWidget? customIcon;
   final bool isIconPrefix;
+  final bool isEnabled;
   final VoidCallback? onPressed;
 
   const CustomButtonWidget({
@@ -16,17 +18,20 @@ class CustomButtonWidget extends StatelessWidget {
     this.iconData,
     this.customIcon,
     this.isIconPrefix = true,
+    this.isEnabled = true,
     this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: isEnabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
+        disabledBackgroundColor: AppConstants.disabledButtonColor,
         backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
+        
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer, width: 1),
+          side: BorderSide(color: isEnabled ? (backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer) : AppConstants.disabledButtonColor, width: 1),
           borderRadius: BorderRadius.circular(12),
         ),
       ),
@@ -39,7 +44,7 @@ class CustomButtonWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (iconData != null) ...[
-          Icon(iconData, color: Theme.of(context).colorScheme.onSecondary, size: text == null ? 30 : 24),
+          Icon(iconData, color: Theme.of(context).colorScheme.onPrimaryContainer, size: text == null ? 30 : 24),
         ],
         if (iconData == null && customIcon != null) ...[
           customIcon!,
@@ -49,7 +54,7 @@ class CustomButtonWidget extends StatelessWidget {
             const SizedBox(width: 8),
           ],
 
-          Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), // es. , fontWeight: FontWeight.bold)),
+          Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), // es. , fontWeight: FontWeight.bold)),
         ],
       ],
     );
@@ -59,10 +64,10 @@ class CustomButtonWidget extends StatelessWidget {
     return Row(      
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), 
+        Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), 
 
         if (iconData != null) ...[
-          Icon(iconData, color: Theme.of(context).colorScheme.onSecondary, size: text == null ? 30 : 24),
+          Icon(iconData, color: Theme.of(context).colorScheme.onPrimaryContainer, size: text == null ? 30 : 24),
         ],
         if (iconData == null && customIcon != null) ...[
           customIcon!,

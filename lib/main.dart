@@ -1,3 +1,4 @@
+import 'package:Billy/authGate/auth_gate.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/languages/app_localizations.dart';
 import 'package:Billy/pages/splash_screen.dart';
@@ -110,7 +111,7 @@ class _BillyAppState extends State<BillyApp> {
         '/register': (context) => const SignupPage(),
         '/logout': (context) => const LogoutPage(),
       },
-      home: SplashScreen(),
+      home: AuthGate(), // TODO: custom load page between pages: SplashScreen(),
       
       // Setup ThemeData con ColorScheme personalizzato
       theme: ThemeData(
@@ -118,16 +119,16 @@ class _BillyAppState extends State<BillyApp> {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
           seedColor: Colors.blue,
+          onPrimary: Colors.black, // To be used for elements over background (text, icons, etc.)
           
-          primaryContainer: Colors.blue[300],
-          onPrimary: Colors.black,
-          onPrimaryContainer: Colors.white,
+          primaryContainer: Colors.blue[300], // To be used for main elements (buttons, active elements, etc.)
+          onPrimaryContainer: Colors.black, // To be used for elements over main elements (button's text, button's icon, etc.)
           
-          secondary: Colors.black,
-          onSecondary: Colors.black,
+          secondary: Colors.black, // To be used for elements that need to stand out (accent color, highlights, etc.)
+          onSecondary: Colors.black, // To be used for elements over secondary elements (text, icons, etc.)
 
-          secondaryContainer: Colors.orange[300],
-          onSecondaryContainer: Colors.orange[300],
+          secondaryContainer: Colors.orange, // To be use for elements that need to stand out (accent color, highlights, etc.)
+          onSecondaryContainer: Colors.black, // To be used for elements over secondary container elements (text, icons, etc.)
 
         ),
       ),
@@ -136,17 +137,16 @@ class _BillyAppState extends State<BillyApp> {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
           seedColor: Colors.blue,
+          onPrimary: Colors.white, // To be used for elements over background (text, icons, etc.)
 
-          primaryContainer: Colors.blue[300],
-          onPrimary: Colors.black,
-          onPrimaryContainer: Colors.white,
+          primaryContainer: Colors.blue[300], // To be used for main elements (buttons, active elements, etc.)
+          onPrimaryContainer: Colors.black, // To be used for elements over main elements (button's text, button's icon, etc.)
 
-          secondary: Colors.orange,
-          onSecondary: Colors.black,
+          secondary: Colors.orange, // To be used for elements that need to stand out (accent color, highlights, etc.)
+          onSecondary: Colors.black, // To be used for elements over secondary elements (text, icons, etc.)
 
-          secondaryContainer: Colors.orange[300],
-          onSecondaryContainer: Colors.black,
-        
+          secondaryContainer: Colors.orange, // To be use for elements that need to stand out (accent color, highlights, etc.)
+          onSecondaryContainer: Colors.black, // To be used for elements over secondary container elements (text, icons, etc.)
         ),
       ),
       themeMode: _themeMode,

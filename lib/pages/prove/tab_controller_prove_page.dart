@@ -70,7 +70,7 @@ class _TabControllerProvePageState extends State<TabControllerProvePage> {
               indicatorSize: TabBarIndicatorSize.tab, // Change indicator size
               indicator: BoxDecoration(
                 borderRadius: BorderRadius.circular(50), // Creates border
-                color: Theme.of(context).colorScheme.secondary              
+                color: Theme.of(context).colorScheme.secondaryContainer,
               ),
               tabs: [
                 Tab(icon: Icon(Icons.flight)),
