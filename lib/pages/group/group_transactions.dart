@@ -255,6 +255,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
                 // Alert errore
                 if (_errorMessage != null) ...[
+                  Expanded(
+                    child: const Center(child: Text('Nessuna transazione trovata')),
+                  ),
+                  
                   ErrorAlertWidget(errorMessage: _errorMessage!, onClose: () {
                       setState(() {
                         _errorMessage = null;

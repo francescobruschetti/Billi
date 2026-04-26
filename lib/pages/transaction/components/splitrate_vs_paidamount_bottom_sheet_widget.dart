@@ -305,25 +305,6 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: splitRateModeEnum == SplitRateModeEnum.EVENLY ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
-                    ),
-                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.EVENLY ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
-                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                  ),
-                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.EVENLY),
-                  child: const Text('Evenly'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                       side: splitRateModeEnum == SplitRateModeEnum.ZERO ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
                     ),
                     backgroundColor: splitRateModeEnum == SplitRateModeEnum.ZERO ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
@@ -336,28 +317,48 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                 ),
               ),
             ),
-            
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: CustomValidatedTextField(
-                  controller: _customPercentageController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    TextInputFormatter.withFunction((oldValue, newValue) {
-                      final text = newValue.text;
-                      if (text.isEmpty) return newValue;
-                      final value = int.tryParse(text);
-                      if (value == null) return oldValue;
-                      if (value < 0 || value > 100) return oldValue;
-                      return newValue;
-                    }),
-                  ],
-                  keyboardType: const TextInputType.numberWithOptions(decimal: false),
-                  labelText: '%',
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: splitRateModeEnum == SplitRateModeEnum.EVENLY ? BorderSide(color: Theme.of(context).colorScheme.secondaryContainer) : BorderSide.none,
+                    ),
+                    backgroundColor: splitRateModeEnum == SplitRateModeEnum.EVENLY ? Theme.of(context).colorScheme.secondaryContainer : AppConstants.defaultButtonColor,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                  ),
+                  onPressed: () => _onSplitRateChanged(SplitRateModeEnum.EVENLY),
+                  child: const Text('Evenly'),
                 ),
               ),
             ),
+            
+            // disabled for now (not supported in summary algorithm)
+            // Expanded(
+            //   child: Container(
+            //     margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+            //     child: CustomValidatedTextField(
+            //       controller: _customPercentageController,
+            //       inputFormatters: [
+            //         FilteringTextInputFormatter.digitsOnly,
+            //         TextInputFormatter.withFunction((oldValue, newValue) {
+            //           final text = newValue.text;
+            //           if (text.isEmpty) return newValue;
+            //           final value = int.tryParse(text);
+            //           if (value == null) return oldValue;
+            //           if (value < 0 || value > 100) return oldValue;
+            //           return newValue;
+            //         }),
+            //       ],
+            //       keyboardType: const TextInputType.numberWithOptions(decimal: false),
+            //       labelText: '%',
+            //     ),
+            //   ),
+            // ),
           ],
         ),
 
@@ -442,27 +443,29 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
                 ),
               ),
             ),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-                child: CustomValidatedTextField(
-                  controller: _customFixedController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    TextInputFormatter.withFunction((oldValue, newValue) {
-                      final text = newValue.text;
-                      if (text.isEmpty) return newValue;
-                      final value = int.tryParse(text);
-                      if (value == null) return oldValue;
-                      if (value < 0 || value > 10) return oldValue;
-                      return newValue;
-                    }),
-                  ],
-                  keyboardType: const TextInputType.numberWithOptions(decimal: false),
-                  labelText: 'Altro',
-                ),
-              ),
-            ),
+            
+            // // disabled for now (not supported in summary algorithm)
+            // Expanded(
+            //   child: Container(
+            //     margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+            //     child: CustomValidatedTextField(
+            //       controller: _customFixedController,
+            //       inputFormatters: [
+            //         FilteringTextInputFormatter.digitsOnly,
+            //         TextInputFormatter.withFunction((oldValue, newValue) {
+            //           final text = newValue.text;
+            //           if (text.isEmpty) return newValue;
+            //           final value = int.tryParse(text);
+            //           if (value == null) return oldValue;
+            //           if (value < 0 || value > 10) return oldValue;
+            //           return newValue;
+            //         }),
+            //       ],
+            //       keyboardType: const TextInputType.numberWithOptions(decimal: false),
+            //       labelText: 'Altro',
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       

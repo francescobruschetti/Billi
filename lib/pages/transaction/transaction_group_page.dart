@@ -94,11 +94,12 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
 
   Future<bool> _confirmSave({required String message}) async {
-    // Mostra dialog di conferma
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => _buildConfirmDialog(context, message: message),
-    );
+    final confirmed = await GenericUtil.showConfirmationDialog(
+      context, 
+      'Conferma salvataggio', 
+      message,
+      confirmButtonText: 'Conferma',
+      cancelButtonText: 'Annulla');
 
     return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
   }
@@ -162,10 +163,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   void _onFieldChanged() {
     setState(() {
       if (widget.transactionType == TransactionTypeEnum.EXPENSE) {
-        _isSaveEnabled = (
-          _selectedGroup != null 
+        _isSaveEnabled = (_selectedGroup != null 
           && (_selectedSplitRateValueEnum != null || _groupExpenseSplitResponseModel?.splitRateModeEnum != null)
-          && _priceController.text.isNotEmpty);
+          && _priceController.text.isNotEmpty
+        );
       }
       else {
         _isSaveEnabled = (_selectedGroup != null && _priceController.text.isNotEmpty);
@@ -202,8 +203,11 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     );
 
     if (response != null) { // is null when user cancels/closes the bottom sheet without saving
-      _groupExpenseSplitResponseModel = response;
-      setState(() => _selectedSplitRateValueEnum = _groupExpenseSplitResponseModel!.splitRateModeEnum);
+      setState(() {
+        _groupExpenseSplitResponseModel = response;
+        _selectedSplitRateValueEnum = _groupExpenseSplitResponseModel!.splitRateModeEnum;
+        _onFieldChanged(); // per aggiornare l'abilitazione del tasto salva in base alla nuova selezione
+      });
     }
   }
 
@@ -269,6 +273,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     
       if (mounted) {
         GenericUtil.showSnackbar(context, isEdit ? "Dati aggiornati" : "Dati salvati");
+        resetProviders();
         Navigator.of(context).pop(true); // Torna indietro e segnala che c'è stato un cambiamento
       }
     }
@@ -324,6 +329,11 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     }
   }
 
+  void resetProviders() {
+    ref.read(splitRateAndPaidAmountTabProvider.notifier).state = 0;
+    ref.read(splitRateModeProvider.notifier).state = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupsState = ref.watch(groupsProvider);
@@ -375,7 +385,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                         text: _selectedSplitRateValueEnum?.value ?? 'Configura quota',
                         isIconPrefix: false,
                         backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                        customIcon: CustomIconWidget(assetPath: 'assets/images/icons/vertical_dots.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondaryContainer),
+                        customIcon: CustomIconWidget(assetPath: 'assets/images/icons/right.PNG', size: 24, color: Theme.of(context).colorScheme.onSecondaryContainer),
                       ),
                     ],
                   ],
@@ -410,23 +420,6 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
           );
         }
       ),    
-    );
-  }
-
-  Widget _buildConfirmDialog(BuildContext context, {required String message}) {
-    return AlertDialog(
-      title: const Text('Conferma salvataggio'),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Annulla'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Conferma'),
-        ),
-      ]
     );
   }
 
@@ -468,7 +461,10 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
 
         const SizedBox(width: 16),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => {
+            resetProviders(),
+            Navigator.of(context).pop(),
+          },
           child: const Text('Annulla'),
         ),
       ],

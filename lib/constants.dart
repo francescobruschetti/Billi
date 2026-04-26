@@ -9,6 +9,7 @@ class AppConstants {
   static const double sizedBoxHeight = 8.0; // Spacing between items in a SizedBox
 
   static const Color red = Colors.red;
+  static const Color white = Colors.white;
   static const Color defaultExpenseColor = Colors.redAccent;
   static const Color defaultIncomeColor = Color.fromARGB(255, 79, 167, 124);
 

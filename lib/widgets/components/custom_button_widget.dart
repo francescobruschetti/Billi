@@ -29,6 +29,7 @@ class CustomButtonWidget extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         disabledBackgroundColor: AppConstants.disabledButtonColor,
         backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         
         shape: RoundedRectangleBorder(
           side: BorderSide(color: isEnabled ? (backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer) : AppConstants.disabledButtonColor, width: 1),
@@ -51,7 +52,7 @@ class CustomButtonWidget extends StatelessWidget {
         ],
         if (text != null) ...[
           if (iconData != null || customIcon != null) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
           ],
 
           Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), // es. , fontWeight: FontWeight.bold)),
@@ -67,9 +68,11 @@ class CustomButtonWidget extends StatelessWidget {
         Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), 
 
         if (iconData != null) ...[
+          const SizedBox(width: 4),
           Icon(iconData, color: Theme.of(context).colorScheme.onPrimaryContainer, size: text == null ? 30 : 24),
         ],
         if (iconData == null && customIcon != null) ...[
+          const SizedBox(width: 4),
           customIcon!,
         ],
       ],

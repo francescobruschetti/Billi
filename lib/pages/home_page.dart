@@ -179,51 +179,49 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildList(List<Map<String, dynamic>> transactions) {
-    if (transactions.isEmpty) {
-      return const Center(child: Text('Nessuna spesa trovata'));
-    }
-
     return Expanded(
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (scrollNotification) {
-          if (scrollNotification is ScrollEndNotification) {
-            _onScroll();
-          }
-          return false;
-        },
-        child: RefreshIndicator( // Pull from top to refresh
-          onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
-          child: ListView.builder(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: transactions.length + 1, // +1 per il loader in fondo
-            itemBuilder: (context, index) {
-              if (index < transactions.length) {
-                return _buildTransactionTile(transactions[index]);
-              }
-
-              // Mostra il loader in fondo se stiamo caricando più elementi
-              return Card(
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_hasMore) ...[
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ]
-                  ],
-                ),
-              );
+      child: transactions.isEmpty
+        ? const Center(child: Text('Nessuna transazione trovata'))
+        : NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (scrollNotification is ScrollEndNotification) {
+              _onScroll();
             }
+            return false;
+          },
+          child: RefreshIndicator( // Pull from top to refresh
+            onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
+            child: ListView.builder(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: transactions.length + 1, // +1 per il loader in fondo
+              itemBuilder: (context, index) {
+                if (index < transactions.length) {
+                  return _buildTransactionTile(transactions[index]);
+                }
+
+                // Mostra il loader in fondo se stiamo caricando più elementi
+                return Card(
+                  color: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_hasMore) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: CircularProgressIndicator(),
+                        ),
+                      ]
+                    ],
+                  ),
+                );
+              }
+            ),
           ),
-        ),
       ),
     );
   }

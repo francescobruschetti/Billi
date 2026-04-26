@@ -2,6 +2,7 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
+import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
@@ -21,11 +22,12 @@ class _SignupPageState extends State<SignupPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _repeatPasswordController = TextEditingController();
+  final int PASSWORD_MIN_LENGTH = 6;
   bool _loading = false;
   bool _isFormValid = false;
   bool _showPassword = false;
   bool _showRepeatPassword = false;
-  String? _error;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _SignupPageState extends State<SignupPage> {
       _isFormValid = _usernameController.text.trim().isNotEmpty 
                     && _emailController.text.trim().isNotEmpty
                     && _passwordController.text.trim().isNotEmpty
+                    && _passwordController.text.trim().length >= PASSWORD_MIN_LENGTH
                     && _repeatPasswordController.text.trim().isNotEmpty
                     && (_passwordController.text.trim() == _repeatPasswordController.text.trim());
     });
@@ -62,7 +65,7 @@ class _SignupPageState extends State<SignupPage> {
   Future<void> _register() async {
     setState(() {
       _loading = true;
-      _error = null;
+      _errorMessage = null;
     });
     try {
       final res = await signinSignupLogoutService.signup(
@@ -73,7 +76,7 @@ class _SignupPageState extends State<SignupPage> {
       );
 
       if (res.user == null) {
-        setState(() => _error = 'Registrazione fallita');
+        setState(() => _errorMessage = 'Registrazione fallita');
       }      
       else if (mounted) {
         // Naviga alla login e rimuovi la pagina di registrazione dallo stack
@@ -82,7 +85,7 @@ class _SignupPageState extends State<SignupPage> {
     } 
     catch (e) {
       log.severe("Registration error: ${e.toString()}");
-      setState(() => _error = e.toString());
+      setState(() => _errorMessage = "Errore durante la registrazione");
     } 
     finally {
       setState(() => _loading = false);
@@ -138,7 +141,15 @@ class _SignupPageState extends State<SignupPage> {
                   });
                 },
               ),
-              validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
+              validator: (value) {
+                if (value.trim().isEmpty) {
+                  return 'Campo obbligatorio';
+                }
+                if (value.trim().length < PASSWORD_MIN_LENGTH) {
+                  return 'La password deve contenere almeno $PASSWORD_MIN_LENGTH caratteri';
+                }
+                return null;
+              }
             ),
             
             const SizedBox(height: AppConstants.sizedBoxHeight),
@@ -160,9 +171,9 @@ class _SignupPageState extends State<SignupPage> {
               validator: (value) => passwordsMatchErrorValidator(value),
             ),
 
-            const SizedBox(height: 24),
-            if (_error != null) ...[
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: AppConstants.sizedBoxHeight),
+            if (_errorMessage != null) ...[
+              ErrorAlertWidget(errorMessage: _errorMessage!),
             ],
 
             // Registration button

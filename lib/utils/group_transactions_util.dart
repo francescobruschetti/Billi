@@ -149,6 +149,17 @@ class GroupTransactionsUtil {
             receiveGrossAmount = paidAmountGroup - paidAmountItself;
             break;
 
+          case SplitRateModeEnum.FIXED_AMOUNT:
+            if (transaction.paidAmount == null) {
+              log.warning("Transaction ${transaction.id} has split rate FIXED_AMOUNT but paid amount is null. Defaulting to 0.");
+              paidAmountItself = 0;
+            }
+            else {
+              paidAmountItself = transaction.paidAmount!;
+            }
+            receiveGrossAmount = paidAmountGroup - paidAmountItself;
+            break;
+
           default:
           // TODO: da implementare
             throw Exception("Split rate ${splitRateEnum.value} not implemented yet.");

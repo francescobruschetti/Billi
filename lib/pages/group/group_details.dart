@@ -76,6 +76,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       "Sei sicuro di voler eliminare questo gruppo e tutti i dati associati?\nL'operazione non è reversibile.",
       confirmButtonText: 'Elimina',
       cancelButtonText: 'Annulla');
+      
     if (confirmed != true) return;
 
     try {

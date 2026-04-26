@@ -79,7 +79,7 @@ class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetW
                         borderColor: Theme.of(context).colorScheme.primary,
                         selectedBorderColor: Theme.of(context).colorScheme.primary,
 
-                        fillColor: Theme.of(context).colorScheme.primary, // Selected Button Background Color
+                        fillColor: Theme.of(context).colorScheme.primaryContainer, // Selected Button Background Color
                         selectedColor: Theme.of(context).colorScheme.onPrimaryContainer, // Text Color for selected button
                         color: Theme.of(context).colorScheme.onPrimary, // Text Color
 
@@ -89,16 +89,6 @@ class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetW
                         ),
                         isSelected: _selectedThemes,
                         children: themeWidgets,
-                        // TODO: not working
-                        // children: List.generate(themeWidgets.length, (i) {
-                        //   return Container(
-                        //     color: _selectedThemes[i]
-                        //         ? Colors.red // Theme.of(context).colorScheme.primary
-                        //         : Colors.amber, // .of(context).colorScheme.surface, // colore non selezionato
-                        //     alignment: Alignment.center,
-                        //     child: themeWidgets[i],
-                        //   );
-                        // }),
                       ),
                     );
                   },

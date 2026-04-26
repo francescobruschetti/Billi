@@ -124,7 +124,7 @@ class _BillyAppState extends State<BillyApp> {
           primaryContainer: Colors.blue[300], // To be used for main elements (buttons, active elements, etc.)
           onPrimaryContainer: Colors.black, // To be used for elements over main elements (button's text, button's icon, etc.)
           
-          secondary: Colors.black, // To be used for elements that need to stand out (accent color, highlights, etc.)
+          secondary: Colors.orange, // To be used for elements that need to stand out (accent color, highlights, etc.)
           onSecondary: Colors.black, // To be used for elements over secondary elements (text, icons, etc.)
 
           secondaryContainer: Colors.orange, // To be use for elements that need to stand out (accent color, highlights, etc.)

@@ -1,4 +1,5 @@
 
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 
@@ -31,9 +32,16 @@ class GenericUtil {
             child: Text(cancelButtonText),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: isDestructive ? Colors.red : Colors.blue[700]),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDestructive ? AppConstants.red : Theme.of(context).colorScheme.secondary,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(confirmButtonText),
+            child: Text(
+              confirmButtonText, 
+              style: TextStyle(
+                color: isDestructive ? Colors.white : Theme.of(context).colorScheme.onSecondary,
+              ),
+            ),
           ),
         ],
       ),

@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } 
     catch (e) {
-      setState(() => _errorMessage = e.toString());
+      setState(() => _errorMessage = "Errore durante il login");
     } 
     finally {
       setState(() => _loading = false);
@@ -123,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: _isFormValid ? _login : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer, // dark;
+                    foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                     minimumSize: const Size(double.infinity, 48), // Rende il pulsante full-width
                   ),
                   child: const Text('Login'),
