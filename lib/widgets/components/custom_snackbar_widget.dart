@@ -16,12 +16,17 @@ class CustomSnackBarWidget extends StatelessWidget {
 
   @override
   SnackBar build(BuildContext context) {
-    return SnackBar(content: 
-      Text(text),
+    return SnackBar(
+      content: Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+
       behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+
       backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.secondary,
       duration: Duration(seconds: durationSeconds ?? 2),
+
       showCloseIcon: showIcon ?? true,
+      closeIconColor: Theme.of(context).colorScheme.onSecondary,
     );
   }
 }

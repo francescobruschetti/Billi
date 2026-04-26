@@ -25,7 +25,7 @@ class GroupDetailsModel extends GroupModel {
       throw Exception("Empty map provided to GroupDetailsModel.fromMap");
     }
     return GroupDetailsModel(
-      id: map['id'],
+      id: map['id'] ?? map['group_id'], // ?? [group_id] usato per: update_group_and_participants
       name: map['name'],
       link: map['link'],
       description: map['description'],

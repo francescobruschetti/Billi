@@ -14,11 +14,6 @@ class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
     super.key, required this.title, required this.participantsSummary
   }) : super( title: title, child: Container());
 
-  static const WidgetStateProperty<Icon> thumbIcon = WidgetStateProperty<Icon>.fromMap(<WidgetStatesConstraint, Icon>{
-    WidgetState.selected: Icon(Icons.check),
-    WidgetState.any: Icon(Icons.close),
-  });
-
   @override
   Widget build(BuildContext context) {
     return AppBottomSheet(

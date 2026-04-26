@@ -4,6 +4,7 @@ class SearchFieldWidget extends StatefulWidget {
   final String hintText;
   final IconData? icon;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onSubmitted;
   final VoidCallback? onClose;
 
   const SearchFieldWidget({
@@ -12,6 +13,7 @@ class SearchFieldWidget extends StatefulWidget {
     this.icon,
     required this.onChanged,
     this.onClose,
+    this.onSubmitted,
   });
 
   @override
@@ -41,6 +43,7 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
       hintText: widget.hintText,
       leading: widget.icon != null ? Icon(widget.icon) : const Icon(Icons.search),
       onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
       shadowColor: WidgetStateProperty.all(Colors.transparent), // Remove shadow
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(

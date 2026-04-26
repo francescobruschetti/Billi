@@ -104,10 +104,10 @@ grant execute on function public.get_group_members(uuid) to authenticated;
 
 --------------------------------------------------------------------------
 -- Get Profile by email or username
-drop function if exists get_user_by_email_or_username(varchar, text);
+drop function if exists get_user_by_email_or_username(varchar, varchar);
 create or replace function public.get_user_by_email_or_username(
   p_email varchar(255),
-  p_username text
+  p_username varchar(255)
 )
 returns table (
   id uuid,
@@ -129,7 +129,7 @@ begin
 end;
 $$ language plpgsql security definer;
 
-grant execute on function public.get_user_by_email_or_username(varchar, text) to authenticated;
+grant execute on function public.get_user_by_email_or_username(varchar, varchar) to authenticated;
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
@@ -143,7 +143,7 @@ create or replace function update_group_and_participants(
   p_participants_to_remove uuid[]
 )
 returns table (
-  id uuid,
+  group_id uuid,
   name text,
   description text,
   link text,
@@ -152,35 +152,31 @@ returns table (
   updated_at timestamptz
 ) as $$
 begin
-  -- Aggiorna i dettagli del gruppo
   update groups
-    set name = p_name,
-        description = p_description
-    where id = p_group_id;
+    set name = p_name, description = p_description
+    where groups.id = p_group_id;
 
-  -- Aggiungi nuovi partecipanti
-  if array_length(p_participants_to_add, 1) > 0 then
+  if cardinality(p_participants_to_add) > 0 then
     insert into group_participants (group_id, user_id)
     select p_group_id, unnest(p_participants_to_add)
     on conflict do nothing;
   end if;
 
-  -- Rimuovi partecipanti
-  if array_length(p_participants_to_remove, 1) > 0 then
-    delete from group_participants
-    where group_id = p_group_id
-      and user_id = any(p_participants_to_remove);
+  if cardinality(p_participants_to_remove) > 0 then
+    delete from group_participants gp
+    where gp.group_id = p_group_id 
+      and gp.user_id = any(p_participants_to_remove);
   end if;
 
   return query
   select 
-    g.id as id,
-    g.name::text as name,
-    g.description::text as description,
-    g.link::text as link,
-    g.user_id as user_id,
-    g.created_at as created_at,
-    g.updated_at as updated_at
+    g.id,
+    g.name::text,
+    g.description::text,
+    g.link::text,
+    g.user_id,
+    g.created_at,
+    g.updated_at
   from groups g
   where g.id = p_group_id;
 end;

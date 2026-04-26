@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileService {
-  final Logger _log = Logger('ProfileService');
+  final Logger log = Logger('ProfileService');
   final SupabaseClient supabase = Supabase.instance.client;
 
   Future<ProfileModel> getUserByEmailOrUsername(String key) async {
@@ -11,10 +11,10 @@ class ProfileService {
       'p_email': key,
       'p_username': key,
     });
-    _log.fine("Fetched user by email or username '$key': $res");
+    log.fine("Fetched user by email or username '$key': $res");
 
     if (res == null || (res is List && res.isEmpty)) {
-      _log.warning("No user found with email or username '$key'. Returning empty profile.");
+      log.warning("No user found with email or username '$key'. Returning empty profile.");
       return ProfileModel.empty();
     }
 

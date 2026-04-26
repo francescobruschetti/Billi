@@ -1,10 +1,10 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group_participant_model.dart';
+import 'package:Billy/pages/group/components/invitation_link_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
-import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
@@ -29,16 +29,17 @@ class GroupDetailsPage extends ConsumerStatefulWidget {
 
 class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   final Logger log = Logger('GroupDetailsPage');
-  
+
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
-  late TextEditingController _linkController;
   bool _isLoading = false;
   bool _isSaveEnabled = false;
   bool _isSearching = false;
   bool _showOnlyError = false; // TODO: da implementare
+
   String? _errorMessage;
   String _searchUser = '';
+  late String _invitationLink;
   final List<GroupParticipantModel> _selectedUsers = [];
   final List<String> _removedUserIds = [];
   final List<ProfileModel> _existingUsers = [];
@@ -50,7 +51,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     super.initState();
     _nameController = TextEditingController(text: '');
     _descriptionController = TextEditingController(text: '');
-    _linkController = TextEditingController(text: '');
     _nameController.addListener(_onNameChanged);
 
     if (widget.groupId != null) {
@@ -65,7 +65,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _descriptionController.dispose();
-    _linkController.dispose();
     super.dispose();
   }
 
@@ -99,6 +98,8 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   }
 
   Future<void> _getExistingUser(String key) async {
+    if ((_isSearching || key.isEmpty)) return;
+
     if (mounted) {
       setState(() {
         _isSearching = true;
@@ -109,7 +110,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
 
     try {
       final res = await ProfileService().getUserByEmailOrUsername(key);
-      log.fine("User search result: $res");
       
       if (res.id.isEmpty) {
         if (mounted) {
@@ -164,7 +164,8 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       if (mounted) {
         _nameController.text = groupDetailsResponse.name;
         _descriptionController.text = groupDetailsResponse.description ?? '';
-        _linkController.text = groupDetailsResponse.link;
+        _invitationLink = groupDetailsResponse.link;
+
         final userProfiles = groupDetailsResponse.participants.map((p) => p.profile).toList();
         setState(() {
           _existingUsers.clear();
@@ -205,17 +206,23 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     });
   }
 
-  void _onCloseSearchUser() {
-    log.fine("Search user closed. Resetting search state.");
-    setState(() {
-      _searchUser = '';
-    });
-  }
-
   // Apri i dettagli del gruppo dopo la creazione
   void _openGroupDetails(String groupId) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => GroupDetailsPage(groupId: groupId, isEditAllowed: true)),
+    );
+  }
+
+  void _openInviteLinkBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+      backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+      builder: (BuildContext context) => InvitationLinkBottomSheetWidget(
+        title: 'Link di invito al gruppo',
+        subTitle: 'Condividi questo link con altre persone per invitarle a partecipare al gruppo',
+        link: _invitationLink,
+      ),
     );
   }
 
@@ -270,7 +277,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         _isSaveEnabled = true;
       });
     }
-  
   }
 
   @override
@@ -282,6 +288,12 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         title: Text(isEdit ? 'Dettagli gruppo' : 'Crea gruppo'),
         actions: [
           if (isEdit)
+            IconButton(
+              icon: const Icon(Icons.link, size: 24),
+              tooltip: 'Mostra link di invito',
+              onPressed: () => _openInviteLinkBottomSheet(),
+            ),
+
             IconButton(
               icon: const Icon(Icons.delete_forever_rounded, color: AppConstants.red, size: 24),
               tooltip: 'Elimina gruppo',
@@ -297,12 +309,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
             ),
           )
         : SingleChildScrollView(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 16,
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
+            padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: MediaQuery.of(context).viewInsets.bottom), // Aggiunta di padding inferiore dinamico per evitare sovrapposizione da parte della tastiera
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -321,109 +328,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 // if editing an existing group
                 
                 if (widget.groupId != null) ...[
-                  // Link di invito
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomValidatedTextField(
-                          controller: _linkController,
-                          labelText: 'Link',
-                          prefixIcon: const Icon(Icons.link, size: 24),
-                          readOnly: true,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.copy),
-                        tooltip: 'Copia',
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: _linkController.text));
-                          GenericUtil.showSnackbar(context, 'Link copiato negli appunti');
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.ios_share),
-                        tooltip: 'Condividi',
-                        onPressed: () => GenericUtil.showSnackbar(context, 'Funzione di condivisione non ancora implementata'), // TODO: implementare condivisione link
-                      ),
-                    ],
-                  ),
-                
-                  // Aggiunta utenti al gruppo
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Text('Aggiungi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SearchFieldWidget(
-                          hintText: 'Cerca utente per username o email',
-                          onChanged: (value) => setState(() => _searchUser = value), // Nota: quando SearchFieldWidget._onClose().widget.onChanged('') viene chiamato, _searchText viene resettato a ''
-                          onClose: () => setState(() { // Aggiunto per sicurezza
-                            _searchUser = '';
-                          }),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: (_isSearching || _searchUser.isEmpty) ? null : () => _getExistingUser(_searchUser),
-                        child: _isSearching ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Cerca'),
-                      ),
-                    ],
-                  ),
-                  
-                  // List of users to be added to group
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  if (_selectedUsers.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        const Text('Nuovi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 8),
-                        Text('(${_selectedUsers.length})'),
-                      ],
-                    ),
-                    const SizedBox(height: AppConstants.sizedBoxHeight),
-                    Wrap(
-                      spacing: 8,
-                      children: _selectedUsers.map((u) => Chip(
-                        label: Text(u.profile.username),
-                        onDeleted: () {
-                          setState(() {
-                            _selectedUsers.removeWhere((x) => x.userId == u.userId);
-                          });
-                        },
-                      )).toList(),
-                    ),
-                  ],
+                  _buildAddUsersToGroup(),
 
+                  // List of users to be added to group
+                  _buildListOfUsersToBeAddedToGroup(),
+                  
                   // List of users already in group
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  if (_existingUsers.isEmpty) ...[
-                    const Text('Nessun partecipante nel gruppo'),
-                  ]
-                  else ...[
-                    Row(
-                      children: [
-                        const Text('Partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 8),
-                        Text('(${_existingUsers.length})'),
-                      ],
-                    ),
-                    const SizedBox(height: AppConstants.sizedBoxHeight),
-                    Wrap(
-                      spacing: 8,
-                      children: _existingUsers.map((u) => Chip(
-                        label: Text((u.username.isNotEmpty) ? u.username : u.name),
-                        onDeleted: () {
-                          setState(() {
-                            _existingUsers.removeWhere((x) => x.id == u.id);
-                            _removedUserIds.add(u.id);
-                          });
-                        },
-                      )).toList(),
-                    ),
-                  ],
+                  _buildListOfUsersAlreadyInGroup(),
                 ],
                       
                 // Alert errore
@@ -458,6 +369,189 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
               ],
             ),
           ),
+    );
+  }
+
+  Widget _buildAddUsersToGroup() {
+    return Column(
+      children: [
+        // Aggiunta utenti al gruppo
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Aggiungi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        Row(
+          children: [
+            Expanded(
+              child: SearchFieldWidget(
+                hintText: 'Cerca utente per username o email',
+                onChanged: (value) => setState(() => _searchUser = value), // Nota: quando SearchFieldWidget._onClose().widget.onChanged('') viene chiamato, _searchText viene resettato a ''
+                onClose: () => setState(() { // Aggiunto per sicurezza
+                  _searchUser = '';
+                }),
+                onSubmitted: (value) {
+                    _getExistingUser(value);
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () => _getExistingUser(_searchUser),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Theme.of(context).colorScheme.secondaryContainer, width: 1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isSearching 
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                : Text('Cerca', style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), // es. , fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+                 
+      ],
+    );
+  }
+
+  Widget _buildListOfUsersToBeAddedToGroup() {
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        if (_selectedUsers.isNotEmpty) ...[
+          Row(
+            children: [
+              const Text('Nuovi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
+              
+              const SizedBox(width: 8),
+              Text('(${_selectedUsers.length})'),
+            ],
+          ),
+          
+          const SizedBox(height: AppConstants.sizedBoxHeight),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _selectedUsers.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final user = _selectedUsers[i];
+              return ListTile(
+                leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.profile.name),
+                    Text(" (@${user.profile.username})", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                  ],
+                ),
+                trailing: 
+                  // TODO: add icon only user is not a CREATOR
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: AppConstants.red),
+                    tooltip: 'Rimuovi',
+                    onPressed: () {
+                      setState(() {
+                        _selectedUsers.removeWhere((u) => u.profile.id == user.profile.id);
+                      });
+                    },
+                  ),
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildListOfUsersAlreadyInGroup() {
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.sizedBoxHeight),
+        if (_existingUsers.isEmpty) ...[
+          const Text('Nessun partecipante nel gruppo'),
+        ]
+        else ...[
+          Row(
+            children: [
+              const Text('Partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(width: 8),
+              Text('(${_existingUsers.length})'),
+            ],
+          ),
+
+          const SizedBox(height: AppConstants.sizedBoxHeight),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _existingUsers.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final user = _existingUsers[i];
+              return ListTile(
+                leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.name),
+                    Text(" (@${user.username})", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                  ],
+                ),
+                trailing: 
+                  // TODO: add icon only user is not a CREATOR
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: AppConstants.red),
+                    tooltip: 'Rimuovi dal gruppo',
+                    onPressed: () {
+                      setState(() {
+                        _removedUserIds.add(user.id);
+                        _existingUsers.removeWhere((u) => u.id == user.id);
+                      });
+                    },
+                  ),
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+
+  Widget _buildListTile({ required String name, required String username}) {
+    // return ListTile(
+    //   leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
+    //   title: Row(
+    //     children: [
+    //       Text(name),
+    //       const Spacer(),
+    //       Text('@$username', style: TextStyle(color: Colors.grey[600])),
+
+    //     ],
+    //   ),
+    //   // onTap: onTap
+    // );
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: _existingUsers.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, i) {
+          final user = _existingUsers[i];
+          return _buildListTile(
+            name: user.name,
+            username: user.username,
+          );
+        },
+      ),
     );
   }
 }
