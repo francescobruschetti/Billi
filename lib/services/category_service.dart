@@ -16,14 +16,4 @@ class CategoryService {
       .order('name', ascending: true);
     return (res as List).map((c) => CategoryModel.fromMap(c)).toList();
   }
-
-  // TODO: ISAR
-  // Future<CategoryModel> createCategory(String name) async {
-  //   final res = await supabase
-  //     .from('categories')
-  //     .insert({'name': name})
-  //     .select()
-  //     .single();
-  //   return CategoryModel.fromMap(res);
-  // }
 }

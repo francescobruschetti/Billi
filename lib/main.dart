@@ -7,7 +7,6 @@ import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'widgets/main_scaffold.dart';
 import 'pages/login_logout_signup/login_page.dart';
 import 'pages/login_logout_signup/signup_page.dart';
 import 'pages/login_logout_signup/logout_page.dart';
@@ -22,19 +21,8 @@ void main() async {
     anonKey: 'sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd',
   );
 
-  // TODO: ISAR
-  // final dir = await getApplicationDocumentsDirectory();
-  // final isar = await Isar.open(
-  //   [CategoryLocalSchema], // aggiungi qui tutti i tuoi schema
-  //   directory: dir.path,
-  // );
-
   runApp(
     ProviderScope( // *Added in order to use Riverpod providers* 
-      // TODO: ISAR
-      // overrides: [
-      //   isarProvider.overrideWithValue(isar), // inietta l'istanza
-      // ],
       child: const BillyApp(),
     ),
   );

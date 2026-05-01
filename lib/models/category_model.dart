@@ -29,27 +29,4 @@ class CategoryModel {
   Widget get icon {
     return CategoryEnumParsing(name).toCategoryEnum().toIcon();
   }
-
-  // TODO: ISAR
-  // factory CategoryModel.fromLocal(CategoryLocal local) => CategoryModel(
-  //   id: local.id,
-  //   name: local.name,
-  //   userId: local.userId,
-  //   createdAt: local.createdAt,
-  //   updatedAt: local.updatedAt,
-  // );
-
-  // CategoryLocal toLocal({ required Duration ttl, SyncStatusEnum syncStatus = SyncStatusEnum.SYNCED, }) 
-  // {
-  //   final now = DateTime.now();
-  //   return CategoryLocal()
-  //     ..id = id
-  //     ..name = name
-  //     ..userId = userId
-  //     ..createdAt = createdAt
-  //     ..updatedAt = updatedAt
-  //     ..cachedAt = now
-  //     ..expiresAt = now.add(ttl)
-  //     ..syncStatus = syncStatus;
-  // }
 }
