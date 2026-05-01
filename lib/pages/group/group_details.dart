@@ -9,7 +9,6 @@ import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart'
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/services/group_service.dart';

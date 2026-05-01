@@ -10,7 +10,6 @@ import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/models/group_transaction_model.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/pages/transaction/transaction_group_page.dart';

@@ -9,6 +9,7 @@ import 'package:logging/logging.dart';
 class InvitationLinkBottomSheetWidget extends AppBottomSheet {
   static final ScrollController _verticalController = ScrollController();
 
+  @override
   final String title;
   final String subTitle;
   final String link;

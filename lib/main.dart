@@ -1,7 +1,6 @@
 import 'package:Billy/authGate/auth_gate.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/languages/app_localizations.dart';
-import 'package:Billy/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

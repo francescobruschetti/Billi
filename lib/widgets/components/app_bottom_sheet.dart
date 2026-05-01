@@ -1,6 +1,5 @@
 // Solo scaffolding visivo, nessuna logica
 import 'package:Billy/constants.dart';
-import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 
 class AppBottomSheet extends StatelessWidget {

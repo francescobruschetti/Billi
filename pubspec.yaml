@@ -44,10 +44,6 @@ dependencies:
 
   flutter_riverpod: ^2.5.0 # State management
 
-  # local structored database
-  isar: ^3.1.0
-  isar_flutter_libs: ^3.1.0
-
   json_annotation: ^4.8.1
   logging: ^1.1.0
 
@@ -68,8 +64,6 @@ dev_dependencies:
 
   # Splash screen
   flutter_native_splash: ^2.3.10
-
-  isar_generator: ^3.1.0 # local structored database
 
   # json_serializable: ^6.7.1
 
