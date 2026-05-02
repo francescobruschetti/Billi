@@ -58,7 +58,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
       
       child: categoriesState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Errore: $e')),
+        error: (e, _) => Center(child: Text('Errore durante il caricamento delle categorie')), // TODO: migliorare gestione errori
         data: (categories) {
           final filteredCategories = _searchController.text.isEmpty
             ? categories

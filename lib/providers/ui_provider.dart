@@ -9,8 +9,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // -------------------------------------------------------------------------------------------------------------------------
 // Used to handle Tabs in Split Rate vs Paid Amount bottom sheet
-final splitRateAndPaidAmountTabProvider = StateProvider<int>((ref) => 0);
+final splitRateAndPaidAmountTabProvider = NotifierProvider<SplitRateAndPaidAmountTabNotifier, int>(
+  SplitRateAndPaidAmountTabNotifier.new,
+);
+
+class SplitRateAndPaidAmountTabNotifier extends Notifier<int> {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setTab(int tabIndex) {
+    state = tabIndex;
+  }
+}
 
 // -------------------------------------------------------------------------------------------------------------------------
 // Used to handle Transaction splitRate or FixedAmount in Split Rate vs Paid Amount bottom sheet
-final splitRateModeProvider = StateProvider<SplitRateModeEnum?>((ref) => null);
+final splitRateModeProvider = NotifierProvider<SplitRateModeNotifier, SplitRateModeEnum?>(
+  SplitRateModeNotifier.new,
+);
+
+class SplitRateModeNotifier extends Notifier<SplitRateModeEnum?> {
+  @override
+  SplitRateModeEnum? build() {
+    return null;
+  }
+
+  void setMode(SplitRateModeEnum? mode) {
+    state = mode;
+  }
+}

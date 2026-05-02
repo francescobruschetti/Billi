@@ -4,15 +4,21 @@ import 'package:Billy/services/group_service.dart';
 
 final groupServiceProvider = Provider((ref) => GroupService());
 
-final groupsProvider = StateNotifierProvider<GroupsNotifier, AsyncValue<List<GroupDetailsModel>>>(
-  (ref) => GroupsNotifier(ref.read(groupServiceProvider)),
+final groupsProvider = NotifierProvider<GroupsNotifier, AsyncValue<List<GroupDetailsModel>>>(
+  GroupsNotifier.new,
 );
 
-class GroupsNotifier extends StateNotifier<AsyncValue<List<GroupDetailsModel>>> {
-  final GroupService _service;
+class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
+  late final GroupService _service;
 
-  GroupsNotifier(this._service) : super(const AsyncLoading()) {
+  @override
+  AsyncValue<List<GroupDetailsModel>> build() {
+    _service = ref.read(groupServiceProvider);
+
+    // stato iniziale
     _loadFromServer();
+
+    return const AsyncLoading();
   }
 
   // Carica dal server — chiamato solo all'avvio e su refresh forzato

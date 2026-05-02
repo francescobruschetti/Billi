@@ -5,4 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
  * - stato instabile
  * - difficile da riusare
  */
-final tabProviderProve = StateProvider<int>((ref) => 0);
+final tabProviderProve = NotifierProvider<TabNotifierProve, int>(
+  TabNotifierProve.new,
+);
+
+class TabNotifierProve extends Notifier<int> {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setTab(int tabIndex) {
+    state = tabIndex;
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:Billy/authGate/auth_gate.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/languages/app_localizations.dart';
+import 'package:Billy/local/database/app_database.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/logger.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,6 +10,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/login_logout_signup/login_page.dart';
 import 'pages/login_logout_signup/signup_page.dart';
 import 'pages/login_logout_signup/logout_page.dart';
+
+late AppDatabase database; // Global variable to hold the instance of the database, accessible from anywhere in the app.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +23,14 @@ void main() async {
     anonKey: 'sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd',
   );
 
+  // Load Drift Database
+  database = AppDatabase();
+
   runApp(
     ProviderScope( // *Added in order to use Riverpod providers* 
+      overrides: [
+        localDatabaseProvider.overrideWithValue(database), // inietta l'istanza nel provider
+      ],
       child: const BillyApp(),
     ),
   );

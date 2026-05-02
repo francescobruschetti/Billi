@@ -1,5 +1,6 @@
 name: Billy
-description: "A new Flutter project."
+description: "Personal and group expenses monitoring made easy :)"
+
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,10 +17,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 0.0.0
 
 environment:
-  sdk: ^3.10.4
+  sdk: ">=3.6.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -40,20 +41,46 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # Database and local Cache
+  drift: ^2.23.1
+  drift_dev: ^2.23.1
+  drift_flutter: ^0.3.0
+  sqlite3_flutter_libs: ^0.6.0
+  sqlite3: ^3.1.15
+  path_provider: ^2.0.9
+  path: ^1.8.0
+
   dropdown_search: ^5.0.6
 
-  flutter_riverpod: ^2.5.0 # State management
+  # State management
+  flutter_riverpod: ^3.3.1
 
   json_annotation: ^4.8.1
   logging: ^1.1.0
 
+  stack_trace: ^1.11.1
+
   supabase_flutter: ^2.12.0
+
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  build_runner: ^2.4.6
+  build_runner: ^2.1.8
+
+  # Database and local Cache
+  # We use this to compile the shared web worker for the web database. This dependency
+  # isn't required for most apps. You only need it if you want to target the web, use
+  # web workers for drift AND want to compile those web workers through `build_runner`.
+  # Either way, using this package with Flutter requires a delicate setup described in
+  # `build.yaml`.
+  build_web_compilers: ^4.0.0
+  build: '>=3.0.0 <5.0.0'
+
+  # Database and local Cache
+  # drift_dev: ^2.28.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

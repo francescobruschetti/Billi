@@ -121,7 +121,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       // debug UI: backgroundColor: Colors.orange,
       body: transactionsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")),
+        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")), // TODO: migliorare gestione errori
         data: (transactions) {
           // Aggiorna il balance ogni volta che cambia la lista transazioni
           _balanceDetails = GroupTransactionsUtil.computeBalance(transactions);

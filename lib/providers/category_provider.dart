@@ -4,17 +4,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final categoryServiceProvider = Provider((ref) => CategoryService());
 
-final categoryProvider = StateNotifierProvider<CategoryNotifier, AsyncValue<List<CategoryModel>>>(
-  (ref) => CategoryNotifier(ref.read(categoryServiceProvider)),
+final categoryProvider = NotifierProvider<CategoryNotifier, AsyncValue<List<CategoryModel>>>(
+  CategoryNotifier.new,
 );
 
-class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  final CategoryService _service;
+class CategoryNotifier extends Notifier<AsyncValue<List<CategoryModel>>> {
+  late final CategoryService _service;
 
-  CategoryNotifier(this._service) : super(const AsyncLoading()) {
+  @override
+  AsyncValue<List<CategoryModel>> build() {
+    _service = ref.read(categoryServiceProvider);
+
+    // stato iniziale
     _loadFromServer();
+
+    return const AsyncLoading();
   }
 
+  
   // Carica dal server — chiamato solo all'avvio e su refresh forzato
   Future<void> _loadFromServer() async {
     try {

@@ -1,10 +1,8 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:logging/logging.dart';
 
 class InvitationLinkBottomSheetWidget extends AppBottomSheet {
   static final ScrollController _verticalController = ScrollController();

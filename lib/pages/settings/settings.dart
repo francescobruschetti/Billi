@@ -1,9 +1,11 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
+import 'package:Billy/local/database/app_database.dart';
 import 'package:Billy/main.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
+import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -19,7 +21,7 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   late SigninSignupLogoutService signinSignupLogoutService;
-  bool _isLoading = false;
+  bool _isLoadingLogout = false;
   String _themeLabel = 'Caricamento...';
   Icon themeIcon = Icon(Icons.dark_mode, color: Colors.orange);
 
@@ -30,7 +32,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _currentThemeLabel();
 
     setState(() {
-      _isLoading = false;
+      _isLoadingLogout = false;
     });
   }
 
@@ -70,6 +72,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     if (selectedTheme != null && mounted) {
       BillyApp.setToggleThemeMode(context, selectedTheme);
+      ref.read(userSettingsProvider.notifier).updateThemeSettings(selectedTheme);
       _currentThemeLabel();
     }
   }
@@ -83,7 +86,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Future<void> _logout() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingLogout = true;
     });
     try {
       await signinSignupLogoutService.logout();
@@ -102,7 +105,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingLogout = false;
         });
       }
     }
@@ -110,35 +113,45 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Impostazioni')),
-      body: _isLoading
-        ? const Center(
-            child: Column(
+    final settingsState = ref.watch(userSettingsProvider);
+    
+    return settingsState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")), // TODO: migliorare gestione errori
+      data: (settings) => Scaffold(
+        appBar: AppBar(title: const Text('Impostazioni')),
+        body: _isLoadingLogout
+          ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
                 Text('Eseguendo il logout...'),
               ],
-            ),
-          )
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // --- SYSTEM ---
-                _buildMainGroup(),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text( 
+                    'Impostazioni: ${settings != null ? settings.themeMode : 'N/A'}', // TODO: mostrare più impostazioni
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
 
-                // --- ACCOUNT ---
-                _buildAccountGroup(),
+                  // --- SYSTEM ---
+                  _buildMainGroup(),
 
-                // --- OTHER SETTINGS ---
-                _buildOtherGroup(),
-              ],
+                  // --- ACCOUNT ---
+                  _buildAccountGroup(),
+
+                  // --- OTHER SETTINGS ---
+                  _buildOtherGroup(),
+                ],
+              ),
             ),
-          ),
+      ),
     );
   }
 
@@ -290,4 +303,5 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       onTap: onTap
     );
   }
+
 }

@@ -4,24 +4,32 @@ import 'package:logging/logging.dart';
 
 final transactionServiceProvider = Provider((ref) => TransactionService());
 
-final transactionProvider = StateNotifierProvider<TransactionsNotifier, AsyncValue<List<Map<String, dynamic>>>>(
-  (ref) => TransactionsNotifier(ref.read(transactionServiceProvider)),
+final transactionProvider = NotifierProvider<TransactionsNotifier, AsyncValue<List<Map<String, dynamic>>>>(
+  TransactionsNotifier.new,
   name: 'transactionProvider',
 );
 
-class TransactionsNotifier extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+class TransactionsNotifier extends Notifier<AsyncValue<List<Map<String, dynamic>>>> {
   
   final Logger log = Logger('TransactionsNotifier');
   
-  final TransactionService _service;
+  late final TransactionService _service;
   int _currentPage = 0;
-  final int _pageSize;
+  late final int _pageSize;
   bool _isLoading = false;
   bool _hasMore = true;
 
-  TransactionsNotifier(this._service, {int pageSize = 5}) // TODO: 5 valore utilizzato per test
-    : _pageSize = pageSize,
-    super(const AsyncLoading());
+
+  @override
+  AsyncValue<List<Map<String, dynamic>>> build({int pageSize = 5}) {
+    _service = ref.read(transactionServiceProvider);
+
+    // stato iniziale
+    _pageSize = pageSize;
+    _loadFromServer(pageIndex: _currentPage, pageSize: _pageSize);
+
+    return const AsyncLoading();
+  }
 
   Future<void> _loadFromServer({required int pageIndex, required int pageSize, bool append = false}) async {
     try {

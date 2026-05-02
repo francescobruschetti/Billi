@@ -59,7 +59,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
       ),
       body: groupsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")),
+        error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")), // TODO: migliorare gestione errori
         data: (groups) {
           final filtered = _filtered(groups);
 
