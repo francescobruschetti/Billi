@@ -11,17 +11,16 @@ final transactionProvider = NotifierProvider<TransactionsNotifier, AsyncValue<Li
 
 class TransactionsNotifier extends Notifier<AsyncValue<List<Map<String, dynamic>>>> {
   final Logger log = Logger('TransactionsNotifier');
-  
-  late final TransactionService _service;
+  TransactionService get _service => ref.read(transactionServiceProvider);
+
   int _currentPage = 0;
-  late final int _pageSize;
+  int _pageSize = 50;
   bool _isLoading = false;
   bool _hasMore = true;
 
 
   @override
   AsyncValue<List<Map<String, dynamic>>> build({int pageSize = 5}) {
-    _service = ref.read(transactionServiceProvider);
 
     // stato iniziale
     _pageSize = pageSize;

@@ -20,9 +20,7 @@ class $UserSettingsTableTable extends UserSettingsTable
   @override
   late final GeneratedColumn<String> userId = GeneratedColumn<String>(
       'user_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('default_user'));
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _themeModeMeta =
       const VerificationMeta('themeMode');
   @override
@@ -30,7 +28,7 @@ class $UserSettingsTableTable extends UserSettingsTable
       'theme_mode', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: Constant(ThemeEnum.SYSTEM.name));
+      defaultValue: Constant(ThemeEnum.SYSTEM.value));
   static const VerificationMeta _notificationsEnabledMeta =
       const VerificationMeta('notificationsEnabled');
   @override
@@ -92,6 +90,8 @@ class $UserSettingsTableTable extends UserSettingsTable
     if (data.containsKey('user_id')) {
       context.handle(_userIdMeta,
           userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
     }
     if (data.containsKey('theme_mode')) {
       context.handle(_themeModeMeta,
@@ -300,14 +300,14 @@ class UserSettingsTableCompanion
   });
   UserSettingsTableCompanion.insert({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
+    required String userId,
     this.themeMode = const Value.absent(),
     this.notificationsEnabled = const Value.absent(),
     this.language = const Value.absent(),
     this.currency = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  }) : userId = Value(userId);
   static Insertable<UserSettingsTableData> custom({
     Expression<int>? id,
     Expression<String>? userId,
@@ -413,7 +413,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$UserSettingsTableTableCreateCompanionBuilder
     = UserSettingsTableCompanion Function({
   Value<int> id,
-  Value<String> userId,
+  required String userId,
   Value<String> themeMode,
   Value<bool> notificationsEnabled,
   Value<String> language,
@@ -578,7 +578,7 @@ class $$UserSettingsTableTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
-            Value<String> userId = const Value.absent(),
+            required String userId,
             Value<String> themeMode = const Value.absent(),
             Value<bool> notificationsEnabled = const Value.absent(),
             Value<String> language = const Value.absent(),

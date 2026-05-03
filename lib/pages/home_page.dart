@@ -4,6 +4,7 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:Billy/providers/transaction_provider.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/balance_bar_widget.dart';
@@ -14,7 +15,6 @@ import 'package:logging/logging.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
-import '../services/transaction_service.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -27,7 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Logger log = Logger('HomePage');
   final TransactionService service = TransactionService();
   final ScrollController _scrollController = ScrollController();
-  late BalanceDetailsModel _balanceDetails = BalanceDetailsModel(totalBalance: 0, totalExpenses: 0, totalIncomes: 0);
+  late BalanceDetailsModel _balanceDetails;
 
   bool _isLoading = false;
   bool _hasMore = false;
@@ -89,7 +89,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     )
     .then((result) {
       if (result == true) {
-        ref.read(transactionProvider.notifier).refresh();
+        _refreshTransactions();
       }
     });
   }
@@ -111,6 +111,16 @@ class _HomePageState extends ConsumerState<HomePage> {
         });
       });
     }
+  }
+
+  Future<void> _refreshTransactions() async {
+    setState(() => _isLoading = true);
+
+    await ref.read(transactionProvider.notifier).refresh();
+
+    Future.delayed(const Duration(seconds: 5), () {
+      setState(() => _isLoading = false);
+    });
   }
 
   @override
@@ -180,49 +190,70 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildList(List<Map<String, dynamic>> transactions) {
     return Expanded(
-      child: transactions.isEmpty
-        ? const Center(child: Text('Nessuna transazione trovata'))
-        : NotificationListener<ScrollNotification>(
-          onNotification: (scrollNotification) {
-            if (scrollNotification is ScrollEndNotification) {
-              _onScroll();
-            }
-            return false;
-          },
-          child: RefreshIndicator( // Pull from top to refresh
-            onRefresh: () => ref.read(transactionProvider.notifier).refresh(),
-            child: ListView.builder(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: transactions.length + 1, // +1 per il loader in fondo
-              itemBuilder: (context, index) {
-                if (index < transactions.length) {
-                  return _buildTransactionTile(transactions[index]);
+      child: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : transactions.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Nessuna transazione trovata', 
+                    style: TextStyle(fontSize: 16)
+                  ),
+                  SizedBox(height: 4),
+                  IntrinsicWidth( // Note Docs: Force button to take only the necessary width
+                    child: CustomButtonWidget(
+                      onPressed: _refreshTransactions, // Note Docs: non esegue direttamente _refreshTransactions() per evitare di chiamare la funzione al momento della build. Use () { _refreshTransactions(param1, param2); } or pass the function reference without parentheses.
+                      text: 'Ricarica',
+                      iconData: Icons.refresh,
+                    ),
+                  )
+                ]
+              ),
+            )
+          : NotificationListener<ScrollNotification>(
+              onNotification: (scrollNotification) {
+                if (scrollNotification is ScrollEndNotification) {
+                  _onScroll();
                 }
+                return false;
+              },
+              child: RefreshIndicator( // Pull from top to refresh
+                onRefresh: _refreshTransactions,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: transactions.length + 1, // +1 per il loader in fondo
+                  itemBuilder: (context, index) {
+                    if (index < transactions.length) {
+                      return _buildTransactionTile(transactions[index]);
+                    }
 
-                // Mostra il loader in fondo se stiamo caricando più elementi
-                return Card(
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_hasMore) ...[
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: CircularProgressIndicator(),
-                        ),
-                      ]
-                    ],
-                  ),
-                );
-              }
+                    // Mostra il loader in fondo se stiamo caricando più elementi
+                    return Card(
+                      color: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_hasMore) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ]
+                        ],
+                      ),
+                    );
+                  }
+                ),
+              ),
             ),
-          ),
-      ),
     );
   }
 

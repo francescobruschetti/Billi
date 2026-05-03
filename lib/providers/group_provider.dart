@@ -9,12 +9,10 @@ final groupsProvider = NotifierProvider<GroupsNotifier, AsyncValue<List<GroupDet
 );
 
 class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
-  late final GroupService _service;
+  GroupService get _service => ref.read(groupServiceProvider);
 
   @override
   AsyncValue<List<GroupDetailsModel>> build() {
-    _service = ref.read(groupServiceProvider);
-
     // stato iniziale
     _loadFromServer();
 

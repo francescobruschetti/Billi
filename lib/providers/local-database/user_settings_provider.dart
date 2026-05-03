@@ -15,7 +15,6 @@ final userSettingsProvider = AsyncNotifierProvider<UserSettingsNotifier, UserSet
 
 class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   static final Logger log = Logger('UserSettingsNotifier');
-  final SupabaseClient supabase = Supabase.instance.client;
 
   @override
   Future<UserSettingsTableData?> build() async {
@@ -65,10 +64,10 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   }
 
   // Aggiorna un campo → salva in locale + sync col BE
-  Future<UserSettingsTableData?> updateThemeSettings(ThemeEnum theme) async {
+  Future<UserSettingsTableData?> updateThemeSettings({ required ThemeEnum theme }) async {
     log.fine('Updating theme settings');
     UserSettingsTableCompanion updated = UserSettingsTableCompanion(
-      userId: Value(supabase.auth.currentUser!.id),
+      userId: Value(Supabase.instance.client.auth.currentUser!.id), // TODO: sempre null?
       themeMode: Value(theme.name),
       updatedAt: Value(DateTime.now()),
     );
@@ -110,8 +109,27 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
 
   // Chiamato al logout
   Future<void> clear() async {
-    log.fine('Clearing settings from local database');
-    await ref.read(localDatabaseProvider).delete(ref.read(localDatabaseProvider).userSettingsTable).go();
-    state = const AsyncData(null);
+    try {
+      log.fine('xx> Clearing settings from local database');
+      
+      ref.read(localDatabaseProvider).delete(ref.read(localDatabaseProvider).userSettingsTable).go();
+      // TODO:
+      // log.fine('xx> Current user ID: $userId');
+      // if (userId.isEmpty) {
+      //   log.warning('No user is currently logged in. Skipping clear operation.');
+      //   return;
+      // }
+      //
+      // final db = ref.read(localDatabaseProvider);
+      // await (db.delete(db.userSettingsTable)
+      //   ..where((t) => t.userId.equals(userId)))
+      //   .go();
+
+      state = const AsyncData(null);
+    }
+    catch (e, st) {
+      log.severe('Error clearing settings: $e', e, st);
+      rethrow;
+    }
   }
 }

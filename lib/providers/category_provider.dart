@@ -9,12 +9,10 @@ final categoryProvider = NotifierProvider<CategoryNotifier, AsyncValue<List<Cate
 );
 
 class CategoryNotifier extends Notifier<AsyncValue<List<CategoryModel>>> {
-  late final CategoryService _service;
+  CategoryService get _service => ref.read(categoryServiceProvider);
 
   @override
   AsyncValue<List<CategoryModel>> build() {
-    _service = ref.read(categoryServiceProvider);
-
     // stato iniziale
     _loadFromServer();
 

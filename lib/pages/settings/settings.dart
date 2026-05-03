@@ -2,13 +2,13 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/local/database/app_database.dart';
-import 'package:Billy/main.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/providers/ui_provider.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,8 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   final Logger log = Logger('SettingsPage');
-  late SigninSignupLogoutService signinSignupLogoutService;
+  final SigninSignupLogoutService signinSignupLogoutService = SigninSignupLogoutService();
+  final ProfileService profileService = ProfileService();
   bool _isLoadingLogout = false;
   String _themeLabel = 'Caricamento...';
   Icon themeIcon = Icon(Icons.dark_mode, color: Colors.orange);
@@ -32,7 +33,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    signinSignupLogoutService = SigninSignupLogoutService();
 
     setState(() {
       _isLoadingLogout = false;
@@ -69,18 +69,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // TODO: BillyApp.setToggleThemeMode(context, selectedTheme);
 
       log.fine('User selected theme: $selectedTheme. Updating settings...');
-      ref.read(userSettingsProvider.notifier).updateThemeSettings(selectedTheme);
+      ref.read(userSettingsProvider.notifier).updateThemeSettings(theme: selectedTheme); // Replace 'currentUserId' with the actual user ID
     }
   }
 
+  Future<void> _clearLocalData() async {
+    await ref.read(userSettingsProvider.notifier).clear();
+  }
+
   void _invalidateCache() {
+
     // !!! IMPORTANT: Invalidate all providers that cache user-specific data to force refetching after logout
     ref.invalidate(categoryProvider);
     ref.invalidate(groupsProvider);
     ref.invalidate(splitRateAndPaidAmountTabProvider);
     ref.invalidate(splitRateModeProvider);
-    ref.invalidate(userSettingsProvider);
     ref.invalidate(transactionProvider);
+    
+    // ! Do not reset Drift DB Providers here: ref.invalidate(userSettingsProvider);
   }
 
   Future<void> _logout() async {
@@ -90,6 +96,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     try {
       await signinSignupLogoutService.logout();
+      await _clearLocalData();
       _invalidateCache();
 
       if (mounted) {
@@ -124,13 +131,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return Scaffold(
           appBar: AppBar(title: const Text('Impostazioni')),
           body: _isLoadingLogout
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Eseguendo il logout...'),
-                ],
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Eseguendo il logout...'),
+                  ],
+                )
               )
             : SingleChildScrollView(
               padding: const EdgeInsets.all(0),

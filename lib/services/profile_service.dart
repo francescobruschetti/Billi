@@ -20,4 +20,13 @@ class ProfileService {
 
     return ProfileModel.fromMap((res as List).first);
   }
+
+  String getCurrentUserId() {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) {
+      log.warning('No user is currently logged in. Returning empty user ID.');
+      throw Exception('No user logged in');
+    }
+    return userId;
+  }
 }

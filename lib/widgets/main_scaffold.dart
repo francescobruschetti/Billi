@@ -1,10 +1,10 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/pages/group/groups_page.dart';
+import 'package:Billy/pages/home_page.dart';
 import 'package:Billy/pages/prove/ui_prove_page.dart';
 import 'package:Billy/pages/settings/settings.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
-import '../pages/home_page.dart';
-import '../pages/group/groups_page.dart';
 
 
 class MainScaffold extends StatefulWidget {

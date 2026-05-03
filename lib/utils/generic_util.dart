@@ -5,7 +5,6 @@ import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 
 class GenericUtil {
 
-  
   static Future<bool?> showConfirmationBeforeDeleteDialog(BuildContext context, String title, String content, 
     {String confirmButtonText = "Elimina", String cancelButtonText = "Annulla"}) async {
     return await showConfirmationDialog(

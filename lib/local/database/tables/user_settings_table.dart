@@ -8,8 +8,7 @@ class UserSettingsTable extends Table {
   // Chiave fissa — garantisce una sola riga nella tabella
   IntColumn get id => integer().withDefault(const Constant(1))();
 
-  TextColumn get userId => text()
-      .withDefault(const Constant('default_user'))(); // Placeholder until we have real user IDs, ensures only one row per user when we implement multi-user support.
+TextColumn get userId => text()(); // Mandatory
 
   TextColumn get themeMode => text()
       .withDefault(Constant(ThemeEnum.SYSTEM.value))();
