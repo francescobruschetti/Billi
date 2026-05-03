@@ -1,17 +1,20 @@
 import 'package:Billy/enums/theme_enum.dart';
+import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/main.dart';
+import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ThemeSettingBottomSheetWidget extends StatefulWidget {
+class ThemeSettingBottomSheetWidget extends ConsumerStatefulWidget {
   final String title;
   const ThemeSettingBottomSheetWidget({super.key, required this.title});
 
   @override
-  State<ThemeSettingBottomSheetWidget> createState() => _ThemeSettingBottomSheetWidgetState();
+  ConsumerState<ThemeSettingBottomSheetWidget> createState() => _ThemeSettingBottomSheetWidgetState();
 }
 
-class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetWidget> {
+class _ThemeSettingBottomSheetWidgetState extends ConsumerState<ThemeSettingBottomSheetWidget> {
   static final ScrollController _verticalController = ScrollController();
 
   late List<bool> _selectedThemes;
@@ -24,17 +27,6 @@ class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetW
   @override
   void initState() {
     super.initState();
-    ThemeEnum currentTheme = BillyApp.getThemeMode(context) == ThemeMode.dark
-        ? ThemeEnum.DARK
-        : BillyApp.getThemeMode(context) == ThemeMode.light
-            ? ThemeEnum.LIGHT
-            : ThemeEnum.SYSTEM;
-            
-    _selectedThemes = <bool>[
-      currentTheme == ThemeEnum.DARK,
-      currentTheme == ThemeEnum.LIGHT,
-      currentTheme == ThemeEnum.SYSTEM,
-    ];
   }
 
   void _handleThemeChange(BuildContext context, int index) {
@@ -48,56 +40,74 @@ class _ThemeSettingBottomSheetWidgetState extends State<ThemeSettingBottomSheetW
     Navigator.of(context).pop(ThemeEnum.values[index]);
   }
 
+  void _setupSelectedThemes(ThemeEnum? currentTheme) {
+    _selectedThemes = <bool>[
+      currentTheme == ThemeEnum.DARK,
+      currentTheme == ThemeEnum.LIGHT,
+      currentTheme == ThemeEnum.SYSTEM,
+    ];
+  }
+
   @override
-  Widget build(BuildContext context) {
-    return AppBottomSheet(
-      title: widget.title,
-      initialSize: 0.4,
-      minSize: 0.2,
-      maxSize: 0.5,
+  Widget build(BuildContext context) {    
+    final settingsState = ref.watch(userSettingsProvider);
+    
+    return settingsState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")), // TODO: migliorare gestione errori
+      data: (settings) {
+        _setupSelectedThemes(settings?.themeModeEnum);
 
-      child: Column(
-        children: [         
-          const SizedBox(height: 4),
-          Scrollbar(
-            controller: _verticalController,
-            thumbVisibility: true,
-            child: Scrollbar(
-              notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-              child: SingleChildScrollView(
+        return AppBottomSheet(
+          title: widget.title,
+          initialSize: 0.4,
+          minSize: 0.2,
+          maxSize: 0.5,
+
+          child: Column(
+            children: [         
+              const SizedBox(height: 4),
+              Scrollbar(
                 controller: _verticalController,
-                scrollDirection: Axis.vertical,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SizedBox(
-                      width: constraints.maxWidth - 16,
-                      child: ToggleButtons(
-                        direction: Axis.vertical,
-                        onPressed: (int index) => _handleThemeChange(context, index),
-                        
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        borderColor: Theme.of(context).colorScheme.primary,
-                        selectedBorderColor: Theme.of(context).colorScheme.primary,
+                thumbVisibility: true,
+                child: Scrollbar(
+                  notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                  child: SingleChildScrollView(
+                    controller: _verticalController,
+                    scrollDirection: Axis.vertical,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SizedBox(
+                          width: constraints.maxWidth - 16,
+                          child: ToggleButtons(
+                            direction: Axis.vertical,
+                            onPressed: (int index) => _handleThemeChange(context, index),
+                            
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            borderColor: Theme.of(context).colorScheme.primary,
+                            selectedBorderColor: Theme.of(context).colorScheme.primary,
 
-                        fillColor: Theme.of(context).colorScheme.primaryContainer, // Selected Button Background Color
-                        selectedColor: Theme.of(context).colorScheme.onPrimaryContainer, // Text Color for selected button
-                        color: Theme.of(context).colorScheme.onPrimary, // Text Color
+                            fillColor: Theme.of(context).colorScheme.primaryContainer, // Selected Button Background Color
+                            selectedColor: Theme.of(context).colorScheme.onPrimaryContainer, // Text Color for selected button
+                            color: Theme.of(context).colorScheme.onPrimary, // Text Color
 
-                        constraints: BoxConstraints(
-                          minHeight: 40.0,
-                          minWidth: constraints.maxWidth,
-                        ),
-                        isSelected: _selectedThemes,
-                        children: themeWidgets,
-                      ),
-                    );
-                  },
+                            constraints: BoxConstraints(
+                              minHeight: 40.0,
+                              minWidth: constraints.maxWidth,
+                            ),
+                            isSelected: _selectedThemes,
+                            children: themeWidgets,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 }

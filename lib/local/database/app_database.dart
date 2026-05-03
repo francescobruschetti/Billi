@@ -49,15 +49,24 @@ class AppDatabase extends _$AppDatabase {
   // SETTINGS
   // =========================
   Future<UserSettingsTableData?> getSettings() {
+    log.fine('Fetching settings from local database');
     return select(userSettingsTable).getSingleOrNull();
   }
 
   Stream<UserSettingsTableData?> watchSettings() {
+    log.fine('Watching settings from local database');
     return select(userSettingsTable).watchSingleOrNull();
   }
 
   Future<void> upsertSettings(UserSettingsTableCompanion settings) async {
-    await into(userSettingsTable).insertOnConflictUpdate(settings);
+    log.fine('Upserting settings into local database');
+    // v1: await into(userSettingsTable).insertOnConflictUpdate(settings);
+    await transaction(() async {
+      await delete(userSettingsTable).go(); // elimina tutto
+      await into(userSettingsTable).insert(
+        settings,
+      );
+    });
   }
 
   // @override

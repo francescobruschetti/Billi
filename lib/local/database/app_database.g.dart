@@ -13,11 +13,16 @@ class $UserSettingsTableTable extends UserSettingsTable
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      defaultValue: const Constant(1));
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('default_user'));
   static const VerificationMeta _themeModeMeta =
       const VerificationMeta('themeMode');
   @override
@@ -61,8 +66,15 @@ class $UserSettingsTableTable extends UserSettingsTable
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, themeMode, notificationsEnabled, language, currency, updatedAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        userId,
+        themeMode,
+        notificationsEnabled,
+        language,
+        currency,
+        updatedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -76,6 +88,10 @@ class $UserSettingsTableTable extends UserSettingsTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
     }
     if (data.containsKey('theme_mode')) {
       context.handle(_themeModeMeta,
@@ -103,13 +119,15 @@ class $UserSettingsTableTable extends UserSettingsTable
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {userId};
   @override
   UserSettingsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UserSettingsTableData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
       themeMode: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}theme_mode'])!,
       notificationsEnabled: attachedDatabase.typeMapping.read(
@@ -132,6 +150,7 @@ class $UserSettingsTableTable extends UserSettingsTable
 class UserSettingsTableData extends DataClass
     implements Insertable<UserSettingsTableData> {
   final int id;
+  final String userId;
   final String themeMode;
   final bool notificationsEnabled;
   final String language;
@@ -139,6 +158,7 @@ class UserSettingsTableData extends DataClass
   final DateTime updatedAt;
   const UserSettingsTableData(
       {required this.id,
+      required this.userId,
       required this.themeMode,
       required this.notificationsEnabled,
       required this.language,
@@ -148,6 +168,7 @@ class UserSettingsTableData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<String>(userId);
     map['theme_mode'] = Variable<String>(themeMode);
     map['notifications_enabled'] = Variable<bool>(notificationsEnabled);
     map['language'] = Variable<String>(language);
@@ -159,6 +180,7 @@ class UserSettingsTableData extends DataClass
   UserSettingsTableCompanion toCompanion(bool nullToAbsent) {
     return UserSettingsTableCompanion(
       id: Value(id),
+      userId: Value(userId),
       themeMode: Value(themeMode),
       notificationsEnabled: Value(notificationsEnabled),
       language: Value(language),
@@ -172,6 +194,7 @@ class UserSettingsTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserSettingsTableData(
       id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
       themeMode: serializer.fromJson<String>(json['themeMode']),
       notificationsEnabled:
           serializer.fromJson<bool>(json['notificationsEnabled']),
@@ -185,6 +208,7 @@ class UserSettingsTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<String>(userId),
       'themeMode': serializer.toJson<String>(themeMode),
       'notificationsEnabled': serializer.toJson<bool>(notificationsEnabled),
       'language': serializer.toJson<String>(language),
@@ -195,6 +219,7 @@ class UserSettingsTableData extends DataClass
 
   UserSettingsTableData copyWith(
           {int? id,
+          String? userId,
           String? themeMode,
           bool? notificationsEnabled,
           String? language,
@@ -202,6 +227,7 @@ class UserSettingsTableData extends DataClass
           DateTime? updatedAt}) =>
       UserSettingsTableData(
         id: id ?? this.id,
+        userId: userId ?? this.userId,
         themeMode: themeMode ?? this.themeMode,
         notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
         language: language ?? this.language,
@@ -211,6 +237,7 @@ class UserSettingsTableData extends DataClass
   UserSettingsTableData copyWithCompanion(UserSettingsTableCompanion data) {
     return UserSettingsTableData(
       id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
       themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
       notificationsEnabled: data.notificationsEnabled.present
           ? data.notificationsEnabled.value
@@ -225,6 +252,7 @@ class UserSettingsTableData extends DataClass
   String toString() {
     return (StringBuffer('UserSettingsTableData(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('themeMode: $themeMode, ')
           ..write('notificationsEnabled: $notificationsEnabled, ')
           ..write('language: $language, ')
@@ -235,13 +263,14 @@ class UserSettingsTableData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, themeMode, notificationsEnabled, language, currency, updatedAt);
+  int get hashCode => Object.hash(id, userId, themeMode, notificationsEnabled,
+      language, currency, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is UserSettingsTableData &&
           other.id == this.id &&
+          other.userId == this.userId &&
           other.themeMode == this.themeMode &&
           other.notificationsEnabled == this.notificationsEnabled &&
           other.language == this.language &&
@@ -252,60 +281,74 @@ class UserSettingsTableData extends DataClass
 class UserSettingsTableCompanion
     extends UpdateCompanion<UserSettingsTableData> {
   final Value<int> id;
+  final Value<String> userId;
   final Value<String> themeMode;
   final Value<bool> notificationsEnabled;
   final Value<String> language;
   final Value<String> currency;
   final Value<DateTime> updatedAt;
+  final Value<int> rowid;
   const UserSettingsTableCompanion({
     this.id = const Value.absent(),
+    this.userId = const Value.absent(),
     this.themeMode = const Value.absent(),
     this.notificationsEnabled = const Value.absent(),
     this.language = const Value.absent(),
     this.currency = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   UserSettingsTableCompanion.insert({
     this.id = const Value.absent(),
+    this.userId = const Value.absent(),
     this.themeMode = const Value.absent(),
     this.notificationsEnabled = const Value.absent(),
     this.language = const Value.absent(),
     this.currency = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   static Insertable<UserSettingsTableData> custom({
     Expression<int>? id,
+    Expression<String>? userId,
     Expression<String>? themeMode,
     Expression<bool>? notificationsEnabled,
     Expression<String>? language,
     Expression<String>? currency,
     Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
       if (themeMode != null) 'theme_mode': themeMode,
       if (notificationsEnabled != null)
         'notifications_enabled': notificationsEnabled,
       if (language != null) 'language': language,
       if (currency != null) 'currency': currency,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   UserSettingsTableCompanion copyWith(
       {Value<int>? id,
+      Value<String>? userId,
       Value<String>? themeMode,
       Value<bool>? notificationsEnabled,
       Value<String>? language,
       Value<String>? currency,
-      Value<DateTime>? updatedAt}) {
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
     return UserSettingsTableCompanion(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       themeMode: themeMode ?? this.themeMode,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       language: language ?? this.language,
       currency: currency ?? this.currency,
       updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -314,6 +357,9 @@ class UserSettingsTableCompanion
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
     }
     if (themeMode.present) {
       map['theme_mode'] = Variable<String>(themeMode.value);
@@ -330,6 +376,9 @@ class UserSettingsTableCompanion
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -337,11 +386,13 @@ class UserSettingsTableCompanion
   String toString() {
     return (StringBuffer('UserSettingsTableCompanion(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('themeMode: $themeMode, ')
           ..write('notificationsEnabled: $notificationsEnabled, ')
           ..write('language: $language, ')
           ..write('currency: $currency, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -362,20 +413,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$UserSettingsTableTableCreateCompanionBuilder
     = UserSettingsTableCompanion Function({
   Value<int> id,
+  Value<String> userId,
   Value<String> themeMode,
   Value<bool> notificationsEnabled,
   Value<String> language,
   Value<String> currency,
   Value<DateTime> updatedAt,
+  Value<int> rowid,
 });
 typedef $$UserSettingsTableTableUpdateCompanionBuilder
     = UserSettingsTableCompanion Function({
   Value<int> id,
+  Value<String> userId,
   Value<String> themeMode,
   Value<bool> notificationsEnabled,
   Value<String> language,
   Value<String> currency,
   Value<DateTime> updatedAt,
+  Value<int> rowid,
 });
 
 class $$UserSettingsTableTableFilterComposer
@@ -389,6 +444,9 @@ class $$UserSettingsTableTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get themeMode => $composableBuilder(
       column: $table.themeMode, builder: (column) => ColumnFilters(column));
@@ -419,6 +477,9 @@ class $$UserSettingsTableTableOrderingComposer
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get themeMode => $composableBuilder(
       column: $table.themeMode, builder: (column) => ColumnOrderings(column));
 
@@ -447,6 +508,9 @@ class $$UserSettingsTableTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get themeMode =>
       $composableBuilder(column: $table.themeMode, builder: (column) => column);
@@ -494,35 +558,43 @@ class $$UserSettingsTableTableTableManager extends RootTableManager<
                   $db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
             Value<String> themeMode = const Value.absent(),
             Value<bool> notificationsEnabled = const Value.absent(),
             Value<String> language = const Value.absent(),
             Value<String> currency = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
           }) =>
               UserSettingsTableCompanion(
             id: id,
+            userId: userId,
             themeMode: themeMode,
             notificationsEnabled: notificationsEnabled,
             language: language,
             currency: currency,
             updatedAt: updatedAt,
+            rowid: rowid,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
             Value<String> themeMode = const Value.absent(),
             Value<bool> notificationsEnabled = const Value.absent(),
             Value<String> language = const Value.absent(),
             Value<String> currency = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
           }) =>
               UserSettingsTableCompanion.insert(
             id: id,
+            userId: userId,
             themeMode: themeMode,
             notificationsEnabled: notificationsEnabled,
             language: language,
             currency: currency,
             updatedAt: updatedAt,
+            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

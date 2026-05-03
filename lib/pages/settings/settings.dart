@@ -1,5 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
+import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/local/database/app_database.dart';
 import 'package:Billy/main.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
@@ -7,10 +8,12 @@ import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/providers/transaction_provider.dart';
+import 'package:Billy/providers/ui_provider.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -20,6 +23,7 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  final Logger log = Logger('SettingsPage');
   late SigninSignupLogoutService signinSignupLogoutService;
   bool _isLoadingLogout = false;
   String _themeLabel = 'Caricamento...';
@@ -29,33 +33,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void initState() {
     super.initState();
     signinSignupLogoutService = SigninSignupLogoutService();
-    _currentThemeLabel();
 
     setState(() {
       _isLoadingLogout = false;
     });
   }
 
-  String _currentThemeLabel() {
-    ThemeMode currentMode = BillyApp.getThemeMode(context);
-    switch (currentMode) {
-      case ThemeMode.dark:
-        setState(() {
-          themeIcon = const Icon(Icons.dark_mode, color: Colors.orange);
-          _themeLabel = ThemeEnum.DARK.value;
-        });
+  String _currentThemeLabel(UserSettingsTableData? settings) {
+    log.fine('x>> Determining current theme label based on settings: $settings');
+    final theme = settings?.themeModeEnum ?? ThemeEnum.SYSTEM;
+    switch (theme) {
+      case ThemeEnum.DARK:
+        themeIcon = const Icon(Icons.dark_mode, color: Colors.orange);
         return ThemeEnum.DARK.value;
-      case ThemeMode.light:
-        setState(() {
-          themeIcon = const Icon(Icons.light_mode, color: Colors.orange);
-          _themeLabel = ThemeEnum.LIGHT.value;
-        });
+      case ThemeEnum.LIGHT:
+        themeIcon = const Icon(Icons.light_mode, color: Colors.orange);
         return ThemeEnum.LIGHT.value;
-      case ThemeMode.system:
-        setState(() {
-          themeIcon = const Icon(Icons.settings, color: Colors.orange);
-          _themeLabel = ThemeEnum.SYSTEM.value;
-        });
+      case ThemeEnum.SYSTEM:
+        themeIcon = const Icon(Icons.settings, color: Colors.orange);
         return ThemeEnum.SYSTEM.value;
     }
   }
@@ -71,9 +66,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
 
     if (selectedTheme != null && mounted) {
-      BillyApp.setToggleThemeMode(context, selectedTheme);
+      // TODO: BillyApp.setToggleThemeMode(context, selectedTheme);
+
+      log.fine('User selected theme: $selectedTheme. Updating settings...');
       ref.read(userSettingsProvider.notifier).updateThemeSettings(selectedTheme);
-      _currentThemeLabel();
     }
   }
 
@@ -81,6 +77,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     // !!! IMPORTANT: Invalidate all providers that cache user-specific data to force refetching after logout
     ref.invalidate(categoryProvider);
     ref.invalidate(groupsProvider);
+    ref.invalidate(splitRateAndPaidAmountTabProvider);
+    ref.invalidate(splitRateModeProvider);
+    ref.invalidate(userSettingsProvider);
     ref.invalidate(transactionProvider);
   }
 
@@ -88,6 +87,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     setState(() {
       _isLoadingLogout = true;
     });
+
     try {
       await signinSignupLogoutService.logout();
       _invalidateCache();
@@ -118,28 +118,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return settingsState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, _) => Center(child: Text("Errore durante il caricamento. Riprovare")), // TODO: migliorare gestione errori
-      data: (settings) => Scaffold(
-        appBar: AppBar(title: const Text('Impostazioni')),
-        body: _isLoadingLogout
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Eseguendo il logout...'),
-              ],
-            )
-          : SingleChildScrollView(
+      data: (settings) {
+        _themeLabel = _currentThemeLabel(settings);
+        
+        return Scaffold(
+          appBar: AppBar(title: const Text('Impostazioni')),
+          body: _isLoadingLogout
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Eseguendo il logout...'),
+                ],
+              )
+            : SingleChildScrollView(
               padding: const EdgeInsets.all(0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text( 
-                    'Impostazioni: ${settings != null ? settings.themeMode : 'N/A'}', // TODO: mostrare più impostazioni
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-
                   // --- SYSTEM ---
                   _buildMainGroup(),
 
@@ -151,7 +148,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ],
               ),
             ),
-      ),
+        );
+      }
     );
   }
 

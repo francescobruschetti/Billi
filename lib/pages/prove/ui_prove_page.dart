@@ -23,12 +23,12 @@ class _UIProvePageState extends State<UIProvePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Impostazioni')),
+      appBar: AppBar(title: const Text('Prove UI')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: [           
             _buildMainGroup(context),
 
             // const SizedBox(height: AppConstants.sizedBoxHeight),

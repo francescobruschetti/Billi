@@ -10,7 +10,6 @@ final transactionProvider = NotifierProvider<TransactionsNotifier, AsyncValue<Li
 );
 
 class TransactionsNotifier extends Notifier<AsyncValue<List<Map<String, dynamic>>>> {
-  
   final Logger log = Logger('TransactionsNotifier');
   
   late final TransactionService _service;

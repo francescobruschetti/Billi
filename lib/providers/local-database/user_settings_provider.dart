@@ -7,6 +7,7 @@ import 'package:Billy/services/user_settings_service.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final userSettingsProvider = AsyncNotifierProvider<UserSettingsNotifier, UserSettingsTableData?>(
   UserSettingsNotifier.new,
@@ -14,6 +15,7 @@ final userSettingsProvider = AsyncNotifierProvider<UserSettingsNotifier, UserSet
 
 class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   static final Logger log = Logger('UserSettingsNotifier');
+  final SupabaseClient supabase = Supabase.instance.client;
 
   @override
   Future<UserSettingsTableData?> build() async {
@@ -36,6 +38,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   // Fetch dal BE e salva in locale
   Future<UserSettingsTableData?> _fetchAndSave() async {
     try {
+      log.fine('Fetching settings from BE');
       final remote = await UserSettingsService().fetchSettings();
       await _save(remote);
       return ref.read(localDatabaseProvider).getSettings();
@@ -48,6 +51,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
 
   // Salva in locale
   Future<void> _save(UserSettingsModel settings) async {
+    log.fine('Saving settings to local database');
     final db = ref.read(localDatabaseProvider);
     await db.upsertSettings(
       UserSettingsTableCompanion(
@@ -62,7 +66,9 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
 
   // Aggiorna un campo → salva in locale + sync col BE
   Future<UserSettingsTableData?> updateThemeSettings(ThemeEnum theme) async {
+    log.fine('Updating theme settings');
     UserSettingsTableCompanion updated = UserSettingsTableCompanion(
+      userId: Value(supabase.auth.currentUser!.id),
       themeMode: Value(theme.name),
       updatedAt: Value(DateTime.now()),
     );
@@ -70,6 +76,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   }
 
   Future<UserSettingsTableData?> updateSettings(UserSettingsTableCompanion settings) async {
+    log.fine('Updating settings');
     final db = ref.read(localDatabaseProvider);
 
     // Aggiornamento ottimistico — UI si aggiorna subito
@@ -84,22 +91,26 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
           UserSettingsModel.fromTableData(current),
         );
       }
-    } catch (e, st) {
+    } 
+    catch (e, st) {
       log.severe('Error updating settings on BE: $e', e, st);
       // Offline → i dati sono già salvati in locale
       // syncPending() li invierà al BE al prossimo avvio
     }
+
     return await db.getSettings();
   }
 
   // Forza reload dal BE
   Future<void> refresh() async {
+    log.fine('Refreshing settings from BE');
     state = const AsyncLoading();
     state = AsyncData(await _fetchAndSave());
   }
 
   // Chiamato al logout
   Future<void> clear() async {
+    log.fine('Clearing settings from local database');
     await ref.read(localDatabaseProvider).delete(ref.read(localDatabaseProvider).userSettingsTable).go();
     state = const AsyncData(null);
   }

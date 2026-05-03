@@ -1,13 +1,12 @@
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:logging/logging.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:Billy/models/database/user_settings_model.dart';
 
 class UserSettingsService {
   final Logger log = Logger('UserSettingsService');
-  final _supabase = Supabase.instance.client;
 
   Future<UserSettingsModel> fetchSettings() async {
+    log.fine('Fetching settings from DB');
 
     return UserSettingsModel.fromMap({
       'theme_mode': ThemeEnum.DARK.name,
