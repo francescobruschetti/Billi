@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 
 class ErrorAlertWidget extends StatelessWidget {
@@ -26,7 +27,7 @@ class ErrorAlertWidget extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon ?? Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
           Expanded(
             child: Text(
               errorMessage,
@@ -34,7 +35,7 @@ class ErrorAlertWidget extends StatelessWidget {
             ),
           ),
           if (onClose != null) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: AppConstants.sizedBoxWidth),
             IconButton(
               icon: const Icon(Icons.close, color: Colors.red),
               tooltip: 'Chiudi',

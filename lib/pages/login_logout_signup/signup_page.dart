@@ -107,7 +107,7 @@ class _SignupPageState extends State<SignupPage> {
               prefixIcon: Icon(Icons.person, size: 24),
             ),
             
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             CustomValidatedTextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -116,7 +116,7 @@ class _SignupPageState extends State<SignupPage> {
               validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
             
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             CustomValidatedTextField(
               controller: _usernameController,
               labelText: 'Username',
@@ -124,7 +124,7 @@ class _SignupPageState extends State<SignupPage> {
               validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
             ),
             
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             CustomValidatedTextField(
               controller: _passwordController,
               labelText: 'Password',
@@ -152,7 +152,7 @@ class _SignupPageState extends State<SignupPage> {
               }
             ),
             
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             CustomValidatedTextField(
               controller: _repeatPasswordController,
               labelText: 'Ripeti Password',
@@ -171,13 +171,13 @@ class _SignupPageState extends State<SignupPage> {
               validator: (value) => passwordsMatchErrorValidator(value),
             ),
 
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             if (_errorMessage != null) ...[
               ErrorAlertWidget(errorMessage: _errorMessage!),
             ],
 
             // Registration button
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             if (_loading) ...[
               const CircularProgressIndicator(),
             ] 
@@ -194,7 +194,7 @@ class _SignupPageState extends State<SignupPage> {
             ],
 
             // Login Page navigation
-            const SizedBox(height: AppConstants.sizedBoxHeight),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);

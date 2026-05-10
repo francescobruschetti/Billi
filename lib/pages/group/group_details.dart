@@ -319,7 +319,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   validator: (value) => value.trim().isEmpty ? 'Il nome del gruppo è obbligatorio' : null,
                 ),
                 
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 CustomValidatedTextField(
                   controller: _descriptionController,
                   labelText: 'Descrizione',
@@ -346,7 +346,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 ],
                 
                 // Save/Cancel buttons
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -358,7 +358,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       isEnabled: _isSaveEnabled,
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppConstants.largeSizedBoxWidth),
                     TextButton(
                       onPressed: () => _navigatePop(),
                       child: const Text('Annulla'),
@@ -375,13 +375,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     return Column(
       children: [
         // Aggiunta utenti al gruppo
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         Align(
           alignment: Alignment.centerLeft,
           child: Text('Aggiungi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
         
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         Row(
           children: [
             Expanded(
@@ -396,7 +396,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppConstants.mediumSizedBoxWidth),
             ElevatedButton(
               onPressed: () => _getExistingUser(_searchUser),
               style: ElevatedButton.styleFrom(
@@ -409,7 +409,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 ),
               ),
               child: _isSearching 
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                ? const SizedBox(width: AppConstants.largeSizedBoxWidth, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
                 : Text('Cerca', style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer)), // es. , fontWeight: FontWeight.bold)),
             ),
           ],
@@ -422,18 +422,18 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   Widget _buildListOfUsersToBeAddedToGroup() {
     return Column(
       children: [
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         if (_selectedUsers.isNotEmpty) ...[
           Row(
             children: [
               const Text('Nuovi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
               
-              const SizedBox(width: 8),
+              const SizedBox(width: AppConstants.mediumSizedBoxWidth),
               Text('(${_selectedUsers.length})'),
             ],
           ),
           
-          const SizedBox(height: AppConstants.sizedBoxHeight),
+          const SizedBox(height: AppConstants.mediumSizedBoxHeight),
           ListView.separated(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -447,7 +447,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(user.profile.name),
-                    Text(" (@${user.profile.username})", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                    Text(" (@${user.profile.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
                   ],
                 ),
                 trailing: 
@@ -472,7 +472,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   Widget _buildListOfUsersAlreadyInGroup() {
     return Column(
       children: [
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         if (_existingUsers.isEmpty) ...[
           const Text('Nessun partecipante nel gruppo'),
         ]
@@ -480,12 +480,12 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
           Row(
             children: [
               const Text('Partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppConstants.mediumSizedBoxWidth),
               Text('(${_existingUsers.length})'),
             ],
           ),
 
-          const SizedBox(height: AppConstants.sizedBoxHeight),
+          const SizedBox(height: AppConstants.mediumSizedBoxHeight),
           ListView.separated(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -499,7 +499,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(user.name),
-                    Text(" (@${user.username})", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                    Text(" (@${user.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
                   ],
                 ),
                 trailing: 

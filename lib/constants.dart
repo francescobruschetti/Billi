@@ -5,8 +5,18 @@ class AppConstants {
   static const double zeroHeight = 0.0;
   static const double rowHorizontalPadding = 8.0;
   static const double rowVerticalPadding = 2.0;
-  static const double sizedBoxWidth = 4.0; // Spacing between items in a SizedBox
-  static const double sizedBoxHeight = 8.0; // Spacing between items in a SizedBox
+
+  // Spacing between items in a SizedBox
+  static const double largeSizedBoxWidth = 16.0;
+  static const double mediumSizedBoxWidth = 8.0;
+  static const double sizedBoxWidth = 4.0;
+  static const double smallSizedBoxWidth = 2.0;
+  
+   // Spacing between items in a SizedBox
+  static const double splashScreenSizedBoxHeight = 32.0; // Spacing for splash screen
+  static const double mediumSizedBoxHeight = 8.0;
+  static const double sizedBoxHeight = 4.0; // Spacing between items in a SizedBox
+  static const double smallSizedBoxHeight = 2.0; // Spacing between items in a SizedBox
 
   static const Color red = Colors.red;
   static const Color white = Colors.white;
@@ -16,4 +26,10 @@ class AppConstants {
   static const Color defaultButtonColor = Color.fromARGB(255, 226, 226, 226);
   static const Color defaultButtonBorderColor = Colors.grey;
   static const Color disabledButtonColor = Color.fromARGB(255, 114, 114, 114);
+
+  // Text Sizes
+  static const double titleTextSize = 28.0;
+  static const double subtitleTextSize = 24.0;
+  static const double textSize = 16.0;
+  static const double smallTextSize = 12.0;
 }

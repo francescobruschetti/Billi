@@ -62,11 +62,11 @@ class AppBottomSheet extends StatelessWidget {
               _buildDraggableIndicator(context),
               
               if (title != null) ...[
-                const SizedBox(height: AppConstants.sizedBoxHeight),
-                Text(title!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+                Text(title!, style: const TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold)),
               ],
               
-              const SizedBox(height: AppConstants.sizedBoxHeight),
+              const SizedBox(height: AppConstants.mediumSizedBoxHeight),
               Expanded(child: child), // Contenuto personalizzato - IMPORTANT! Expanded qui, non nel child, altrimenti: "RenderBox was not laid out: RenderRepaintBoundary#2227e NEEDS-LAYOUT NEEDS-PAINT"
             ],
           ),
@@ -78,7 +78,7 @@ class AppBottomSheet extends StatelessWidget {
   Widget _buildDraggableIndicator(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         Container(
           width: 40, height: 4,
           decoration: BoxDecoration(

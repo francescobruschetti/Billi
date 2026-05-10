@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/enums/category_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +72,7 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
                     CustomIconWidget(assetPath: 'assets/images/icons/sell_filled.PNG', color: Colors.orange),
                   ],
                   
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppConstants.sizedBoxWidth),
                   if (widget.categoryName != null) ...[
                     Text(widget.categoryName!, style: const TextStyle(fontWeight: FontWeight.w500)),
                   ]
@@ -87,7 +88,7 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.shopping_cart, size: 20, color: Colors.blueGrey),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppConstants.sizedBoxWidth),
                     if (widget.merchantName != null) ...[
                       Text(widget.merchantName!, style: const TextStyle(fontWeight: FontWeight.w500)),
                     ]
@@ -104,26 +105,26 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.person, size: 20, color: Colors.green),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppConstants.sizedBoxWidth),
                     Text(widget.profileModel!.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ],
             ],
           ),
-          subtitle: Text(widget.formattedDateTime, style: const TextStyle(fontSize: 12)),
+          subtitle: Text(widget.formattedDateTime, style: const TextStyle(fontSize: AppConstants.smallTextSize)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.note != null && widget.note!.isNotEmpty) ...[
                 Icon(Icons.note, color: Colors.yellow[700], size: 20),
               ],
-              const SizedBox(width: 4),
+              const SizedBox(width: AppConstants.sizedBoxWidth),
               Text(
                 _formatAmount(widget.totalAmount, widget.transactionType), 
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: AppConstants.textSize,
                   color: widget.transactionType == TransactionTypeEnum.INCOME ? Colors.green : Colors.red,
                 )
               ),

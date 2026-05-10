@@ -52,7 +52,7 @@ class CustomButtonWidget extends StatelessWidget {
         ],
         if (text != null) ...[
           if (iconData != null || customIcon != null) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: AppConstants.sizedBoxWidth),
           ],
 
           Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), // es. , fontWeight: FontWeight.bold)),
@@ -68,11 +68,11 @@ class CustomButtonWidget extends StatelessWidget {
         Text(text!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)), 
 
         if (iconData != null) ...[
-          const SizedBox(width: 4),
+          const SizedBox(width: AppConstants.sizedBoxWidth),
           Icon(iconData, color: Theme.of(context).colorScheme.onPrimaryContainer, size: text == null ? 30 : 24),
         ],
         if (iconData == null && customIcon != null) ...[
-          const SizedBox(width: 4),
+          const SizedBox(width: AppConstants.sizedBoxWidth),
           customIcon!,
         ],
       ],

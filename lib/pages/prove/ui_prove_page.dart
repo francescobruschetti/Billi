@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/pages/prove/button_group_prove_page.dart';
 import 'package:Billy/pages/prove/multilanguage_prove_page.dart';
 import 'package:Billy/pages/prove/segment/segment_page_prove.dart';
@@ -31,19 +32,19 @@ class _UIProvePageState extends State<UIProvePage> {
           children: [           
             _buildMainGroup(context),
 
-            // const SizedBox(height: AppConstants.sizedBoxHeight),
+            // const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             // const Padding(
             //   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             //   child: Align(
             //     alignment: Alignment.centerLeft,
             //     child: Text(
             //       'Account',
-            //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+            //       style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
             //     ),
             //   ),
             // ),
             //
-            // const SizedBox(height: AppConstants.sizedBoxHeight),
+            // const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             // Card(
             //   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             //   child: Column(
@@ -107,7 +108,7 @@ class _UIProvePageState extends State<UIProvePage> {
           Text(title),
           const Spacer(),
           if (subtitle != null) Text(subtitle, style: TextStyle(color: Colors.grey.shade600)),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
           const Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),

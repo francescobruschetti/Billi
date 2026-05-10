@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 class SegmentedControl extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onChanged;
+  final List<String> segments;
 
   const SegmentedControl({
     super.key,
     required this.selectedIndex,
     required this.onChanged,
+    required this.segments,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Colors.grey.shade400, // TODO: gestire il cambio di Theme (light/dark mode)
         borderRadius: BorderRadius.circular(999),
       ),
       child: LayoutBuilder(
@@ -33,17 +35,17 @@ class SegmentedControl extends StatelessWidget {
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeInOutCubic,
                 builder: (context, value, child) {
-                  final left = (width / 2) * value;
+                  final left = (width / segments.length) * value;
 
                   return Positioned(
                     left: left,
                     top: 0,
                     bottom: 0,
-                    width: width / 2,
+                    width: width / segments.length,
                     child: Container(
                       margin: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.secondary, // TODO: gestire il cambio di Theme (light/dark mode)
                         borderRadius: BorderRadius.circular(999),
                         boxShadow: [
                           BoxShadow(
@@ -58,10 +60,9 @@ class SegmentedControl extends StatelessWidget {
               ),
 
               Row(
-                children: [
-                  _buildItem("Dividi spesa", 0),
-                  _buildItem("Specifica quota", 1),
-                ],
+                children: segments.asMap().entries.map((entry) {
+                  return _buildItem(entry.value, entry.key);
+                }).toList(),
               ),
             ],
           );
@@ -75,7 +76,7 @@ class SegmentedControl extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onChanged(index),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Center(
             child: Text(
               text,

@@ -15,8 +15,8 @@ class LoadingScaffold extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: AppConstants.sizedBoxHeight),
-            Text(message, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+            Text(message, style: const TextStyle(fontSize: AppConstants.textSize)),
           ],
         ),
       ),

@@ -1,10 +1,11 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
-import 'package:Billy/main.dart';
 import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 class ThemeSettingBottomSheetWidget extends ConsumerStatefulWidget {
   final String title;
@@ -15,6 +16,7 @@ class ThemeSettingBottomSheetWidget extends ConsumerStatefulWidget {
 }
 
 class _ThemeSettingBottomSheetWidgetState extends ConsumerState<ThemeSettingBottomSheetWidget> {
+  final Logger log = Logger('ThemeSettingBottomSheetWidget');
   static final ScrollController _verticalController = ScrollController();
 
   late List<bool> _selectedThemes;
@@ -41,6 +43,7 @@ class _ThemeSettingBottomSheetWidgetState extends ConsumerState<ThemeSettingBott
   }
 
   void _setupSelectedThemes(ThemeEnum? currentTheme) {
+    log.fine("Setting up selected themes with current theme: $currentTheme");
     _selectedThemes = <bool>[
       currentTheme == ThemeEnum.DARK,
       currentTheme == ThemeEnum.LIGHT,
@@ -66,7 +69,7 @@ class _ThemeSettingBottomSheetWidgetState extends ConsumerState<ThemeSettingBott
 
           child: Column(
             children: [         
-              const SizedBox(height: 4),
+              const SizedBox(height: AppConstants.sizedBoxHeight),
               Scrollbar(
                 controller: _verticalController,
                 thumbVisibility: true,

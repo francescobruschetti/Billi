@@ -2,6 +2,7 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/extentions/datetime_extention.dart';
 import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
@@ -90,7 +91,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     return count;
   }
 
-  void _filterTransactions() {
+  void _filterTransactions() { // TODO: da implementare filtro spese
     setState(() {
       _showFilters = !_showFilters;
     });
@@ -103,8 +104,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
 
  String _formatDateTime(String dateTimeStr) {
     try {
-      final dateTime = DateTime.parse(dateTimeStr);
-      return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      final dateTime = dateTimeStr.toDateTime();
+      return dateTime.toDateTimeStr();
     } 
     catch (e) {
       log.severe('Error parsing date: $e');
@@ -266,7 +267,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                 ]
                 else ...[
                   // --- How much user owes or is owed
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppConstants.smallSizedBoxHeight),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -278,7 +279,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                           onPressed: _openSummaryDetailsBottomSheet
                         )
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppConstants.mediumSizedBoxWidth),
                       Expanded(
                         child: CustomButtonWidget(
                           text: "Da saldare: $_groupTransactionsBalanceCnt", 
@@ -291,7 +292,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                   ),
                   
                   // -- Azioni di ordinamento e filtro
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppConstants.smallSizedBoxHeight),
                   Row(
                     children: [
                       IconButton(
@@ -479,7 +480,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
               backgroundColor: AppConstants.defaultExpenseColor,
             ),
           ),
-          const SizedBox(width: AppConstants.sizedBoxWidth),
+          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
           Expanded(
             child: 
               CustomButtonWidget(
@@ -508,11 +509,11 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Bilancio', style: TextStyle(fontSize: 15)),
-                const SizedBox(width: 8),
+                Text('Bilancio', style: TextStyle(fontSize: AppConstants.textSize)),
+                const SizedBox(width: AppConstants.mediumSizedBoxWidth),
                 SelectableText(
                   '${_computeBalance()}€',
-                  style: TextStyle(fontSize: 30),
+                  style: TextStyle(fontSize: AppConstants.titleTextSize),
                 ),
               ],
             ),
@@ -521,66 +522,4 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       ),
     );
   }
-  // UI AppBar: v2:
-  // Widget _pageHeader() {
-  //   return Container(
-  //     // debug UI: color: Colors.green,
-  //     padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         // -- Back button
-  //         IconButton(
-  //           icon: const Icon(Icons.arrow_back),
-  //           tooltip: 'Indietro',
-  //           onPressed: () => Navigator.of(context).pop(),
-  //         ),
-
-  //         // -- Title + Balance
-  //         Expanded(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text('Bilancio: $_groupName', style: TextStyle(fontSize: 16)),
-  //               const SizedBox(width: 8),
-  //               SelectableText(
-  //                 '${_computeBalance()} €',
-  //                 style: TextStyle(fontSize: 28),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-
-  //         // -- Search bar
-  //         _animatedSearchBar(),
-
-  //         // -- Actions
-  //         if (!_showSearchBar) ...[
-  //           IconButton(
-  //             icon: const Icon(Icons.search),
-  //             tooltip: 'Cerca',
-  //             onPressed: () => {
-  //               setState(() => _showSearchBar = !_showSearchBar),
-  //             },
-  //           ),
-  //           // IconButton( // TODO: valutare se mantenere o spostare nei filtri
-  //           //   icon: const Icon(Icons.refresh),
-  //           //   tooltip: 'Aggiorna',
-  //           //   onPressed: () => _loadData(reset: true),
-  //           // ),
-  //           // IconButton( // TODO: valutare se mantenere o spostare nei filtri
-  //           //   icon: const Icon(Icons.filter_list),
-  //           //   tooltip: 'Filtra',
-  //           //   onPressed: () => _filterTransactions(reset: true),
-  //           // ),
-  //           IconButton(
-  //             icon: CustomIconWidget(assetPath: 'assets/images/icons/settings.PNG', size: 24),
-  //             tooltip: 'Impostazioni Gruppo',
-  //             onPressed: () => _openPage(GroupDetailsPage(groupId: widget.groupId, isEditAllowed: widget.isEditAllowed)),
-  //           ),
-  //         ],
-  //       ],
-  //     ),
-  //   );
-  // }
 }

@@ -1,4 +1,5 @@
 import 'package:Billy/authGate/auth_gate.dart';
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 
 
@@ -32,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/logo.png', width: 150, height: 150),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppConstants.splashScreenSizedBoxHeight),
             const CircularProgressIndicator(), // oppure LinearProgressIndicator()
           ],
         ),

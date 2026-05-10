@@ -136,7 +136,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircularProgressIndicator(),
-                    SizedBox(height: 16),
+                    SizedBox(height: AppConstants.mediumSizedBoxHeight),
                     Text('Eseguendo il logout...'),
                   ],
                 )
@@ -165,14 +165,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _buildAccountGroup() {
     return Column(
       children: [
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Account',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
         ),
@@ -202,14 +202,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _buildMainGroup() {
     return Column(
       children: [
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Sistema',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
         ),
@@ -250,14 +250,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _buildOtherGroup() {
     return Column(
       children: [
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Altro',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
         ),
@@ -303,7 +303,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           const Spacer(),
           if (subtitle != null) Text(subtitle),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
           const Icon(Icons.chevron_right),
         ],
       ),

@@ -23,10 +23,13 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
 
       // Prova dalla cache locale → funziona anche offline
       final local = await db.getSettings();
-      if (local != null) return local;
+      if (local != null) {
+        log.fine('x> Loaded settings from local cache: $local');
+        return local;
+      }
 
       // Non in locale → fetch dal BE
-      return _fetchAndSave();
+      return fetchAndSave();
     } 
     catch (e, st) {
       log.severe('Error loading settings: $e', e, st);
@@ -35,7 +38,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   }
 
   // Fetch dal BE e salva in locale
-  Future<UserSettingsTableData?> _fetchAndSave() async {
+  Future<UserSettingsTableData?> fetchAndSave() async {
     try {
       log.fine('Fetching settings from BE');
       final remote = await UserSettingsService().fetchSettings();
@@ -104,7 +107,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   Future<void> refresh() async {
     log.fine('Refreshing settings from BE');
     state = const AsyncLoading();
-    state = AsyncData(await _fetchAndSave());
+    state = AsyncData(await fetchAndSave());
   }
 
   // Chiamato al logout

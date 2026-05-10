@@ -1,12 +1,16 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
+import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TransactionService {
   final Logger log = Logger('TransactionService');
   final SupabaseClient supabase = Supabase.instance.client;
+  final ProfileService profileService = ProfileService();
 
   Future<Map<String, dynamic>> createGroupExpenseTransaction({
     required String groupId,
@@ -57,7 +61,8 @@ class TransactionService {
     String? note,
   }) async {
     
-    final userId = supabase.auth.currentUser!.id;
+    final userId = profileService.getCurrentUserId();
+
     try {
       final result = await supabase.rpc('insert_group_transaction_with_merchant_category', params: {
         'p_group_id': groupId,
@@ -88,7 +93,8 @@ class TransactionService {
     String? note,
   }) async {
     
-    final userId = supabase.auth.currentUser!.id;
+    final userId = profileService.getCurrentUserId();
+
     try {
       final result = await supabase.rpc('insert_transaction_with_merchant_category', params: {
         'p_user_id': userId,
@@ -106,20 +112,27 @@ class TransactionService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchLatestPersonalTransactions({required int pageIndex, int pageSize = 50}) async {
-    final userId = supabase.auth.currentUser!.id;
+  Future<PersonalTransactionPageModel> fetchLatestPersonalTransactions({
+    required int pageIndex,
+    int pageSize = 50,
+    DateTime? dateStart,
+    DateTime? dateEnd
+  }) async {
 
+    final userId = profileService.getCurrentUserId();
     final from = pageIndex * pageSize;
     final to = from + pageSize - 1;
 
-    final rows = await supabase
-      .from('transactions')
-      .select('*, merchant:merchants(*), category:categories(*)')
-      .eq('user_id', userId)
-      .order('created_at', ascending: false)
-      .range(from, to);
+    // TODO: remove merchant_id, category_id from root model
+    final result = await supabase.rpc('get_personal_transactions', params: {
+      'p_user_id': userId,
+      'p_from': from,
+      'p_to': to,
+      'p_date_start': dateStart?.toIso8601String(),
+      'p_date_end': dateEnd?.toIso8601String(),
+    });
 
-    return rows;
+    return PersonalTransactionPageModel.fromJson(result);
   }
 
   Future<GroupDetailsModel> fetchGroup({required String groupId}) async {

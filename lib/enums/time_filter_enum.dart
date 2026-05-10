@@ -4,10 +4,10 @@ enum TimeFilterEnum {
   ONE_WEEK("ONE_WEEK", "1s"), 
   ONE_MONTH("ONE_MONTH", "1m"), 
   ONE_YEAR("ONE_YEAR", "1a"), 
-  CURRENT_WEEK("CURRENT_WEEK", "cs"), 
-  CURRENT_MONTH("CURRENT_MONTH", "cm"), 
-  CURRENT_YEAR("CURRENT_YEAR", "ca"), 
-  RANGE("RANGE", "i");
+  CURRENT_WEEK("CURRENT_WEEK", "c_W"), 
+  CURRENT_MONTH("CURRENT_MONTH", "c_M"), 
+  CURRENT_YEAR("CURRENT_YEAR", "c_Y"), 
+  RANGE("RANGE", "range");
 
   final String value;  
   final String shortValue;

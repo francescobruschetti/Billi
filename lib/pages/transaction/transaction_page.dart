@@ -93,7 +93,7 @@ class _TransactionPageState extends State<TransactionPage> {
     //     context: context,
     //     builder: (context) => CupertinoActionSheet(
     //       // oppure un widget custom con stile iOS
-    //       message: Text('Seleziona Categoria', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    //       message: Text('Seleziona Categoria', style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold)),
     //       actions: [
     //         CupertinoActionSheetAction(
     //           onPressed: () async {
@@ -239,7 +239,7 @@ class _TransactionPageState extends State<TransactionPage> {
                 
                 // -- Negozio
                 if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                   CustomValidatedTextField(
                     controller: _merchantController,
                     labelText: 'Negozio',
@@ -253,7 +253,7 @@ class _TransactionPageState extends State<TransactionPage> {
                   ),
                 
                   // -- Categorie
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                   CustomValidatedTextField(
                     controller: _categoriesController,
                     labelText: 'Categorie',
@@ -262,7 +262,7 @@ class _TransactionPageState extends State<TransactionPage> {
                   ),
 
                   // -- Payment method (TODO: da implementare)
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                   CustomValidatedTextField(
                     controller: _paymentMethodController,
                     labelText: 'Metodo di pagamento',
@@ -272,7 +272,7 @@ class _TransactionPageState extends State<TransactionPage> {
                 ],
                 
                 // -- Note
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 CustomValidatedTextField(
                   controller: _noteController,
                   labelText: 'Note',
@@ -285,7 +285,7 @@ class _TransactionPageState extends State<TransactionPage> {
                 ],
                 
                 // Save/Cancel buttons
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -297,7 +297,7 @@ class _TransactionPageState extends State<TransactionPage> {
                       isEnabled: _isSaveEnabled,
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppConstants.largeSizedBoxWidth),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Annulla'),

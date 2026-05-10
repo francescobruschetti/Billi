@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/pages/prove/segment/segment_control_prove_page.dart';
 import 'package:Billy/pages/prove/segment/ui_provider_prove.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class _SegmentPageProveState extends ConsumerState<SegmentPageProve> {
       appBar: AppBar(title: const Text("Transactions")),
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: AppConstants.mediumSizedBoxHeight),
 
           // Segmented control
           Padding(
@@ -58,7 +59,7 @@ class _SegmentPageProveState extends ConsumerState<SegmentPageProve> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppConstants.mediumSizedBoxHeight),
 
           // PageView
           Expanded(
@@ -66,8 +67,8 @@ class _SegmentPageProveState extends ConsumerState<SegmentPageProve> {
               controller: _controller,
               onPageChanged: _onPageChanged,
               children: const [
-                Text("Entrate", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                Text("Uscite", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text("Entrate", style: TextStyle(fontSize: AppConstants.subtitleTextSize, fontWeight: FontWeight.bold)),
+                Text("Uscite", style: TextStyle(fontSize: AppConstants.subtitleTextSize, fontWeight: FontWeight.bold)),
               ],
             ),
           ),

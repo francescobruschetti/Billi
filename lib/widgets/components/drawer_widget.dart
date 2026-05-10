@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,7 @@ class DrawerWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.blue,
             ),
-            child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+            child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: AppConstants.subtitleTextSize)),
           ),
           ListTile(
             leading: const CustomIconWidget(assetPath: 'assets/images/icons/outward.PNG', size: 24),

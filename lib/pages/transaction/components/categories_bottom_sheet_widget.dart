@@ -70,7 +70,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: CustomValidatedTextField(
@@ -82,10 +82,10 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                 ),
 
                 if (_searchControllerText.isNotEmpty) ...[
-                  const SizedBox(height: AppConstants.sizedBoxHeight / 2),
+                  const SizedBox(height: AppConstants.mediumSizedBoxHeight / 2),
                   Text('${filteredCategories.length} categorie trovate'),
                 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                   CustomButtonWidget(
                     onPressed: () => Navigator.of(context).pop(CreateCategoryResponseModel(newName: _searchControllerText, isNew: true)),
                     text: 'Crea nuova categoria "$_searchControllerText"',
@@ -94,7 +94,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                   ),
                 ],
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 GridView.builder(
                   controller: _scrollListController,
                   shrinkWrap: true,
@@ -119,7 +119,7 @@ class _CategoriesBottomSheetWidgetState extends ConsumerState<CategoriesBottomSh
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             category.icon,
-                            const SizedBox(height: 4),
+                            const SizedBox(height: AppConstants.sizedBoxHeight),
                             Text(
                               category.name,
                               textAlign: TextAlign.center,

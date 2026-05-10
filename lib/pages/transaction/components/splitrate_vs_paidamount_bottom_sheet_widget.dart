@@ -120,7 +120,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
   }
 
   void _onTabChanged(int index) {
-    ref.read(splitRateAndPaidAmountTabProvider.notifier).state = index;
+    ref.read(splitRateAndPaidAmountTabProvider.notifier).setTab(index);
 
     if (mounted) {
       _controller.animateToPage(
@@ -183,6 +183,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           child: SegmentedControl(
             selectedIndex: tabSelectedIndex,
             onChanged: _onTabChanged,
+            segments: const ['Dividi spesa', 'Specifica quota'],
           ),
         ),
 
@@ -222,7 +223,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           prefixIcon: Icon(Icons.euro, size: 24),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         CustomButtonWidget(
           onPressed: _save,
           text: 'Salva',
@@ -236,7 +237,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         Text('Quanto paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -362,7 +363,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           ],
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         Text('Per quanti paghi?', style: const TextStyle(fontWeight: FontWeight.bold)),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -469,7 +470,7 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           ],
         ),
       
-        const SizedBox(height: 8),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         CustomButtonWidget(
           onPressed: _save,
           text: 'Salva',

@@ -33,10 +33,10 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
           children: [
             _buildSubTitle(context),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             _buildInviteLinkText(context),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             _buildActionButtonRow(context),
           ],
         ),
@@ -127,7 +127,7 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
       ),
       child: SelectableText(link, 
         style: TextStyle(
-          fontSize: 24, 
+          fontSize: AppConstants.subtitleTextSize, 
           color: Theme.of(context).colorScheme.onSecondary,
           fontStyle: FontStyle.italic,
           fontWeight: FontWeight.bold,
@@ -144,7 +144,7 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
         subTitle, 
         textAlign: TextAlign.center, 
         style: TextStyle(
-          fontSize: 14, 
+          fontSize: AppConstants.textSize, 
         ),
       ),
     );

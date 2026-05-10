@@ -1,14 +1,17 @@
 import 'package:Billy/enums/theme_enum.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/models/database/user_settings_model.dart';
 
 class UserSettingsService {
   final Logger log = Logger('UserSettingsService');
+  final ProfileService _profileService = ProfileService();
 
   Future<UserSettingsModel> fetchSettings() async {
     log.fine('Fetching settings from DB');
 
     return UserSettingsModel.fromMap({
+      'user_id': _profileService.getCurrentUserId(),
       'theme_mode': ThemeEnum.DARK.name,
       'notifications_enabled': true,
       'language': 'it',

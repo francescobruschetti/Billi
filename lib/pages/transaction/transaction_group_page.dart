@@ -360,7 +360,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                 _buildDropDownGroup(groups),
 
                 // -- Transaction Price
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 Row(
                   children: [
                     Expanded(
@@ -378,7 +378,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                     
                     // -- Split Rate vs Paid Amount
                     if (widget.transactionType == TransactionTypeEnum.EXPENSE) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppConstants.mediumSizedBoxWidth),
                       CustomButtonWidget(
                         onPressed: _openSplitRateVsPaidAmountBottomSheet,
                         text: _selectedSplitRateValueEnum?.value ?? 'Configura quota',
@@ -395,7 +395,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
                 ],
 
                 // -- Note
-                const SizedBox(height: AppConstants.sizedBoxHeight),
+                const SizedBox(height: AppConstants.mediumSizedBoxHeight),
                 CustomValidatedTextField(
                   controller: _noteController,
                   labelText: 'Note',
@@ -458,7 +458,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
           isEnabled: _isSaveEnabled,
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: AppConstants.largeSizedBoxWidth),
         TextButton(
           onPressed: () => {
             resetProviders(),
@@ -475,7 +475,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // -- Negozio
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         CustomValidatedTextField(
           controller: _merchantController,
           labelText: 'Negozio',
@@ -489,7 +489,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         ),
 
         // -- Categorie
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         CustomValidatedTextField(
           controller: _categoriesController,
           labelText: 'Categorie',
@@ -498,7 +498,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         ),
 
         // -- Payment method (TODO: da implementare)
-        const SizedBox(height: AppConstants.sizedBoxHeight),
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
         CustomValidatedTextField(
           controller: _paymentMethodController,
           labelText: 'Metodo di pagamento',

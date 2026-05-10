@@ -1,3 +1,4 @@
+import 'package:Billy/constants.dart';
 import 'package:Billy/models/group_participant_summary_model.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
         children: [
           // TODO: mostra versione "intelligente", mostra "tutti i movimenti" in un secondo sheet?
           
-          const SizedBox(height: 4),
+          const SizedBox(height: AppConstants.sizedBoxHeight),
           Scrollbar(
             controller: _verticalController,
             thumbVisibility: true,

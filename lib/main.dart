@@ -54,7 +54,8 @@ class BillyApp extends ConsumerStatefulWidget  {
 class _BillyAppState extends ConsumerState<BillyApp> {
   final Logger log = Logger('BillyApp');
 
-  // TODO: valutare se è possibile evitare di usare lo state per la lingua, e gestirla direttamente dalle impostazioni (come per il tema) in modo più "reactive" e meno "imperativo"
+  /* TODO: valutare se è possibile evitare di usare lo state per la lingua,
+  * e gestirla direttamente dalle impostazioni (come per il tema) in modo più "reactive" e meno "imperativo" */
   String currentLanguage = 'en';
   late Locale _locale = Locale(currentLanguage);
     void changeLocale(Locale locale) {
