@@ -1,3 +1,4 @@
+import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_totals_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
@@ -15,8 +16,11 @@ final transactionProvider = NotifierProvider<TransactionsNotifier, AsyncValue<Li
 class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionModel>>> {
   final Logger log = Logger('TransactionsNotifier');
 
+  List<PersonalTransactionModel> periodTransactions = [];
+  TransactionTypeEnum? currentFilter;
+  
   TransactionService get _service => ref.read(transactionServiceProvider);
-
+  
   PersonalTransactionTotalsModel? _totals;
   PersonalTransactionTotalsModel? get totals => _totals;
 
@@ -25,13 +29,53 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   bool _hasMore = true;
 
   @override
-  AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 5}) {
-
+  AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 5}) { // TODO: valore di test!!
     // stato iniziale
     _pageSize = pageSize;
-    _loadFromServer(pageIndex: _currentPage, pageSize: _pageSize);
-
     return const AsyncLoading();
+  }
+
+  Future<void> filterTransactionsType(TransactionTypeEnum? type) async { // TODO: filtra solo le transazioni già caricate, senza fare ulteriori chiamate al server (al momento filtra tutto in locale, ma sarebbe meglio filtrare già a livello di query al server)
+    if (currentFilter == type) {
+      // Se il filtro selezionato è già attivo, rimuovilo (mostra tutte le transazioni)
+      currentFilter = null;
+      state = AsyncData(periodTransactions);
+      _hasMore = periodTransactions.length == _pageSize;
+      return;
+    }
+
+    currentFilter = type;
+    List<PersonalTransactionModel> filteredTransactions = [];
+    for (PersonalTransactionModel t in periodTransactions) {
+      if (t.transactionType == type) {
+        filteredTransactions.add(t);
+      }
+    }
+
+    state = AsyncData(filteredTransactions);
+    _hasMore = filteredTransactions.length == _pageSize;
+  }
+
+  Future<void> _handleLoadedTransactions(PersonalTransactionPageModel transactions, {bool append = false, required int pageSize}) async {
+    
+    try {
+      _totals = transactions.totals;
+
+      if (append && state is AsyncData<List<PersonalTransactionModel>> && (state as AsyncData<List<PersonalTransactionModel>>).value.isNotEmpty) {
+        final current = (state as AsyncData<List<PersonalTransactionModel>>).value;
+        state = AsyncData([...current, ...transactions.transactions]);
+      } 
+      else {
+        state = AsyncData(transactions.transactions);
+      }
+      periodTransactions = transactions.transactions;
+
+      _hasMore = transactions.transactions.length == pageSize;
+    } 
+    catch (e, st) {
+      log.severe("Errore caricamento transazioni: $e", e, st);
+      state = AsyncError(e, st);
+    }
   }
 
   Future<void> _loadFromServer({
@@ -54,20 +98,7 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
         dateEnd: dateEnd,
       );
       
-      _totals = personalTransactionPageModel.totals;
-
-      if (append && state is AsyncData<List<PersonalTransactionModel>> && (state as AsyncData<List<PersonalTransactionModel>>).value.isNotEmpty) {
-        final current = (state as AsyncData<List<PersonalTransactionModel>>).value;
-        state = AsyncData([...current, ...personalTransactionPageModel.transactions]);
-      } 
-      else {
-        state = AsyncData(personalTransactionPageModel.transactions);
-      }
-
-      log.fine("transactions.length: ${personalTransactionPageModel.transactions.length}, pageSize: $pageSize");
-      _hasMore = personalTransactionPageModel.transactions.length == pageSize;
-      log.fine("_hasMore: $_hasMore");
-
+      _handleLoadedTransactions(personalTransactionPageModel, append: append, pageSize: pageSize);      
     } 
     catch (e, st) {
       log.severe("Errore caricamento transazioni: $e", e, st);

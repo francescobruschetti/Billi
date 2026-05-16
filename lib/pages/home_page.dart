@@ -61,7 +61,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final state = ref.read(transactionProvider);
       if (state is AsyncLoading) {
-        ref.read(transactionProvider.notifier).loadMore(reset: true);
+        _applyTimeFilter(_selectedTimeFilterIndex);
       }
     });
   }
@@ -75,8 +75,24 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _applyTimeFilter(int index) {
     setState(() => _selectedTimeFilterIndex = index);
-
     _loadDataWithCurrentFilter();
+  }
+  
+  Function()? _filterTransactions(TransactionTypeEnum expense) {
+    log.fine("Filtering transactions for type: $expense");
+    return () {
+      ref.read(transactionProvider.notifier).filterTransactionsType(expense);
+    };
+  }
+
+  void _loadDataWithCurrentFilter({bool reset = true}) {
+    final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
+    final (dateStart, dateEnd) = timeFilterEnum.dateRange;
+    
+    ref.read(transactionProvider.notifier).refresh(
+      dateStart: dateStart,
+      dateEnd: dateEnd,
+    );
   }
 
   void _navigateToTransactionPage({required TransactionTypeEnum transactionType, required bool isEditAllowed}) async {
@@ -114,16 +130,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     await ref.read(transactionProvider.notifier).refresh();
   }
 
-  void _loadDataWithCurrentFilter({bool reset = true}) {
-    final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
-    final (dateStart, dateEnd) = timeFilterEnum.dateRange;
-    
-    ref.read(transactionProvider.notifier).refresh(
-      dateStart: dateStart,
-      dateEnd: dateEnd,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {  
     final transactionsState = ref.watch(transactionProvider);
@@ -139,8 +145,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           // Aggiorna il balance ogni volta che cambia la lista transazioni
           _balanceDetails = BalanceDetailsModel(
             totalBalance: ref.read(transactionProvider.notifier).totals?.balance ?? 0,
-            totalExpenses: ref.read(transactionProvider.notifier).totals?.totalExpense ?? 0,
-            totalIncomes: ref.read(transactionProvider.notifier).totals?.totalIncome ?? 0,
+            totalExpenses: ref.read(transactionProvider.notifier).totals?.totalExpenses ?? 0,
+            totalIncomes: ref.read(transactionProvider.notifier).totals?.totalIncomes ?? 0,
           );
           
           return Column(
@@ -148,7 +154,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               // Page Header
               _pageHeader(transactions),
 
-              _pageHeaderSubtitle(),  
+              _pageHeaderSubtitle(transactions),  
 
               // Page Header "subtitle"
               _buildTimeFilters(),
@@ -347,7 +353,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _pageHeaderSubtitle() {
+  Widget _pageHeaderSubtitle(List<PersonalTransactionModel> transactions) {
     return Container(
       // debug UI: color: Colors.red,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
@@ -355,8 +361,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         totalBalance: _balanceDetails.totalBalance, 
         totalExpenses: _balanceDetails.totalExpenses, 
         totalIncomes: _balanceDetails.totalIncomes,
-        onExpenseParentCallback: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare filtro transazioni per categoria quando si clicca su barra
-        onIncomeParentCallback: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare filtro transazioni per categoria quando si clicca su barra
+        onExpenseParentCallback: _filterTransactions(TransactionTypeEnum.EXPENSE), 
+        onIncomeParentCallback: _filterTransactions(TransactionTypeEnum.INCOME),
       )
     );
   }

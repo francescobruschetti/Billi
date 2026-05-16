@@ -1,10 +1,16 @@
 class PersonalTransactionTotalsModel {
-  final double totalIncome;
-  final double totalExpense;
+  final double totalIncomes;
+  final double totalExpenses;
   final double balance;
 
+  PersonalTransactionTotalsModel({
+    required this.totalIncomes,
+    required this.totalExpenses,
+    required this.balance,
+  });
+
   PersonalTransactionTotalsModel.fromJson(Map<String, dynamic> data)
-      : totalIncome  = (data['total_income'] as num).toDouble(),
-        totalExpense = (data['total_expense'] as num).toDouble(),
+      : totalIncomes  = (data['total_incomes'] as num).toDouble(),
+        totalExpenses = (data['total_expenses'] as num).toDouble(),
         balance = (data['balance'] as num).toDouble();
 }

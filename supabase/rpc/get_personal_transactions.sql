@@ -30,8 +30,8 @@ BEGIN
 
   -- Totali sull'intero intervallo (non solo la pagina)
   SELECT JSON_BUILD_OBJECT(
-    'total_income', COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN total_amount ELSE 0 END), 0),
-    'total_expense', COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN total_amount ELSE 0 END), 0),
+    'total_incomes', COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN total_amount ELSE 0 END), 0),
+    'total_expenses', COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN total_amount ELSE 0 END), 0),
     'balance', COALESCE(SUM(
       CASE 
         WHEN transaction_type = 'INCOME' THEN total_amount 

@@ -1,7 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 
 class BalanceBarWidget extends StatefulWidget {
   final double totalBalance;
@@ -35,9 +34,6 @@ class _BalanceBarWidgetState extends State<BalanceBarWidget> {
     return (_selectedTransactionType == transactionType || _selectedTransactionType == null ? expectedColorWhenSelected : notSelectedColor);
   }
 
-   @override
-
-
   @override
   Widget build(BuildContext context) {
     final total = widget.totalIncomes + widget.totalExpenses;
@@ -60,21 +56,7 @@ class _BalanceBarWidgetState extends State<BalanceBarWidget> {
           ],
 
           const SizedBox(height: AppConstants.sizedBoxHeight),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '-${widget.totalExpenses.toStringAsFixed(2)}€', 
-                style: TextStyle(color: getBalanceColor(TransactionTypeEnum.EXPENSE, expenseColor), 
-                fontWeight: FontWeight.bold)
-              ),
-              Text('${widget.totalIncomes.toStringAsFixed(2)}€', 
-                style: 
-                TextStyle(color: getBalanceColor(TransactionTypeEnum.INCOME, incomeColor), 
-                fontWeight: FontWeight.bold)
-              ),
-            ],
-          ),
+          _buildBalanceLabels(),
         ],
       ),
     );
@@ -97,21 +79,10 @@ class _BalanceBarWidgetState extends State<BalanceBarWidget> {
   Widget _buildBalanceExpanded(Function()? onParentCallback, TransactionTypeEnum transactionType, Color color, BorderRadius borderRadius, int flex) {
     return Expanded(
       flex: flex,
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            if (_selectedTransactionType == transactionType) {
-              _selectedTransactionType = null;
-            } 
-            else {
-              _selectedTransactionType = transactionType;
-            }
-          });
-
-          // callback del padre
-          onParentCallback?.call();          
-        },
-        child: Container(
+      child: _buildClickableWidget(
+        onParentCallback, 
+        transactionType, 
+        Container(
           height: 10,
           decoration: BoxDecoration(
             color: getBalanceColor(transactionType, color),
@@ -122,4 +93,48 @@ class _BalanceBarWidgetState extends State<BalanceBarWidget> {
     );
   }
 
+  Widget _buildBalanceLabels() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildClickableWidget(
+          widget.onExpenseParentCallback,  
+          TransactionTypeEnum.EXPENSE,
+          Text(
+            '-${widget.totalExpenses.toStringAsFixed(2)}€', 
+            style: TextStyle(color: getBalanceColor(TransactionTypeEnum.EXPENSE, expenseColor), 
+            fontWeight: FontWeight.bold)
+          ),
+        ),
+        _buildClickableWidget(
+          widget.onIncomeParentCallback, 
+          TransactionTypeEnum.INCOME,
+          Text('${widget.totalIncomes.toStringAsFixed(2)}€', 
+            style: 
+            TextStyle(color: getBalanceColor(TransactionTypeEnum.INCOME, incomeColor), 
+            fontWeight: FontWeight.bold)
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildClickableWidget(Function()? onParentCallback, TransactionTypeEnum transactionType, Widget child) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_selectedTransactionType == transactionType) {
+            _selectedTransactionType = null;
+          } 
+          else {
+            _selectedTransactionType = transactionType;
+          }
+        });
+
+        // callback del padre
+        onParentCallback?.call();          
+      },
+      child: child,
+    );
+  }
 }

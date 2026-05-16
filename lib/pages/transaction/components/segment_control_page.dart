@@ -17,7 +17,7 @@ class SegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: Colors.grey.shade400, // TODO: gestire il cambio di Theme (light/dark mode)
+        color: Colors.grey.shade300, // TODO: gestire il cambio di Theme (light/dark mode)
         borderRadius: BorderRadius.circular(999),
       ),
       child: LayoutBuilder(
