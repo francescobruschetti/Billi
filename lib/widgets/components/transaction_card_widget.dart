@@ -50,7 +50,6 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Card(

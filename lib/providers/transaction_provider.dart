@@ -2,9 +2,11 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_totals_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final transactionServiceProvider = Provider((ref) => TransactionService());
 
@@ -15,6 +17,7 @@ final transactionProvider = NotifierProvider<TransactionsNotifier, AsyncValue<Li
 
 class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionModel>>> {
   final Logger log = Logger('TransactionsNotifier');
+  final ProfileService profileService = ProfileService();
 
   List<PersonalTransactionModel> periodTransactions = [];
   TransactionTypeEnum? currentFilter;
@@ -32,9 +35,14 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 5}) { // TODO: valore di test!!
     // stato iniziale
     _pageSize = pageSize;
+
+    // Ascolta i cambiamenti in realtime
+    _subscribeToRealtime();
+
     return const AsyncLoading();
   }
 
+  //************************************* Data Management *************************************//
   Future<void> filterTransactionsType(TransactionTypeEnum? type) async { // TODO: filtra solo le transazioni già caricate, senza fare ulteriori chiamate al server (al momento filtra tutto in locale, ma sarebbe meglio filtrare già a livello di query al server)
     if (currentFilter == type) {
       // Se il filtro selezionato è già attivo, rimuovilo (mostra tutte le transazioni)
@@ -123,6 +131,7 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
     await loadMore(reset: true, dateStart: dateStart, dateEnd: dateEnd);
   }
 
+  //************************************* LOCAL Management *************************************//
   void addGroupLocally(PersonalTransactionModel newGroup) {
     state = state.whenData((transactions) => [newGroup, ...transactions]);
   }
@@ -140,5 +149,23 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
     state = state.whenData(
       (transactions) => transactions.where((g) => g.id != id).toList(),
     );
+  }
+
+  //************************************* Realtime Updates *************************************//
+  void _subscribeToRealtime() {
+    final supabase = Supabase.instance.client;
+    final userId = profileService.getCurrentUserId();
+
+    final subscription = supabase
+      .from('transactions')
+      .stream(primaryKey: ['id'])
+      .eq('user_id', userId)
+      .listen((data) {
+        // Nuovi dati arrivati → refresh automatico
+        refresh();
+      });
+
+    // Cancella la subscription quando il provider viene distrutto
+    ref.onDispose(() => subscription.cancel());
   }
 }

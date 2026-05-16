@@ -7,6 +7,7 @@ import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/models/category_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_model.dart';
+import 'package:Billy/pages/prove/logs_prove_page.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:Billy/providers/transaction_provider.dart';
@@ -28,18 +29,24 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState 
+  extends ConsumerState<HomePage>
+  with WidgetsBindingObserver // *Added to listen to app lifecycle events (e.g., to refresh data when the app is resumed)*
+{
   final Logger log = Logger('HomePage');
   final TransactionService service = TransactionService();
   final ScrollController _scrollController = ScrollController();
-  late BalanceDetailsModel _balanceDetails;
-  
   final List<TimeFilterEnum> _timeFilters = ([
     TimeFilterEnum.ONE_DAY,
     TimeFilterEnum.CURRENT_WEEK,
     TimeFilterEnum.CURRENT_MONTH,
     TimeFilterEnum.CURRENT_YEAR,
   ]);
+
+  late BalanceDetailsModel _balanceDetails;
+  late DateTime _lastRefreshTime = DateTime.now();
+
+  final int _autoRefreshThresholdMinutes = 5; // Tempo dopo il quale forzare un refresh dei dati al ritorno in foreground
   int _selectedTimeFilterIndex = 2; // default: CURRENT_MONTH
 
   bool _isLoading = false;
@@ -50,6 +57,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addObserver(this); // registra observer
 
     setState(() {
       _isLoading = false;
@@ -68,9 +76,23 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // rimuovi observer
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      LogsProvePage.insertLog('App tornata in foreground. Ultimo refresh: ${_lastRefreshTime.toIso8601String()}');
+      
+      // App tornata in foreground → refresh if last refresh was more than _autoRefreshThresholdMinutes mins ago
+      if (DateTime.now().difference(_lastRefreshTime) > Duration(minutes: _autoRefreshThresholdMinutes)) {
+        LogsProvePage.insertLog('App tornata in foreground. Forzo refresh dati perché l\'ultimo refresh risale a più di $_autoRefreshThresholdMinutes minuti fa.');
+        _refreshTransactions();
+      }
+    }
   }
 
   void _applyTimeFilter(int index) {
@@ -79,7 +101,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
   
   Function()? _filterTransactions(TransactionTypeEnum expense) {
-    log.fine("Filtering transactions for type: $expense");
     return () {
       ref.read(transactionProvider.notifier).filterTransactionsType(expense);
     };
@@ -128,6 +149,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _refreshTransactions() async {
     await ref.read(transactionProvider.notifier).refresh();
+    _lastRefreshTime = DateTime.now();
   }
 
   @override

@@ -2,7 +2,6 @@ import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
-import 'package:Billy/pages/transaction/transaction_page.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
