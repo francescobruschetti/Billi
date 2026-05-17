@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/pages/prove/button_group_prove_page.dart';
-import 'package:Billy/pages/prove/logs_prove_page.dart';
+import 'package:Billy/pages/settings/logs_page.dart';
 import 'package:Billy/pages/prove/multilanguage_prove_page.dart';
 import 'package:Billy/pages/prove/segment/segment_page_prove.dart';
 import 'package:Billy/pages/prove/tab_controller_prove_page.dart';
@@ -94,13 +94,6 @@ class _UIProvePageState extends State<UIProvePage> {
             icon: Icon(Icons.swipe, color: Colors.orange[700]), 
             title: 'Segment Control',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SegmentPageProve())),
-          ),
-          
-          const Divider(height: 1),
-           _buildListTile(
-            icon: Icon(Icons.wrap_text, color: Colors.orange[700]), 
-            title: 'Logs',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogsProvePage())),
           ),
         ],
       ),

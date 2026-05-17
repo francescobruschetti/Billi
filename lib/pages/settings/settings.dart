@@ -3,6 +3,7 @@ import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/local/database/app_database.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
+import 'package:Billy/pages/settings/logs_page.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/local-database/user_settings_provider.dart';
@@ -271,6 +272,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 icon: Icon(Icons.share, color: Colors.orange[700]), 
                 title: 'Condividi',
                 // TODO: add onTap to open share options
+              ),
+
+              const Divider(height: 1),
+              _buildListTile(
+                icon: Icon(Icons.bug_report, color: Colors.orange[700]), 
+                title: 'Segnala un problema',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogsPage())),
               ),
             ],
           ),

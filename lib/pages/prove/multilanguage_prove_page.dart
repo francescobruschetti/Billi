@@ -58,7 +58,7 @@ class _MultiLinguaProvePageState extends State<MultiLinguaProvePage> {
           Text(AppLocalizations.of(context)!.nWombats(1)),
           // Returns '5 wombats'
           Text(AppLocalizations.of(context)!.nWombats(5)),
-          Text(AppLocalizations.of(context)!.helloWorldOn(DateTime.utc(1959, 7, 9))),
+          Text(AppLocalizations.of(context)!.helloWorldOn(DateTime.utc(1959, 12, 9))),
       ],
     );
   }

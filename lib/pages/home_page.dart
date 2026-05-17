@@ -1,15 +1,18 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/enums/log_level_enum.dart' show LogLevelEnum;
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/extentions/datetime_extention.dart';
 import 'package:Billy/extentions/timefilter_start_end_extention.dart';
 import 'package:Billy/models/balance_details_model.dart';
 import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/database/log_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_model.dart';
-import 'package:Billy/pages/prove/logs_prove_page.dart';
+import 'package:Billy/pages/settings/logs_page.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/pages/transaction/transaction_page.dart';
+import 'package:Billy/providers/local-database/logs_provider.dart';
 import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -85,11 +88,11 @@ class _HomePageState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      LogsProvePage.insertLog('App tornata in foreground. Ultimo refresh: ${_lastRefreshTime.toIso8601String()}');
+      ref.read(logsProvider.notifier).saveMessage(LogLevelEnum.FINE, 'App tornata in foreground. Ultimo refresh: ${_lastRefreshTime.toIso8601String()}');
       
       // App tornata in foreground → refresh if last refresh was more than _autoRefreshThresholdMinutes mins ago
       if (DateTime.now().difference(_lastRefreshTime) > Duration(minutes: _autoRefreshThresholdMinutes)) {
-        LogsProvePage.insertLog('App tornata in foreground. Forzo refresh dati perché l\'ultimo refresh risale a più di $_autoRefreshThresholdMinutes minuti fa.');
+        ref.read(logsProvider.notifier).saveMessage(LogLevelEnum.INFO, 'App tornata in foreground. Forzo refresh dati perché l\'ultimo refresh risale a più di $_autoRefreshThresholdMinutes minuti fa.');
         _refreshTransactions();
       }
     }

@@ -19,10 +19,8 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   @override
   Future<UserSettingsTableData?> build() async {
     try {
-      final db = ref.read(localDatabaseProvider);
-
       // Prova dalla cache locale → funziona anche offline
-      final local = await db.getSettings();
+      final local = await ref.read(localDatabaseProvider).userSettingsDao.getSettings();
       if (local != null) {
         log.fine('x> Loaded settings from local cache: $local');
         return local;
@@ -43,7 +41,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
       log.fine('Fetching settings from BE');
       final remote = await UserSettingsService().fetchSettings();
       await _save(remote);
-      return ref.read(localDatabaseProvider).getSettings();
+      return ref.read(localDatabaseProvider).userSettingsDao.getSettings();
     } 
     catch (e, st) {
       log.severe('Error fetching settings from BE: $e', e, st);
@@ -54,8 +52,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   // Salva in locale
   Future<void> _save(UserSettingsModel settings) async {
     log.fine('Saving settings to local database');
-    final db = ref.read(localDatabaseProvider);
-    await db.upsertSettings(
+    await ref.read(localDatabaseProvider).userSettingsDao.upsertSettings(
       UserSettingsTableCompanion(
         themeMode: Value(settings.themeMode.name),
         notificationsEnabled: Value(settings.notificationsEnabled),
@@ -82,12 +79,12 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
     final db = ref.read(localDatabaseProvider);
 
     // Aggiornamento ottimistico — UI si aggiorna subito
-    await db.upsertSettings(settings);
-    state = AsyncData(await db.getSettings());
+    await db.userSettingsDao.upsertSettings(settings);
+    state = AsyncData(await db.userSettingsDao.getSettings());
 
     // Sync col BE in background
     try {
-      final current = await db.getSettings();
+      final current = await db.userSettingsDao.getSettings();
       if (current != null) {
         await UserSettingsService().updateSettings(
           UserSettingsModel.fromTableData(current),
@@ -100,7 +97,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
       // syncPending() li invierà al BE al prossimo avvio
     }
 
-    return await db.getSettings();
+    return await db.userSettingsDao.getSettings();
   }
 
   // Forza reload dal BE
@@ -114,9 +111,8 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   Future<void> clear() async {
     try {
       log.fine('xx> Clearing settings from local database');
-      
       ref.read(localDatabaseProvider).delete(ref.read(localDatabaseProvider).userSettingsTable).go();
-      // TODO:
+      // TODO: dà errore perché userId è null...
       // log.fine('xx> Current user ID: $userId');
       // if (userId.isEmpty) {
       //   log.warning('No user is currently logged in. Skipping clear operation.');
