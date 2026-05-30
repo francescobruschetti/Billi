@@ -92,11 +92,11 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
     }
   }
 
-  Future<bool> _confirmSave({required String message}) async {
+  Future<bool> _confirmSave({required String content}) async {
     final confirmed = await GenericUtil.showConfirmationDialog(
       context, 
       'Conferma salvataggio', 
-      message,
+      content,
       confirmButtonText: 'Conferma',
       cancelButtonText: 'Annulla');
 
@@ -237,7 +237,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       if (_groupExpenseSplitResponseModel?.fixedAmount != null) {
         paidAmount = _groupExpenseSplitResponseModel?.fixedAmount;
         if (paidAmount! > formattedPrice) {
-          final bool proceed = await _confirmSave(message: "La quota pagata è maggiore del totale. Vuoi procedere comunque?");
+          final bool proceed = await _confirmSave(content: "La quota pagata è maggiore del totale. Vuoi procedere comunque?");
           if (!proceed) {
             setState(() {
               _isSaveEnabled = true;

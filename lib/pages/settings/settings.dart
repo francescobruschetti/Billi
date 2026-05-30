@@ -75,7 +75,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _clearLocalData() async {
-    await ref.read(userSettingsProvider.notifier).clear();
+    final bool proceed = await _confirmSave(content: 'Sei sicuro di voler eliminare tutti i dati locali? Questa operazione non può essere annullata.');
+    if (!proceed) {
+      final db = ref.read(localDatabaseProvider);
+      await db.wipeDatabase();
+
+      if (mounted) {
+        GenericUtil.showSnackbar(context, 'Dati locali eliminati con successo');
+      }
+      return;
+    }    
+  }
+
+  Future<bool> _confirmSave({required String content}) async {
+    final confirmed = await GenericUtil.showConfirmationDialog(
+      context, 
+      'Conferma eliminazione dati locali', 
+      content,
+      confirmButtonText: 'Conferma',
+      cancelButtonText: 'Annulla');
+
+    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
   }
 
   void _invalidateCache() {
@@ -155,6 +175,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
                   // --- OTHER SETTINGS ---
                   _buildOtherGroup(),
+
+                  // --- DELETE DATA ---
+                  _buildDeleteDataGroup(),
                 ],
               ),
             ),
@@ -263,17 +286,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
         ),
 
-        // --- SHARE APP ---
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             children: [
+              // --- SHARE APP ---
               _buildListTile(
                 icon: Icon(Icons.share, color: Colors.orange[700]), 
                 title: 'Condividi',
                 // TODO: add onTap to open share options
               ),
 
+              // --- REPORT BUG ---
               const Divider(height: 1),
               _buildListTile(
                 icon: Icon(Icons.bug_report, color: Colors.orange[700]), 
@@ -283,12 +307,38 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
           ),
         ),
+        
+      ],
+    );
+  }
   
-        // --- DELETE ACCOUNT ---
+  Widget _buildDeleteDataGroup() {
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Elimina Dati',
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
+          ),
+        ),
+        
+        // --- DELETE LOCAL DATA and ACCOUNT ---
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Column(
             children: [
+              _buildListTile(
+                icon: Icon(Icons.sd_storage, color: Colors.orange[700]), 
+                title: 'Elimina Dati locali',                    
+                onTap: () => _clearLocalData(),
+              ),
+
+              const Divider(height: 1),
               _buildListTile(
                 icon: Icon(Icons.heart_broken_rounded, color: Colors.orange[700]), 
                 title: 'Elimina account',                    

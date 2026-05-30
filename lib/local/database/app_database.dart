@@ -1,11 +1,13 @@
 
 
 
+import 'package:Billy/enums/log_level_enum.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/local/database/data_access_object/logs_dao.dart';
 import 'package:Billy/local/database/data_access_object/user_settings_dao.dart';
 import 'package:Billy/local/database/tables/logs_table.dart';
 import 'package:Billy/local/database/tables/user_settings_table.dart';
+import 'package:Billy/providers/local-database/logs_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +31,7 @@ final localDatabaseProvider = Provider<AppDatabase>((ref) {
 )
 class AppDatabase extends _$AppDatabase {
   static final Logger log = Logger('AppDatabase');
+  static final LogsNotifier logsNotifier = LogsNotifier();
 
   AppDatabase([QueryExecutor? e])
     : super(
@@ -62,12 +65,13 @@ class AppDatabase extends _$AppDatabase {
 
   // TODO: da implelmentare
   // Metodo per resettare il database (usato in fase di sviluppo/testing e al logout)
-  // Future<void> resetDatabase() async {
-  //   await transaction(() async {
-  //     await delete(logsTable).go();
-  //     await delete(userSettingsTable).go();
-  //   });
-  // }
+  Future<void> wipeDatabase() async {
+    await transaction(() async {
+      await delete(logsTable).go();
+      await delete(userSettingsTable).go();
+      // TODO: add here all tables to be deleted...
+    });
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +81,7 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       // Così un utente che passa dalla v1 alla v5 eseguirà automaticamente tutte le migration necessarie.
       if (from < 2) {
+        logsNotifier.saveMessage(LogLevelEnum.FINE, 'Migration from v1 to v2: creating logsTable');
         await m.createTable(logsTable);
       }
 
