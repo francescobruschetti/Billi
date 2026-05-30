@@ -47,8 +47,8 @@ class _HomePageState
   ]);
 
   late DateTime _lastRefreshTime = DateTime.now();
-  late DateTime? _dateTimeFrameStart;
-  late DateTime? _dateTimeFrameEnd;
+  DateTime? _dateTimeFrameStart = null;
+  DateTime? _dateTimeFrameEnd = null;
 
   final int _autoRefreshThresholdMinutes = 5; // Tempo dopo il quale forzare un refresh dei dati al ritorno in foreground
   int _selectedTimeFilterIndex = 2; // default: CURRENT_MONTH
@@ -68,6 +68,8 @@ class _HomePageState
       _hasMore = false;
       _showFilters = false;
     });
+
+    _setupTimeFrameForFilter(_selectedTimeFilterIndex);
 
     // Carica i primi N elementi all'avvio
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,10 +113,7 @@ class _HomePageState
   }
 
   void _loadDataWithCurrentFilter() {
-    final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
-    final (dateStart, dateEnd) = timeFilterEnum.dateRange;
-    _dateTimeFrameStart = dateStart;
-    _dateTimeFrameEnd = dateEnd;
+    _setupTimeFrameForFilter(_selectedTimeFilterIndex); 
     
     ref.read(transactionProvider.notifier).refresh(
       dateStart: _dateTimeFrameStart,
@@ -156,6 +155,13 @@ class _HomePageState
   Future<void> _refreshTransactions() async {
     await ref.read(transactionProvider.notifier).refresh();
     _lastRefreshTime = DateTime.now();
+  }
+
+  void _setupTimeFrameForFilter(int _selectedTimeFilterIndex) {
+    final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
+    final (dateStart, dateEnd) = timeFilterEnum.dateRange;
+    _dateTimeFrameStart = dateStart;
+    _dateTimeFrameEnd = dateEnd;
   }
 
   @override
