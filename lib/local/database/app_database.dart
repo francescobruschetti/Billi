@@ -59,4 +59,29 @@ class AppDatabase extends _$AppDatabase {
   // getter per accedere ai DAO
   late final userSettingsDao = UserSettingsDao(this);
   late final logsDao = LogsDao(this);
+
+  // TODO: da implelmentare
+  // Metodo per resettare il database (usato in fase di sviluppo/testing e al logout)
+  // Future<void> resetDatabase() async {
+  //   await transaction(() async {
+  //     await delete(logsTable).go();
+  //     await delete(userSettingsTable).go();
+  //   });
+  // }
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      // Così un utente che passa dalla v1 alla v5 eseguirà automaticamente tutte le migration necessarie.
+      if (from < 2) {
+        await m.createTable(logsTable);
+      }
+
+      // if (from < 3) { ... }
+      // if (from < 4) { ... }
+    },
+  );
 }
