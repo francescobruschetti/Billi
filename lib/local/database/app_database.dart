@@ -71,9 +71,9 @@ class AppDatabase extends _$AppDatabase {
       final deletedUserSettings = await delete(userSettingsTable).go();
 
       // TODO: add here all tables to be deleted...
-      
+
       log.fine('Deleted rows from logsTable: $deletedLogs');
-      log.fine('Deleted rows from userSettingsTable: $deletedUserSettings ');
+      log.fine('Deleted rows from userSettingsTable: $deletedUserSettings');
 
     });
   }
