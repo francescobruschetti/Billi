@@ -30,6 +30,9 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   int _pageSize = 50;
   bool _hasMore = true;
 
+  bool _isRefreshing = false;
+  bool get isRefreshing => _isRefreshing;
+
   @override
   AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 5}) { // TODO: valore di test!!
     // stato iniziale
@@ -43,24 +46,37 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
 
   //************************************* Data Management *************************************//
   Future<void> filterTransactionsType(TransactionTypeEnum? type) async { // TODO: filtra solo le transazioni già caricate, senza fare ulteriori chiamate al server (al momento filtra tutto in locale, ma sarebbe meglio filtrare già a livello di query al server)
-    if (currentFilter == type) {
-      // Se il filtro selezionato è già attivo, rimuovilo (mostra tutte le transazioni)
-      currentFilter = null;
+    // v2:
+    currentFilter = type;
+
+    if (type == null) {
       state = AsyncData(periodTransactions);
-      _hasMore = periodTransactions.length == _pageSize;
       return;
     }
 
-    currentFilter = type;
-    List<PersonalTransactionModel> filteredTransactions = [];
-    for (PersonalTransactionModel t in periodTransactions) {
-      if (t.transactionType == type) {
-        filteredTransactions.add(t);
-      }
-    }
+    state = AsyncData(
+      periodTransactions.where((t) => t.transactionType == type).toList()
+    );
 
-    state = AsyncData(filteredTransactions);
-    _hasMore = filteredTransactions.length == _pageSize;
+    // v1:
+    // if (currentFilter == type) {
+    //   // Se il filtro selezionato è già attivo, rimuovilo (mostra tutte le transazioni)
+    //   currentFilter = null;
+    //   state = AsyncData(periodTransactions);
+    //   _hasMore = periodTransactions.length == _pageSize;
+    //   return;
+    // }
+
+    // currentFilter = type;
+    // List<PersonalTransactionModel> filteredTransactions = [];
+    // for (PersonalTransactionModel t in periodTransactions) {
+    //   if (t.transactionType == type) {
+    //     filteredTransactions.add(t);
+    //   }
+    // }
+
+    // state = AsyncData(filteredTransactions);
+    // _hasMore = filteredTransactions.length == _pageSize;
   }
 
   Future<void> _handleLoadedTransactions(PersonalTransactionPageModel transactions, {bool append = false, required int pageSize}) async {
@@ -75,7 +91,13 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
       else {
         state = AsyncData(transactions.transactions);
       }
-      periodTransactions = transactions.transactions;
+
+      if (!append) {
+        periodTransactions = transactions.transactions;
+      } 
+      else {
+        periodTransactions.addAll(transactions.transactions);
+      }
 
       _hasMore = transactions.transactions.length == pageSize;
     } 
@@ -94,22 +116,22 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   }) async {
 
     try {
-      if (!append) {
-        state = const AsyncLoading(); // trigger "loading" state for this provider
-      }
-
-      final PersonalTransactionPageModel personalTransactionPageModel = await _service.fetchLatestPersonalTransactions(
+      _isRefreshing = true;
+      final response = await _service.fetchLatestPersonalTransactions(
         pageIndex: pageIndex,
         pageSize: pageSize,
         dateStart: dateStart,
         dateEnd: dateEnd,
       );
       
-      _handleLoadedTransactions(personalTransactionPageModel, append: append, pageSize: pageSize);      
+      _handleLoadedTransactions(response, append: append, pageSize: pageSize);
     } 
     catch (e, st) {
       log.severe("Errore caricamento transazioni: $e", e, st);
       state = AsyncError(e, st);
+    }
+    finally {
+      _isRefreshing = false;
     }
   }
 
@@ -127,7 +149,16 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
 
   // Refresh forzato dall'utente (pull-to-refresh)
   Future<void> refresh({DateTime? dateStart, DateTime? dateEnd}) async {
-    await loadMore(reset: true, dateStart: dateStart, dateEnd: dateEnd);
+    _isRefreshing = true;
+    state = state; // NOTIFICA UI senza perdere dati
+
+    try {
+      await loadMore(reset: true, dateStart: dateStart, dateEnd: dateEnd);
+    } 
+    finally {
+      _isRefreshing = false;
+      state = state; // refresh UI finale
+    }
   }
 
   //************************************* LOCAL Management *************************************//

@@ -46,8 +46,9 @@ class _HomePageState
     TimeFilterEnum.CURRENT_YEAR,
   ]);
 
-  late BalanceDetailsModel _balanceDetails;
   late DateTime _lastRefreshTime = DateTime.now();
+  late DateTime? _dateTimeFrameStart;
+  late DateTime? _dateTimeFrameEnd;
 
   final int _autoRefreshThresholdMinutes = 5; // Tempo dopo il quale forzare un refresh dei dati al ritorno in foreground
   int _selectedTimeFilterIndex = 2; // default: CURRENT_MONTH
@@ -109,13 +110,15 @@ class _HomePageState
     };
   }
 
-  void _loadDataWithCurrentFilter({bool reset = true}) {
+  void _loadDataWithCurrentFilter() {
     final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
     final (dateStart, dateEnd) = timeFilterEnum.dateRange;
+    _dateTimeFrameStart = dateStart;
+    _dateTimeFrameEnd = dateEnd;
     
     ref.read(transactionProvider.notifier).refresh(
-      dateStart: dateStart,
-      dateEnd: dateEnd,
+      dateStart: _dateTimeFrameStart,
+      dateEnd: _dateTimeFrameEnd,
     );
   }
 
@@ -157,42 +160,53 @@ class _HomePageState
 
   @override
   Widget build(BuildContext context) {  
-    final transactionsState = ref.watch(transactionProvider);
+    final transactionsState = ref.watch(transactionProvider.select((s) => s));
+    final totals = ref.read(transactionProvider.notifier).totals;
+    final balanceDetails = BalanceDetailsModel(
+      totalBalance: totals?.balance ?? 0,
+      totalExpenses: totals?.totalExpenses ?? 0,
+      totalIncomes: totals?.totalIncomes ?? 0,
+    );
+
+    final isRefreshing = ref.watch(
+      transactionProvider.select((_) => ref.read(transactionProvider.notifier).isRefreshing),
+    );
 
     return Scaffold(
       // debug UI: backgroundColor: Colors.orange,
-      body: transactionsState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => ErrorWithRetryWidget(
-          onRetry: _refreshTransactions,
-        ),
-        data: (transactions) {
-          // Aggiorna il balance ogni volta che cambia la lista transazioni
-          _balanceDetails = BalanceDetailsModel(
-            totalBalance: ref.read(transactionProvider.notifier).totals?.balance ?? 0,
-            totalExpenses: ref.read(transactionProvider.notifier).totals?.totalExpenses ?? 0,
-            totalIncomes: ref.read(transactionProvider.notifier).totals?.totalIncomes ?? 0,
-          );
+      body: Stack(
+        children: [
+          transactionsState.when(
+            loading: () => const SizedBox(),
+            error: (err, _) => ErrorWithRetryWidget(
+              onRetry: _refreshTransactions,
+            ),
+            data: (transactions) {
+              return Column(
+                children: [
+                  // Page Header
+                  _pageHeader(balanceDetails),
+
+                  _pageHeaderSubtitle(balanceDetails),  
+
+                  // Page Header "subtitle"
+                  _buildTimeFilters(),
+                  
+                  _buildLoadingOverlay(isRefreshing),
+
+                  // Page Content
+                  _buildList(transactions),
+
+                  // Page footer
+                  const SizedBox(height: AppConstants.rowVerticalPadding),
+                  _footer(),
+                ],
+              );
+            }
+          ),
+           
           
-          return Column(
-            children: [
-              // Page Header
-              _pageHeader(transactions),
-
-              _pageHeaderSubtitle(transactions),  
-
-              // Page Header "subtitle"
-              _buildTimeFilters(),
-              
-              // Page Content
-              _buildList(transactions),
-
-              // Page footer
-              const SizedBox(height: AppConstants.rowVerticalPadding),
-              _footer(),
-            ],
-          );
-        }
+        ],
       ),
     );
   }
@@ -222,48 +236,65 @@ class _HomePageState
                 ]
               ),
             )
-          : NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                if (scrollNotification is ScrollEndNotification) {
-                  _onScroll();
-                }
-                return false;
-              },
-              child: RefreshIndicator( // Pull from top to refresh
-                onRefresh: _refreshTransactions,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: transactions.length + 1, // +1 per il loader in fondo
-                  itemBuilder: (context, index) {
-                    if (index < transactions.length) {
-                      return _buildTransactionTile(transactions[index]);
-                    }
-
-                    // Mostra il loader in fondo se stiamo caricando più elementi
-                    return Card(
-                      color: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_hasMore) ...[
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: CircularProgressIndicator(),
-                            ),
-                          ]
-                        ],
-                      ),
-                    );
+          // v1: 
+          // : NotificationListener<ScrollNotification>(
+          //     onNotification: (scrollNotification) {
+          //       if (scrollNotification is ScrollEndNotification) {
+          //         _onScroll();
+          //       }
+          //       return false;
+          //     },
+          // child: RefreshIndicator( // Pull from top to refresh
+          // v2:
+          : RefreshIndicator( // Pull from top to refresh
+              onRefresh: _refreshTransactions,
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: transactions.length + 1, // +1 per il loader in fondo
+                itemBuilder: (context, index) {
+                  if (index < transactions.length) {
+                    return _buildTransactionTile(transactions[index]);
                   }
-                ),
+
+                  // Mostra il loader in fondo se stiamo caricando più elementi
+                  return Card(
+                    color: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_hasMore) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: CircularProgressIndicator(),
+                          ),
+                        ]
+                      ],
+                    ),
+                  );
+                }
               ),
             ),
     );
+  }
+
+  Widget _buildLoadingOverlay(bool isRefreshing) {
+    if (isRefreshing) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Aggiornamento in corso...'),
+          const Center(
+            child: SizedBox(height: 3, width: 120, child: LinearProgressIndicator()),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildTimeFilters() {
@@ -340,52 +371,55 @@ class _HomePageState
     );
   }
 
-  Widget _pageHeader(List<PersonalTransactionModel> transactions) {
+  Widget _pageHeader(BalanceDetailsModel balanceDetails) {
     return Container(
       // debug UI: color: Colors.green,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.rowHorizontalPadding, vertical: AppConstants.zeroPadding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Bilancio (${_timeFilters[_selectedTimeFilterIndex].shortValue})', style: TextStyle(fontSize: AppConstants.textSize)),
-                const SizedBox(width: AppConstants.mediumSizedBoxWidth),
-                SelectableText(
-                  '${_balanceDetails.totalBalance}€',
-                  style: TextStyle(fontSize: AppConstants.titleTextSize),
-                ),
-              ],
-            ),
-          ),
+          Text('Bilancio: ${_dateTimeFrameStart?.toDateStr() ?? ''} - ${_dateTimeFrameEnd?.toDateStr() ?? ''}', style: TextStyle(fontSize: AppConstants.textSize)),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SelectableText(
+                '${balanceDetails.totalBalance}€',
+                style: TextStyle(fontSize: AppConstants.titleTextSize),
+              ),
 
-          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
-          IconButton(
-            icon: const Icon(Icons.calendar_month),
-            tooltip: 'Filtra per periodo',
-            onPressed: () => setState(() => _showFilters = !_showFilters),
-            color: _showFilters ? Theme.of(context).colorScheme.secondary : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.pie_chart),
-            tooltip: 'Statistiche',
-            onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare pagina statistiche
+              const SizedBox(width: AppConstants.mediumSizedBoxWidth),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.calendar_month),
+                    tooltip: 'Filtra per periodo',
+                    onPressed: () => setState(() => _showFilters = !_showFilters),
+                    color: _showFilters ? Theme.of(context).colorScheme.secondary : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.pie_chart),
+                    tooltip: 'Statistiche',
+                    onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare pagina statistiche
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _pageHeaderSubtitle(List<PersonalTransactionModel> transactions) {
+  Widget _pageHeaderSubtitle(BalanceDetailsModel balanceDetails) {
     return Container(
       // debug UI: color: Colors.red,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.zeroPadding, vertical: AppConstants.rowVerticalPadding),
       child: BalanceBarWidget(
-        totalBalance: _balanceDetails.totalBalance, 
-        totalExpenses: _balanceDetails.totalExpenses, 
-        totalIncomes: _balanceDetails.totalIncomes,
+        totalBalance: balanceDetails.totalBalance, 
+        totalExpenses: balanceDetails.totalExpenses, 
+        totalIncomes: balanceDetails.totalIncomes,
         onExpenseParentCallback: _filterTransactions(TransactionTypeEnum.EXPENSE), 
         onIncomeParentCallback: _filterTransactions(TransactionTypeEnum.INCOME),
       )

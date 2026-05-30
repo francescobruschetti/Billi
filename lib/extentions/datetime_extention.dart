@@ -10,7 +10,11 @@ extension StringToDatetimeExtention on String {
 }
 
 extension DatetimeToStringFormatExtention on DateTime {
-   String toDateTimeStr() {
+  String toDateTimeStr() {
     return '${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+
+   String toDateStr() {
+    return '${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year';
   }
 }
