@@ -15,6 +15,7 @@ import 'package:Billy/utils/generic_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 enum TileName {
   CHANGE_PASSWORD,
@@ -42,6 +43,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _isLoadingLogout = false;
   TileName? _loadingTileName;
   String _themeLabel = 'Caricamento...';
+  String _appVersion = '...';
   Icon themeIcon = Icon(Icons.dark_mode, color: Colors.orange);
 
   @override
@@ -50,6 +52,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     setState(() {
       _isLoadingLogout = false;
+    });
+    
+    PackageInfo.fromPlatform().then((packageInfo) {
+      setState(() {
+        _appVersion = packageInfo.version;
+      });
     });
   }
 
@@ -189,6 +197,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
                   // --- DELETE DATA ---
                   _buildDeleteDataGroup(),
+
+                  Text(
+                    'Versione $_appVersion', 
+                    textAlign: TextAlign.center, 
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                 ],
               ),
             ),

@@ -58,6 +58,9 @@ dependencies:
   json_annotation: ^4.8.1
   logging: ^1.1.0
 
+  # Allows access to pubspec.yaml properties at runtime
+  package_info_plus: ^8.0.0
+
   stack_trace: ^1.11.1
 
   supabase_flutter: ^2.12.0
