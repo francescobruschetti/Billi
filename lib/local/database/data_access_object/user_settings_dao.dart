@@ -23,6 +23,8 @@ class UserSettingsDao extends DatabaseAccessor<AppDatabase> with _$UserSettingsD
 
   Future<void> upsertSettings(UserSettingsTableCompanion settings) async {
     log.fine('Upserting settings into local database');
+    assert(settings.userId.present);
+    
     // v1: await into(userSettingsTable).insertOnConflictUpdate(settings);
     await transaction(() async {
       await delete(userSettingsTable).go(); // elimina tutto
@@ -31,16 +33,4 @@ class UserSettingsDao extends DatabaseAccessor<AppDatabase> with _$UserSettingsD
       );
     });
   }
-
-  // @override
-  // MigrationStrategy get migration => MigrationStrategy(
-  //   onUpgrade: (migrator, from, to) async {
-  //     if (from < 2) {
-  //       await migrator.addColumn(
-  //         userSettingsTable,
-  //         userSettingsTable.notificationsEnabled,
-  //       );
-  //     }
-  //   },
-  // );
 }

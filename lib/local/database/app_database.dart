@@ -86,7 +86,6 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       // Così un utente che passa dalla v1 alla v5 eseguirà automaticamente tutte le migration necessarie.
       if (from < 2) {
-        logsNotifier.saveMessage(LogLevelEnum.FINE, 'Migration from v1 to v2: creating logsTable');
         await m.createTable(logsTable);
       }
 
