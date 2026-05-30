@@ -5,26 +5,38 @@ import 'package:Billy/widgets/components/custom_snackbar_widget.dart';
 
 class GenericUtil {
 
-  static Future<bool?> showConfirmationBeforeDeleteDialog(BuildContext context, String title, String content, 
+  static Future<bool?> showConfirmationBeforeDeleteDialog(BuildContext context, String title, String contentMessage, 
     {String confirmButtonText = "Elimina", String cancelButtonText = "Annulla"}) async {
     return await showConfirmationDialog(
       context,
       title,
-      content,
+      contentMessage,
       confirmButtonText: confirmButtonText,
       cancelButtonText: cancelButtonText,
       isDestructive: true,
     );
   }
 
-  static Future<bool?> showConfirmationDialog(BuildContext context, String title, String content, 
+  static Future<bool> showConfirmationBeforeSaveDialog({ required BuildContext context, String title = 'Conferma salvataggio', String contentMessage = '', 
+    String confirmButtonText = "Conferma", String cancelButtonText = "Annulla"}) async {
+    final confirmed = await showConfirmationDialog(
+      context, 
+      title, 
+      contentMessage,
+      confirmButtonText: confirmButtonText,
+      cancelButtonText: cancelButtonText);
+
+    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
+  }
+
+  static Future<bool?> showConfirmationDialog(BuildContext context, String title, String contentMessage, 
     {String confirmButtonText = "Elimina", String cancelButtonText = "Annulla", bool isDestructive = false}) async 
   {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: Text(content),
+        content: Text(contentMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),

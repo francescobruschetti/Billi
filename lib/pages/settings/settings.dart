@@ -16,6 +16,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+enum TileName {
+  CHANGE_PASSWORD,
+  CLEAR_LOCAL_DATA,
+  DELETE_ACCOUNT,
+  LANGUAGE,
+  LOGOUT,
+  NOTIFICATIONS,
+  REPORT_BUG,
+  SHARE_APP,
+  THEME,
+}
+
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
@@ -28,6 +40,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   final SigninSignupLogoutService signinSignupLogoutService = SigninSignupLogoutService();
   final ProfileService profileService = ProfileService();
   bool _isLoadingLogout = false;
+  TileName? _loadingTileName;
   String _themeLabel = 'Caricamento...';
   Icon themeIcon = Icon(Icons.dark_mode, color: Colors.orange);
 
@@ -74,28 +87,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-  Future<void> _clearLocalData() async {
-    final bool proceed = await _confirmSave(content: 'Sei sicuro di voler eliminare tutti i dati locali? Questa operazione non può essere annullata.');
-    if (!proceed) {
-      final db = ref.read(localDatabaseProvider);
-      await db.wipeDatabase();
+  Future<void> _clearLocalData({bool askConfirmation = false}) async {
+    if (!mounted) return;
+    setState(() => _loadingTileName = TileName.CLEAR_LOCAL_DATA);
+
+    bool? proceed = true;
+    if (askConfirmation) {
+      proceed = await GenericUtil.showConfirmationBeforeDeleteDialog(
+        context, 'Conferma eliminazione dati locali', 'Sei sicuro di voler eliminare tutti i dati locali? L\'operazione non è reversibile.'
+      );
+    }
+
+    if (proceed == true) {
+      await ref.read(localDatabaseProvider).wipeDatabase();
 
       if (mounted) {
         GenericUtil.showSnackbar(context, 'Dati locali eliminati con successo');
       }
-      return;
-    }    
-  }
-
-  Future<bool> _confirmSave({required String content}) async {
-    final confirmed = await GenericUtil.showConfirmationDialog(
-      context, 
-      'Conferma eliminazione dati locali', 
-      content,
-      confirmButtonText: 'Conferma',
-      cancelButtonText: 'Annulla');
-
-    return confirmed ?? false; // Ritorna false se l'utente chiude il dialog senza scegliere
+    } 
+    
+    if (mounted) setState(() => _loadingTileName = null);
   }
 
   void _invalidateCache() {
@@ -207,6 +218,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               _buildListTile(
                 icon: Icon(Icons.logout, color: Colors.orange[700]), 
                 title: 'Esci',
+                tileName: TileName.LOGOUT,
                 onTap: _logout,
               ),
               
@@ -214,7 +226,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               _buildListTile(
                 icon: Icon(Icons.key, color: Colors.orange[700]), 
                 title: 'Cambia password',
-                  // TODO: add onTap
+                tileName: TileName.CHANGE_PASSWORD,
+                // TODO: add onTap
               ),
             ],
           ),
@@ -246,6 +259,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 icon: Icon(Icons.language, color: Colors.orange[700]),
                 title: 'Lingua', 
                 subtitle: 'Italiano',
+                tileName: TileName.LANGUAGE,
                 // TODO: add onTap to open language settings
               ),
 
@@ -254,6 +268,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 icon: themeIcon,
                 title: 'Aspetto',
                 subtitle: _themeLabel,
+                tileName: TileName.THEME,
                 onTap: () => _openThemeSettingsBottomSheet(),
               ),
 
@@ -262,6 +277,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 icon: Icon(Icons.notifications, color: Colors.orange[700]),
                 title: 'Notifiche',
                 subtitle: 'Attive',
+                tileName: TileName.NOTIFICATIONS,
                 // TODO: add onTap to open notification settings
               ),
             ],
@@ -294,6 +310,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               _buildListTile(
                 icon: Icon(Icons.share, color: Colors.orange[700]), 
                 title: 'Condividi',
+                tileName: TileName.SHARE_APP,
                 // TODO: add onTap to open share options
               ),
 
@@ -302,6 +319,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               _buildListTile(
                 icon: Icon(Icons.bug_report, color: Colors.orange[700]), 
                 title: 'Segnala un problema',
+                tileName: TileName.REPORT_BUG,
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogsPage())),
               ),
             ],
@@ -334,14 +352,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             children: [
               _buildListTile(
                 icon: Icon(Icons.sd_storage, color: Colors.orange[700]), 
-                title: 'Elimina Dati locali',                    
-                onTap: () => _clearLocalData(),
+                title: 'Elimina Dati locali',    
+                tileName: TileName.CLEAR_LOCAL_DATA,                
+                onTap: () => _clearLocalData(askConfirmation: true),
               ),
 
               const Divider(height: 1),
               _buildListTile(
                 icon: Icon(Icons.heart_broken_rounded, color: Colors.orange[700]), 
-                title: 'Elimina account',                    
+                title: 'Elimina account',        
+                tileName: TileName.DELETE_ACCOUNT,            
                 // TODO: add onTap to delete account
               ),
             ],
@@ -351,10 +371,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildListTile({ required Icon icon, required String title, String? subtitle, VoidCallback? onTap}) {
+  Widget _buildListTile({ 
+    required Icon icon, required String title, 
+    String? subtitle, required TileName? tileName, VoidCallback? onTap}) 
+  {
+    final isLoading = _loadingTileName == tileName;
+
     return ListTile(
       leading: icon,
-      enabled: onTap != null,
+      enabled: !isLoading && onTap != null,
       title: Row(
         children: [
           Text(title),
@@ -362,7 +387,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           if (subtitle != null) Text(subtitle),
 
           const SizedBox(width: AppConstants.mediumSizedBoxWidth),
-          const Icon(Icons.chevron_right),
+          if (isLoading) ...[
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ]
+          else ...[
+            const Icon(Icons.chevron_right),
+          ]
         ],
       ),
       onTap: onTap

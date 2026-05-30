@@ -67,9 +67,14 @@ class AppDatabase extends _$AppDatabase {
   // Metodo per resettare il database (usato in fase di sviluppo/testing e al logout)
   Future<void> wipeDatabase() async {
     await transaction(() async {
-      await delete(logsTable).go();
-      await delete(userSettingsTable).go();
+      final deletedLogs = await delete(logsTable).go();
+      final deletedUserSettings = await delete(userSettingsTable).go();
+
       // TODO: add here all tables to be deleted...
+      
+      log.fine('Deleted rows from logsTable: $deletedLogs');
+      log.fine('Deleted rows from userSettingsTable: $deletedUserSettings ');
+
     });
   }
 

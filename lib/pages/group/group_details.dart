@@ -71,7 +71,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     final confirmed = await GenericUtil.showConfirmationBeforeDeleteDialog(
       context, 
       'Conferma eliminazione', 
-      "Sei sicuro di voler eliminare questo gruppo e tutti i dati associati?\nL'operazione non è reversibile.",
+      'Sei sicuro di voler eliminare questo gruppo e tutti i dati associati?\nL\'operazione non è reversibile.',
       confirmButtonText: 'Elimina',
       cancelButtonText: 'Annulla');
       
