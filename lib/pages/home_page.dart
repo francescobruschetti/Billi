@@ -47,8 +47,8 @@ class _HomePageState
   ]);
 
   late DateTime _lastRefreshTime = DateTime.now();
-  DateTime? _dateTimeFrameStart = null;
-  DateTime? _dateTimeFrameEnd = null;
+  DateTime? _dateTimeFrameStart;
+  DateTime? _dateTimeFrameEnd;
 
   final int _autoRefreshThresholdMinutes = 5; // Tempo dopo il quale forzare un refresh dei dati al ritorno in foreground
   int _selectedTimeFilterIndex = 2; // default: CURRENT_MONTH
@@ -69,7 +69,7 @@ class _HomePageState
       _showFilters = false;
     });
 
-    _setupTimeFrameForFilter(_selectedTimeFilterIndex);
+    _setupTimeFrameForFilter();
 
     // Carica i primi N elementi all'avvio
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -113,7 +113,7 @@ class _HomePageState
   }
 
   void _loadDataWithCurrentFilter() {
-    _setupTimeFrameForFilter(_selectedTimeFilterIndex); 
+    _setupTimeFrameForFilter(); 
     
     ref.read(transactionProvider.notifier).refresh(
       dateStart: _dateTimeFrameStart,
@@ -157,7 +157,7 @@ class _HomePageState
     _lastRefreshTime = DateTime.now();
   }
 
-  void _setupTimeFrameForFilter(int _selectedTimeFilterIndex) {
+  void _setupTimeFrameForFilter() {
     final TimeFilterEnum timeFilterEnum = _timeFilters[_selectedTimeFilterIndex]; 
     final (dateStart, dateEnd) = timeFilterEnum.dateRange;
     _dateTimeFrameStart = dateStart;
@@ -198,7 +198,7 @@ class _HomePageState
                   // Page Header "subtitle"
                   _buildTimeFilters(),
                   
-                  _buildLoadingOverlay(isRefreshing),
+                  GenericUtil.buildLoadingOverlayCircularIndicator(isRefreshing, color: Theme.of(context).colorScheme.secondary),
 
                   // Page Content
                   _buildList(transactions),
@@ -242,7 +242,7 @@ class _HomePageState
                 ]
               ),
             )
-          // v1: 
+          // v1: rimosso perché venia ricreato ad ogni refresh
           // : NotificationListener<ScrollNotification>(
           //     onNotification: (scrollNotification) {
           //       if (scrollNotification is ScrollEndNotification) {
@@ -286,21 +286,6 @@ class _HomePageState
               ),
             ),
     );
-  }
-
-  Widget _buildLoadingOverlay(bool isRefreshing) {
-    if (isRefreshing) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Aggiornamento in corso...'),
-          const Center(
-            child: SizedBox(height: 3, width: 120, child: LinearProgressIndicator()),
-          ),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
   }
 
   Widget _buildTimeFilters() {
@@ -405,7 +390,7 @@ class _HomePageState
                     color: _showFilters ? Theme.of(context).colorScheme.secondary : null,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.pie_chart),
+                    icon: const Icon(Icons.ssid_chart_rounded), // v1: Icons.bar_chart_rounded
                     tooltip: 'Statistiche',
                     onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare pagina statistiche
                   ),

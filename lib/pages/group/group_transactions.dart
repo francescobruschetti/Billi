@@ -6,6 +6,7 @@ import 'package:Billy/extentions/datetime_extention.dart';
 import 'package:Billy/models/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
@@ -296,19 +297,15 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.sort_by_alpha),
+                        icon: const Icon(Icons.sort_by_alpha_rounded),
                         tooltip: 'Ordina',
-                        onPressed: () {
-                          // TODO: implement sort action
-                        },
+                        onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare
                       ),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.calendar_month_rounded),
                         tooltip: 'Calendario',
-                        onPressed: () {
-                          // TODO: implement calendar action
-                        },
+                        onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare
                       ),
                     ],
                   ),

@@ -20,6 +20,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
     GroupsPage(),
+    // TODO: da implementare: SplitBillCalculatorPage(),
     SettingsPage(),
     UIProvePage(),
   ];
@@ -58,6 +59,11 @@ class _MainScaffoldState extends State<MainScaffold> {
                   icon: Icon(Icons.group),
                   label: 'Gruppi',
                 ),
+                // TODO: da implementare: 
+                // BottomNavigationBarItem(
+                //   icon: Icon(Icons.splitscreen_rounded),
+                //   label: 'Dividi',
+                // ),
                 BottomNavigationBarItem(
                   icon: CustomIconWidget(assetPath: 'assets/images/icons/settings_filled.PNG', size: 24),
                   label: 'Impostazioni',

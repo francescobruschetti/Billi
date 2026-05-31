@@ -286,7 +286,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       appBar: AppBar(
         title: Text(isEdit ? 'Dettagli gruppo' : 'Crea gruppo'),
         actions: [
-          if (isEdit)
+          if (isEdit) ...[
             IconButton(
               icon: const Icon(Icons.link, size: 24),
               tooltip: 'Mostra link di invito',
@@ -298,6 +298,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
               tooltip: 'Elimina gruppo',
               onPressed: () => _deleteGroup(widget.groupId!),
             ),
+          ],
         ],
       ),
       body: _isLoading
