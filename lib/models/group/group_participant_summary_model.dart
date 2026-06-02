@@ -1,4 +1,4 @@
-import 'package:Billy/models/group_participant_summary_balance_movement_model.dart';
+import 'package:Billy/models/group/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/utils/number_util.dart';
 
@@ -27,7 +27,7 @@ class GroupParticipantSummaryModel {
   
   GroupParticipantSummaryModel.basic({
     required this.userId,
-    required this.profile
+    required this.profile,
   }) : 
     paidAmountGroup = 0.0,
     paidAmountItself = 0.0,
@@ -91,5 +91,35 @@ class GroupParticipantSummaryModel {
 
   void increaseExpectedtoReceiveNet(double amount) {
     expectedtoReceiveNet = NumberUtil.roundToDecimals(value: expectedtoReceiveNet + amount);
+  }
+
+  GroupParticipantSummaryModel copyWith({
+    List<GroupTransactionSummaryBalanceMovementModel>? balanceMovements,
+  }) {
+    return GroupParticipantSummaryModel(
+      userId: userId,
+      profile: profile,
+      paidAmountGroup: paidAmountGroup,
+      paidAmountItself: paidAmountItself,
+      toReceiveNet: toReceiveNet,
+      toReceiveGross: toReceiveGross,
+      expectedtoReceiveNet: expectedtoReceiveNet,
+      movements: movements,
+      balanceMovements: balanceMovements ?? this.balanceMovements,
+    );
+  }
+
+  GroupParticipantSummaryModel merge(GroupParticipantSummaryModel value) {
+    return GroupParticipantSummaryModel(
+      userId: userId,
+      profile: profile,
+      paidAmountGroup: NumberUtil.roundToDecimals(value: paidAmountGroup + value.paidAmountGroup),
+      paidAmountItself: NumberUtil.roundToDecimals(value: paidAmountItself + value.paidAmountItself),
+      toReceiveNet: NumberUtil.roundToDecimals(value: toReceiveNet + value.toReceiveNet),
+      toReceiveGross: NumberUtil.roundToDecimals(value: toReceiveGross + value.toReceiveGross),
+      expectedtoReceiveNet: NumberUtil.roundToDecimals(value: expectedtoReceiveNet + value.expectedtoReceiveNet),
+      movements: [...movements, ...value.movements],
+      balanceMovements: [],
+    );
   }
 }

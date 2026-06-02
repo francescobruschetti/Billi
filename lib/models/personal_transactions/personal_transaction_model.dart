@@ -1,5 +1,5 @@
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 
 class PersonalTransactionModel {

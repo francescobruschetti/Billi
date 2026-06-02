@@ -1,8 +1,10 @@
+-- IMPORTANT: profiles must be created using the singin page. Then, update their ids
 insert into profiles (id, username, name) values 
 ('63e05ec7-7e60-49ff-a68b-04bf2ec3a64b', 'f', 'Francesca'),
 ('d8df3d10-5dbe-41b4-b4f8-c0de7fa5eaa2', 'm', 'Marco'),
 ('4f3507a5-51f7-45dd-95da-8ed6ed6a4ebb', 'i', 'Ilaa'),
-('8e4def9e-c1c5-409c-8fc0-50d7a6d2c983', 'q', 'Quinto');
+('8e4def9e-c1c5-409c-8fc0-50d7a6d2c983', 'q', 'Quinto'),
+('8e4def9e-c1c5-409c-8fc0-50d7a6d2c983', 'empty', 'empty');
 
 insert into groups (name, link, user_id) values
 ('Famiglia', 'qwerty12', (select id from profiles where username = 'm')),
@@ -36,7 +38,6 @@ insert into group_transactions (group_id, user_id, merchant_id, category_id, tot
 
 insert into group_transactions (group_id, user_id, total_amount, paid_amount, note, transaction_type) values
 ((select id from groups where name = 'Vacanza'), (select id from profiles where username = 'f'), 100.00, 100.00, '1 hotel', 'INCOME');
-
 
 insert into transactions (user_id, merchant_id, category_id, note, total_amount, transaction_type) values
 ('63e05ec7-7e60-49ff-a68b-04bf2ec3a64b', (select id from merchants where name = 'Negozio 1'), (select id from categories where name = 'Categoria 1'), 'A', 2.34, 'EXPENSE'),

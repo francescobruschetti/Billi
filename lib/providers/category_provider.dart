@@ -1,4 +1,4 @@
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
 import 'package:Billy/services/category_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

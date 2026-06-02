@@ -1,6 +1,6 @@
-import 'package:Billy/models/group_model.dart';
-import 'package:Billy/models/group_transaction_model.dart';
-import 'package:Billy/models/group_participant_model.dart';
+import 'package:Billy/models/group/group_model.dart';
+import 'package:Billy/models/group/group_transaction_model.dart';
+import 'package:Billy/models/group/group_participant_model.dart';
 
 class GroupDetailsModel extends GroupModel {
   final double totalAmount;

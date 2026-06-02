@@ -1,4 +1,4 @@
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/split_rate_mode_enum.dart';
-import 'package:Billy/models/group_expense_split_response_model.dart';
+import 'package:Billy/models/group/group_expense_split_response_model.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/providers/ui_provider.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';

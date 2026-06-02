@@ -1,6 +1,6 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
@@ -148,8 +148,20 @@ class TransactionService {
           created_at,
           updated_at,
           group_participants:group_participants(user_id, profiles:profiles(*)),
-          group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(*))
-        ''')
+          
+          group_transactions:group_transactions(
+            *,
+            merchant:merchants(*),
+            category:categories(*),
+
+            profile:profiles!fk_group_transactions_profiles(*),
+
+            expense_participants:group_expense_participants!fk_group_expense_participants_group_transactions(
+              *,
+              profiles(*)
+            )
+          )
+          ''')
         .eq('id', groupId)
         .single();
 

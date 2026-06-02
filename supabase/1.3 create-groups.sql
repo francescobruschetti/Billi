@@ -22,6 +22,7 @@ create table group_participants (
   is_enabled boolean default true,
 
   joined_at timestamp with time zone default now(),
+  left_at timestamp with time zone,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
   primary key (group_id, user_id),

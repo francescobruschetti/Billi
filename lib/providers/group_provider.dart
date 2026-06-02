@@ -1,4 +1,4 @@
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:Billy/services/group_service.dart';
 

@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/exceptions/app_exception.dart';
-import 'package:Billy/models/group_participant_model.dart';
+import 'package:Billy/models/group/group_participant_model.dart';
 import 'package:Billy/pages/group/components/invitation_link_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';

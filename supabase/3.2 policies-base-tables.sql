@@ -237,6 +237,7 @@ returns table (
 declare
   v_merchant_id uuid;
   v_category_id uuid;
+  v_transaction_id uuid;
 begin
   -- Merchant -- TODO: gestire (m.name is not null and m.name <> '' and lower(m.name) = lower(p_merchant_name))
   if p_transaction_type = 'INCOME' then
@@ -255,21 +256,51 @@ begin
     insert into categories (name, user_id) values (p_category_name, p_user_id) returning id into v_category_id;
   end if;
 
-  -- Transaction
-  return query
+  -- Transaction v1:
+  -- return query
+  -- insert into group_transactions (user_id, paid_amount, total_amount, split_rate, merchant_id, category_id, note, transaction_type, group_id)
+  -- values (p_user_id, p_paid_amount, p_total_amount, p_split_rate, v_merchant_id, v_category_id, p_note, p_transaction_type, p_group_id)
+  -- returning
+  --   group_transactions.id as transaction_id,
+  --   group_transactions.user_id  as user_id,
+  --   group_transactions.paid_amount as paid_amount,
+  --   group_transactions.total_amount as total_amount,
+  --   group_transactions.split_rate as split_rate,
+  --   group_transactions.merchant_id as merchant_id,
+  --   group_transactions.category_id as category_id,
+  --   group_transactions.note as note,
+  --   group_transactions.transaction_type as transaction_type,
+  --   group_transactions.created_at as created_at;
+
+  -------------------------------------------------------------------------------------------------
+  -- Transaction v2: crea transazione e aggiungi in group_expense_participants tutti i partecipanti al gruppo (con left_at null)
   insert into group_transactions (user_id, paid_amount, total_amount, split_rate, merchant_id, category_id, note, transaction_type, group_id)
   values (p_user_id, p_paid_amount, p_total_amount, p_split_rate, v_merchant_id, v_category_id, p_note, p_transaction_type, p_group_id)
-  returning
-    group_transactions.id as transaction_id,
-    group_transactions.user_id  as user_id,
-    group_transactions.paid_amount as paid_amount,
-    group_transactions.total_amount as total_amount,
-    group_transactions.split_rate as split_rate,
-    group_transactions.merchant_id as merchant_id,
-    group_transactions.category_id as category_id,
-    group_transactions.note as note,
-    group_transactions.transaction_type as transaction_type,
-    group_transactions.created_at as created_at; 
+  returning id into v_transaction_id;
+
+  -- Add all active group participants to the expense, except its creator and those who have left the group (left_at is not null)
+  insert into group_expense_participants (group_id, transaction_id, user_id)
+  select gp.group_id, v_transaction_id, gp.user_id
+  from group_participants gp
+  where gp.group_id = p_group_id and gp.left_at is null and gp.user_id <> p_user_id;
+
+  -- Return created transaction
+  return query
+  select
+    gt.id as transaction_id,
+    gt.user_id,
+    gt.paid_amount,
+    gt.total_amount,
+    gt.split_rate,
+    gt.merchant_id,
+    gt.category_id,
+    gt.note,
+    gt.transaction_type,
+    gt.created_at
+  from group_transactions gt
+  where gt.id = v_transaction_id;
+  -------------------------------------------------------------------------------------------------
+
 end;
 $$ language plpgsql security definer;
 grant execute on function public.insert_group_transaction_with_merchant_category(

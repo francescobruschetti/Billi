@@ -1,4 +1,4 @@
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/floating_button_widget.dart';
 import 'package:flutter/material.dart';
