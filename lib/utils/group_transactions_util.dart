@@ -1,6 +1,7 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
+import 'package:Billy/models/group/group_expense_partecipants_model.dart';
 import 'package:Billy/models/group/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/group/group_transaction_model.dart';
 import 'package:Billy/models/profile_model.dart';
@@ -145,6 +146,7 @@ class GroupTransactionsUtil {
   }) {
     for (final transaction in transactions) {
       final payerId = transaction.profileModel.id;
+      log.fine("Computing movements for transaction ${transaction.id} with payer ${transaction.profileModel.name}. Total amount: ${transaction.totalAmount}, paid amount itself: ${transaction.paidAmount}, split rate: ${transaction.splitRate}.");
 
       final participants = [
         payerId,
@@ -159,6 +161,15 @@ class GroupTransactionsUtil {
 
         summary[participantId]?.toReceiveNet -= share;
         summary[payerId]?.toReceiveNet += share;
+
+        log.fine("Transaction ${transaction.id}. total: ${transaction.totalAmount}, participants: ${participants.length}: $participantId owes $share to payer $payerId. Updated toReceiveNet for participant: ${summary[participantId]?.toReceiveNet}, for payer: ${summary[payerId]?.toReceiveNet}.");
+        summary[participantId]?.movements.add(
+          GroupTransactionSummaryBalanceMovementModel(
+            otherUserId: payerId,
+            amount: share,
+            isToPay: true
+          )
+        );
       }
     }
   }
@@ -297,4 +308,20 @@ class GroupTransactionsUtil {
 
     return result;
   }
+
+  // TODO: not used
+  // static GroupExpenseParticipantModel? checkIfUserIsAmongExpenseParticipants(String userId, GroupTransactionModel transaction) {
+  //   if (userId == transaction.profileModel.id) {
+  //     log.fine("User $userId is the payer of transaction ${transaction.id}. Skip it.");
+  //     return null; // Il pagatore non è considerato tra i partecipanti che devono
+  //   }
+
+  //   final index = transaction.expensePartecipants.indexWhere((e) => e.userId == userId);
+  //   if (index == -1) {
+  //     log.fine("User $userId is not among the expense participants of transaction ${transaction.id}. Skip it.");
+  //     return null; // L'utente non è tra i partecipanti che devono pagare per questa transazione
+  //   }
+
+  //   return transaction.expensePartecipants[index];
+  // }
 }
