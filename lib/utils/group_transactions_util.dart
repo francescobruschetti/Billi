@@ -1,7 +1,6 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
-import 'package:Billy/models/group/group_expense_partecipants_model.dart';
 import 'package:Billy/models/group/group_participant_summary_balance_movement_model.dart';
 import 'package:Billy/models/group/group_transaction_model.dart';
 import 'package:Billy/models/profile_model.dart';
@@ -291,6 +290,7 @@ class GroupTransactionsUtil {
     }
   }
 
+  // TODO: da rumovedere, usato solo per debug
   static Map<String, GroupParticipantSummaryModel> mergeSummaries(Map<String, GroupParticipantSummaryModel> summary1, Map<String, GroupParticipantSummaryModel> summary2) {
     // Copia summary1 resettando balanceMovements
     final Map<String, GroupParticipantSummaryModel> result = {
@@ -309,19 +309,4 @@ class GroupTransactionsUtil {
     return result;
   }
 
-  // TODO: not used
-  // static GroupExpenseParticipantModel? checkIfUserIsAmongExpenseParticipants(String userId, GroupTransactionModel transaction) {
-  //   if (userId == transaction.profileModel.id) {
-  //     log.fine("User $userId is the payer of transaction ${transaction.id}. Skip it.");
-  //     return null; // Il pagatore non è considerato tra i partecipanti che devono
-  //   }
-
-  //   final index = transaction.expensePartecipants.indexWhere((e) => e.userId == userId);
-  //   if (index == -1) {
-  //     log.fine("User $userId is not among the expense participants of transaction ${transaction.id}. Skip it.");
-  //     return null; // L'utente non è tra i partecipanti che devono pagare per questa transazione
-  //   }
-
-  //   return transaction.expensePartecipants[index];
-  // }
 }

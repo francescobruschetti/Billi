@@ -147,7 +147,7 @@ class TransactionService {
           user_id,
           created_at,
           updated_at,
-          group_participants:group_participants(user_id, profiles:profiles(*)),
+          group_participants:group_participants(user_id, is_enabled, left_at, role, profiles:profiles(*)),
           
           group_transactions:group_transactions(
             *,
@@ -223,21 +223,6 @@ class TransactionService {
     String? note,
   })
   async {
-    // try {
-    //   final res = await supabase.rpc('update_group_and_participants', params: {
-    //     'p_group_id': id,
-    //     'p_name': name,
-    //     'p_description': description,
-    //     'p_participants_to_add': participantsToAdd?.map((u) => u['id']).toList() ?? [],
-    //     'p_participants_to_remove': participantsToRemoveIds ?? [],
-    //   });
-
-    //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
-    // } 
-    // catch (e) {
-    //   log.severe("Errore creazione gruppo: $e");
-    //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
-    // }
     throw Exception("Not implemented yet");
   }
   
@@ -250,21 +235,6 @@ class TransactionService {
     String? note,
   })
   async {
-    // try {
-    //   final res = await supabase.rpc('update_group_and_participants', params: {
-    //     'p_group_id': id,
-    //     'p_name': name,
-    //     'p_description': description,
-    //     'p_participants_to_add': participantsToAdd?.map((u) => u['id']).toList() ?? [],
-    //     'p_participants_to_remove': participantsToRemoveIds ?? [],
-    //   });
-
-    //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
-    // } 
-    // catch (e) {
-    //   log.severe("Errore creazione gruppo: $e");
-    //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
-    // }
     throw Exception("Not implemented yet");
   }
   

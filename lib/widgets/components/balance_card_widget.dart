@@ -1,0 +1,64 @@
+import 'package:Billy/constants.dart';
+import 'package:Billy/enums/category_enum.dart';
+import 'package:Billy/models/balance_movement_item_model.dart';
+import 'package:Billy/models/group/group_participant_summary_model.dart';
+import 'package:flutter/material.dart';
+
+class BalanceCardWidget extends StatefulWidget {
+
+  final BalanceMovementItemModel balanceMovementItem;
+  final Map<String, GroupParticipantSummaryModel> participantsSummary;
+
+  const BalanceCardWidget({
+    super.key,
+    required this.balanceMovementItem,
+    required this.participantsSummary,
+  });
+
+  @override
+  State<BalanceCardWidget> createState() => _BalanceCardWidgetState();
+}
+
+class _BalanceCardWidgetState extends State<BalanceCardWidget> {
+
+  late CategoryEnum categoryEnum;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        side: BorderSide(
+          color: widget.balanceMovementItem.isCurrentUser ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          width: 2.0,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child:
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${widget.balanceMovementItem.summary.profile.name} → ${widget.participantsSummary[widget.balanceMovementItem.movement.otherUserId]?.profile.name ?? 'Utente sconosciuto'}'),
+                  const SizedBox(height: AppConstants.sizedBoxHeight),
+                  Text(widget.balanceMovementItem.isCurrentUser ? 'Devi' : '', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                ]
+              ),
+
+              Text('${widget.balanceMovementItem.movement.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+    );
+  }
+}

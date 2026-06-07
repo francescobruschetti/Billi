@@ -34,4 +34,7 @@ class AppConstants {
   static const double subtitleTextSize = 24.0;
   static const double textSize = 16.0;
   static const double smallTextSize = 12.0;
+
+  // Border Radius
+  static const double borderRadius = 12.0;
 }

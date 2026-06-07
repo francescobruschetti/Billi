@@ -24,7 +24,7 @@ class GroupService {
     // Prendi dettagli gruppo e partecipanti (join con profiles)
     final res = await supabase
       .from('groups')
-      .select('*, group_participants:group_participants(user_id, profiles:profiles(*))')
+      .select('*, group_participants:group_participants(user_id, is_enabled, left_at, role, profiles:profiles(*))')
       .eq('id', groupId)
       .single();
 
@@ -60,8 +60,13 @@ class GroupService {
         'p_description': description,
         'p_participants_to_add': participantsToAdd?.map((u) => u.userId).toList() ?? [],
         'p_participants_to_remove': participantsToRemoveIds ?? [],
-      }).single();
-      return GroupDetailsModel.fromMap(res);
+      });
+
+      log.fine('update_group_and_participants response: $res');
+
+      final data = (res as List).first;
+      return GroupDetailsModel.fromMap(data);
+
     }
     catch (e) {
       throw GroupException("Impossibile aggiornare il gruppo: $e");

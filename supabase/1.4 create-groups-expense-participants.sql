@@ -10,9 +10,15 @@ create table group_expense_participants (
 
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
+  paid_at timestamp with time zone, -- TODO: da implementare, da aggiornare quando has_paid diventa true
+
   primary key (transaction_id, user_id),
-  constraint fk_group_expense_participants_profiles foreign key (user_id) references profiles(id),
-  constraint fk_group_expense_participants_group_transactions foreign key (transaction_id) references group_transactions(id)
+  constraint fk_group_expense_participants_profiles 
+    foreign key (user_id) references profiles(id)
+    on delete cascade, -- delete dei partecipanti associati alla cancellazione di un utente
+  constraint fk_group_expense_participants_group_transactions 
+    foreign key (transaction_id) references group_transactions(id)
+    on delete cascade -- delete dei partecipanti associati alla cancellazione di una transazione
 );
 
 --------------------------------------------------------------------------

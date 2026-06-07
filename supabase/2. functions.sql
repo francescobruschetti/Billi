@@ -143,29 +143,35 @@ create or replace function update_group_and_participants(
   p_participants_to_remove uuid[]
 )
 returns table (
-  group_id uuid,
-  name text,
-  description text,
-  link text,
-  user_id uuid,
-  created_at timestamptz,
-  updated_at timestamptz
+  out_id uuid,
+  out_name text,
+  out_description text,
+  out_link text,
+  out_user_id uuid,
+  out_created_at timestamptz,
+  out_updated_at timestamptz
 ) as $$
 begin
-  update groups
+  update groups g
     set name = p_name, description = p_description
-    where groups.id = p_group_id;
+    where g.id = p_group_id;
 
   if cardinality(p_participants_to_add) > 0 then
-    insert into group_participants (group_id, user_id)
-    select p_group_id, unnest(p_participants_to_add)
-    on conflict do nothing;
+    insert into group_participants as gp (group_id, user_id, is_enabled, left_at, updated_at)
+    select p_group_id, unnest(p_participants_to_add), true, null, now()
+    on conflict (group_id, user_id) do update
+      set is_enabled = true,
+          left_at = null,
+          updated_at = now();
   end if;
 
   if cardinality(p_participants_to_remove) > 0 then
-    delete from group_participants gp
-    where gp.group_id = p_group_id 
-      and gp.user_id = any(p_participants_to_remove);
+    update group_participants as gp
+      set left_at = now(),
+          is_enabled = false,
+          updated_at = now()
+      where gp.group_id = p_group_id
+        and gp.user_id = any(p_participants_to_remove);
   end if;
 
   return query

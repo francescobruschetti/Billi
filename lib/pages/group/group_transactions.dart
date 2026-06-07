@@ -75,6 +75,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     super.dispose();
   }
 
+  Future<void> _balanceExpenses() async {
+    
+  }
+
   double _computeBalance() {
     double res = _groupTransactions.fold<double>(0, (sum, e) {
       final amount = e.totalAmount;
@@ -116,6 +120,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     if (mounted) {
       setState(() {
         _errorMessage = null;
+
         if (reset) {
           _isLoadingPage = true;
         } 
@@ -217,7 +222,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
       builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
-        title: 'Compensa saldo',
+        title: 'Pagamenti da saldare',
         participantsSummary: _participantsSummary,
       ),
     );
@@ -485,12 +490,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
           Expanded(
             child: 
               CustomButtonWidget(
-                onPressed: () async {
-                  _navigateToGroupTransactionPage(groupId: widget.groupId, transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
-                },
-                text: 'Entrate',
-                iconData: Icons.login,
-                backgroundColor: AppConstants.defaultIncomeColor,
+                onPressed: _openSummaryTransactionBottomSheet,
+                text: 'Salda',
+                iconData: Icons.balance,
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               ),
           ),
         ],

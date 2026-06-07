@@ -18,6 +18,7 @@ class CustomSnackBarWidget extends StatelessWidget {
   SnackBar build(BuildContext context) {
     return SnackBar(
       content: Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+      // TODO: not working when shown over bottomSheet: elevation: 11111.0,
 
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),

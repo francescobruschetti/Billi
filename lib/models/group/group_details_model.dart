@@ -25,14 +25,14 @@ class GroupDetailsModel extends GroupModel {
       throw Exception("Empty map provided to GroupDetailsModel.fromMap");
     }
     return GroupDetailsModel(
-      id: map['id'] ?? map['group_id'], // ?? [group_id] usato per: update_group_and_participants
-      name: map['name'],
-      link: map['link'],
-      description: map['description'],
-      userId: map['user_id'],
+      id: map['out_id'] ?? map['id'] ?? map['group_id'], // ?? [group_id] usato per: update_group_and_participants
+      name: map['out_name'] ?? map['name'],
+      link: map['out_link'] ?? map['link'],
+      description: map['out_description'] ?? map['description'],
+      userId: map['out_user_id'] ?? map['user_id'],
       totalAmount: map['total_amount'] ?? 0.0,
-      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : DateTime.fromMillisecondsSinceEpoch(0),
+      createdAt: DateTime.parse(map['out_created_at'] ?? map['created_at'] ?? DateTime.fromMillisecondsSinceEpoch(0).toIso8601String()),
+      updatedAt: DateTime.parse(map['out_updated_at'] ?? map['updated_at'] ?? DateTime.fromMillisecondsSinceEpoch(0).toIso8601String()),
       participants: (map['group_participants'] as List? ?? [])
         .map((e) => GroupParticipantModel.fromMap(e as Map<String, dynamic>))
         .toList(),
