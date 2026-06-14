@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------
--- Tables
+-- Tables: List of users participating in a group transaction (the transaction payer is not included), with their payment status
 create table group_expense_participants (
 
   group_id uuid references groups(id), -- Note (2026-05-31): non obbligatorio, posso anche dedurlo dalla group_transaction associata
@@ -10,7 +10,7 @@ create table group_expense_participants (
 
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  paid_at timestamp with time zone, -- TODO: da implementare, da aggiornare quando has_paid diventa true
+  paid_at timestamp with time zone,
 
   primary key (transaction_id, user_id),
   constraint fk_group_expense_participants_profiles 
@@ -29,4 +29,4 @@ create index idx_group_expense_participants_transaction_id on group_expense_part
 
 --------------------------------------------------------------------------
 -- Row Level Security (RLS)
-alter table group_expense_participants enable row level security;
+alter table group_settlements enable row level security;

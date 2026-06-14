@@ -1,4 +1,5 @@
 import 'package:Billy/models/group/group_model.dart';
+import 'package:Billy/models/group/group_settlement_model.dart';
 import 'package:Billy/models/group/group_transaction_model.dart';
 import 'package:Billy/models/group/group_participant_model.dart';
 
@@ -6,6 +7,7 @@ class GroupDetailsModel extends GroupModel {
   final double totalAmount;
   final List<GroupParticipantModel> participants;
   final List<GroupTransactionModel> transactions;
+  final List<GroupSettlementModel> settlements;
 
   GroupDetailsModel({
     required super.id,
@@ -18,6 +20,7 @@ class GroupDetailsModel extends GroupModel {
     required this.totalAmount,
     required this.participants,
     required this.transactions,
+    required this.settlements,
   });
 
   factory GroupDetailsModel.fromMap(Map<String, dynamic> map) {
@@ -38,6 +41,9 @@ class GroupDetailsModel extends GroupModel {
         .toList(),
       transactions: (map['group_transactions'] as List? ?? [])
         .map((e) => GroupTransactionModel.fromMap(e as Map<String, dynamic>))
+        .toList(),
+      settlements: (map['group_settlements'] as List? ?? [])
+        .map((e) => GroupSettlementModel.fromMap(e as Map<String, dynamic>))
         .toList(),
     );
   }

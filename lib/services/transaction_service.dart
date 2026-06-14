@@ -1,6 +1,8 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/group/group_details_model.dart';
+import 'package:Billy/models/group/group_participant_summary_balance_model.dart';
+import 'package:Billy/models/group/group_participant_summary_movement_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
@@ -149,6 +151,10 @@ class TransactionService {
           updated_at,
           group_participants:group_participants(user_id, is_enabled, left_at, role, profiles:profiles(*)),
           
+          group_settlements:group_settlements!group_settlements_group_id_fkey(
+            id, group_id, payer_id, receiver_id, amount, settled_at
+          ),
+          
           group_transactions:group_transactions(
             *,
             merchant:merchants(*),
@@ -238,5 +244,19 @@ class TransactionService {
     throw Exception("Not implemented yet");
   }
   
-
+Future<void> settleUserGroupExpenses(final String groupId, final List<GroupTransactionSummaryBalanceModel> balanceModels) async {
+  try {
+    await supabase.rpc('settle_group_movements', params: {
+      'p_group_id': groupId,
+      'p_movements': balanceModels.map((m) => {
+        'receiver_id': m.otherUserId,  // chi riceve i soldi
+        'amount': m.amount,
+      }).toList(),
+    });
+  } 
+  catch (e) {
+    log.severe("Errore salvataggio saldo debiti: $e");
+    throw Exception("Errore salvataggio saldo debiti");
+  }
+}
 }

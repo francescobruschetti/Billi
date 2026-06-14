@@ -1,224 +1,141 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/models/balance_movement_item_model.dart';
-import 'package:Billy/models/group/group_participant_summary_balance_movement_model.dart';
+import 'package:Billy/models/balance_summary_item_model.dart';
 import 'package:Billy/models/group/group_participant_summary_model.dart';
-import 'package:Billy/utils/generic_util.dart';
+import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:Billy/widgets/components/balance_card_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class TransactionsBalanceBottomSheetWidget extends AppBottomSheet {
-  static final ScrollController _verticalController = ScrollController();
-  static final ScrollController _horizontalController = ScrollController();
-  final ScrollController _scrollController = ScrollController();
-
-
-  @override
+class TransactionsBalanceBottomSheetWidget extends StatefulWidget {
   final String title;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
+  final void Function(String) onShowMessage;
+  final String groupId;
 
-  TransactionsBalanceBottomSheetWidget({
-    super.key, required this.title, required this.participantsSummary
-  }) : super( title: title, child: Container());
+  const TransactionsBalanceBottomSheetWidget({
+    super.key,
+    required this.title,
+    required this.participantsSummary,
+    required this.onShowMessage,
+    required this.groupId,
+  });
 
-  // v1: data e importo, chi deve pagare a chi
-  // @override
-  // Widget build(BuildContext context) {
-  //   return AppBottomSheet(
-  //     title: title,
-  //     initialSize: 0.9,
-  //     minSize: 0.5,
-  //     maxSize: 1.0,
+  @override
+  State<TransactionsBalanceBottomSheetWidget> createState() => _TransactionsBalanceBottomSheetWidgetState();
+}
 
-  //     child: Column(
-  //       children: [
-  //         // TODO: mostra versione "intelligente", mostra "tutti i movimenti" in un secondo sheet?
-          
-  //         const SizedBox(height: AppConstants.sizedBoxHeight),
-  //         Scrollbar(
-  //           controller: _verticalController,
-  //           thumbVisibility: true,
-  //           child: Scrollbar(
-  //             controller: _horizontalController,
-  //             thumbVisibility: true,
-  //             notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-  //             child: SingleChildScrollView(
-  //               controller: _verticalController,
-  //               scrollDirection: Axis.vertical,
-  //               child: SingleChildScrollView(
-  //               controller: _horizontalController,
-  //               scrollDirection: Axis.horizontal,
-  //               child:
-  //                 DataTable(
-  //                   columns: const [
-  //                     DataColumn(label: Text('Chi deve pagare a chi')),
-  //                     DataColumn(label: Text('Importo')),
-  //                   ],
-  //                   rows: participantsSummary.values.expand((summary) => summary.balanceMovements.map((movement) => DataRow(cells: [
-  //                     DataCell(Text('${summary.profile.name} → ${participantsSummary[movement.otherUserId]?.profile.name ?? 'Utente sconosciuto'}')),
-  //                     DataCell(Text('${movement.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold))),
-  //                   ]))).toList(),
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalanceBottomSheetWidget> {
+  final Logger log = Logger('TransactionsBalanceBottomSheetWidget');
+  final ScrollController _scrollController = ScrollController();
+  final TransactionService transactionService = TransactionService();
+  bool _showInfo = false;
+  String _infoMessage = '';
 
-  // // v2: list view
-  // @override
-  // Widget build(BuildContext context) {
-  //   final List<BalanceMovementItemModel> currentUserBalanceMovements = [];
-  //   final List<BalanceMovementItemModel> otherUserBalanceMovements = [];
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-  //   for (var summary in participantsSummary.values) {
-  //     for (var movement in summary.balanceMovements) {
-  //       final item = BalanceMovementItemModel(
-  //         summary: summary,
-  //         movement: movement,
-  //       );
+  Future<void> _settleAllUserDebts(final String groupId) async {
+    try {
+      GroupParticipantSummaryModel? currentUserSummary = widget.participantsSummary[Supabase.instance.client.auth.currentUser!.id];
+      log.fine("Settle all debts pressed: ${currentUserSummary?.movementModels.length ?? 0} movements to settle");
 
-  //       if (summary.userId == Supabase.instance.client.auth.currentUser!.id) {
-  //         currentUserBalanceMovements.add(item);
-  //       } 
-  //       else {
-  //         otherUserBalanceMovements.add(item);
-  //       }
-  //     }
-  //   }
+      if (currentUserSummary == null || currentUserSummary.movementModels.isEmpty) {
+        _showPopupMessage('Nessun debito da saldare!');
+        return;
+      }
 
-  //   return AppBottomSheet(
-  //     title: title,
-  //     initialSize: 0.9,
-  //     minSize: 0.5,
-  //     maxSize: 1.0,
+      transactionService.settleUserGroupExpenses(groupId, currentUserSummary.balanceModels).then((_) {
+        _showPopupMessage('Tutti i debiti saldati!');
+      });
+    } 
+    catch (e) {
+      // throw GroupException('Impossibile aggiornare i pagamenti: $e');
+    }
+  }
 
-  //     child: Column(
-  //       children: [
-  //         // TODO: mostra versione "intelligente", mostra "tutti i movimenti" in un secondo sheet?
-          
-  //         _buildUsersBalanceMovements(currentUserBalanceMovements),
-          
-  //         _buildOtherUsersBalanceMovements(otherUserBalanceMovements),
-  //       ],
-  //     ),
-  //   );
-  // }
-  
-  // Widget _buildUsersBalanceMovements(List<BalanceMovementItemModel> balanceMovements) {
-  //   return _buildBalanceMovements(balanceMovements);
-  // }
+  void _showPopupMessage(String message) {
+    setState(() {
+      _showInfo = true;
+      _infoMessage = message;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() {
+        _showInfo = false;
+        _infoMessage = '';
+      });
+    });
+  }
 
-  // Widget _buildOtherUsersBalanceMovements(List<BalanceMovementItemModel> balanceMovements) {
-  //   return _buildBalanceMovements(balanceMovements);
-  // }
-
-  // Widget _buildBalanceMovements(List<BalanceMovementItemModel> balanceMovements) {
-  //   return Expanded(
-  //     child: balanceMovements.isEmpty
-  //       ? Center(
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Text(
-  //                 'Tutto ok, nessun pagamento da saldare!',
-  //                 style: TextStyle(fontSize: AppConstants.textSize),
-  //               ),
-  //             ],
-  //           ),
-  //         )
-  //       : ListView.builder(
-  //           controller: _scrollController,
-  //           itemCount: balanceMovements.length,
-  //           itemBuilder: (context, index) {
-  //             final item = balanceMovements[index];
-
-  //             return BalanceCardWidget(
-  //               participantsSummary: participantsSummary,
-  //               summaryModel: item.summary,
-  //               balanceMovement: item.movement,
-  //             );
-  //           },
-  //         ),
-  //   );
-  // }
-
-  // v3: list view con card (versione attuale)
   @override
   Widget build(BuildContext context) {
-    final List<BalanceMovementItemModel> balanceMovements = [];
-
-    for (var summary in participantsSummary.values) {
-      for (var movement in summary.balanceMovements) {
-        final item = BalanceMovementItemModel(
+    final balanceSummaryItems = <BalanceSummaryItemModel>[];
+    for (final summary in widget.participantsSummary.values) {
+      for (final balanceModel in summary.balanceModels) {
+        final item = BalanceSummaryItemModel(
           isCurrentUser: summary.userId == Supabase.instance.client.auth.currentUser!.id,
           summary: summary,
-          movement: movement,
+          balance: balanceModel,
         );
-
         if (item.isCurrentUser) {
-          balanceMovements.insert(0, item);
+          balanceSummaryItems.insert(0, item);
         } 
         else {
-          balanceMovements.add(item);
+          balanceSummaryItems.add(item);
         }
       }
     }
 
     return AppBottomSheet(
-      title: title,
+      title: widget.title,
       initialSize: 0.9,
       minSize: 0.5,
       maxSize: 1.0,
-
       child: Column(
         children: [
-          // TODO: mostra versione "intelligente", mostra "tutti i movimenti" in un secondo sheet?
-          
-          _buildBalanceMovements(balanceMovements),
+          _buildBalanceMovementItem(balanceSummaryItems),
 
-          const SizedBox(height: AppConstants.sizedBoxHeight),
+          if (_showInfo) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).colorScheme.secondaryContainer,
+              ),
+              child: Text(_infoMessage, textAlign: TextAlign.center, style: TextStyle(fontSize: AppConstants.textSize, color: Theme.of(context).colorScheme.onSecondaryContainer)),
+            ),
+          ],
+          
           CustomButtonWidget(
             text: 'Salda tutti i debiti',
-            onPressed: () => GenericUtil.showSnackbar(context, 'Funzione non ancora implementata'), // TODO: implementare
+            onPressed: () => _settleAllUserDebts(widget.groupId),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBalanceMovements(List<BalanceMovementItemModel> balanceMovements) {
+  Widget _buildBalanceMovementItem(List<BalanceSummaryItemModel> balanceSummaryItems) {
     return Expanded(
-      child: balanceMovements.isEmpty
-        ? Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Tutto ok, nessun pagamento da saldare!',
-                  style: TextStyle(fontSize: AppConstants.textSize),
-                ),
-              ],
-            ),
-          )
+      child: balanceSummaryItems.isEmpty
+        ? const Center(child: Text('Tutto ok, nessun pagamento da saldare!'))
         : ListView.builder(
             controller: _scrollController,
-            itemCount: balanceMovements.length,
+            itemCount: balanceSummaryItems.length,
             itemBuilder: (context, index) {
-              final item = balanceMovements[index];
-
               return BalanceCardWidget(
-                balanceMovementItem: item,
-                participantsSummary: participantsSummary,
+                balanceSummaryItem: balanceSummaryItems[index],
+                participantsSummary: widget.participantsSummary,
               );
             },
           ),
     );
   }
-
 }

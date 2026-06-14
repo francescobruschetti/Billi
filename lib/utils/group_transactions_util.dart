@@ -1,7 +1,9 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/models/balance_details_model.dart';
-import 'package:Billy/models/group/group_participant_summary_balance_movement_model.dart';
+import 'package:Billy/models/group/group_participant_summary_balance_model.dart';
+import 'package:Billy/models/group/group_participant_summary_movement_model.dart';
+import 'package:Billy/models/group/group_settlement_model.dart';
 import 'package:Billy/models/group/group_transaction_model.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/utils/number_util.dart';
@@ -11,6 +13,28 @@ import 'package:Billy/models/group/group_participant_summary_model.dart';
 
 class GroupTransactionsUtil {
   static final Logger log = Logger('GroupTransactionsUtil');
+
+  static void applySettlementsBetweenPartecipants({
+    required Map<String, GroupParticipantSummaryModel> summary,
+    required List<GroupSettlementModel> settlements,
+  }) 
+  {
+    for (final settlement in settlements) {
+      final payerId = settlement.payerId;
+      final receiverId = settlement.receiverId;
+      final amount = settlement.amount;
+
+      // Il payer ha già pagato `amount` al receiver:
+      // - il payer riduce il suo debito (toReceiveNet aumenta, era negativo)
+      // - il receiver riduce il suo credito (toReceiveNet diminuisce, era positivo)
+      summary[payerId]?.toReceiveNet += amount;
+      summary[receiverId]?.toReceiveNet -= amount;
+
+      log.fine("Applied settlement: $payerId paid $amount to $receiverId. "
+          "Updated toReceiveNet: payer=${summary[payerId]?.toReceiveNet}, "
+          "receiver=${summary[receiverId]?.toReceiveNet}");
+    }
+  } 
 
   static BalanceDetailsModel computeBalance(List<Map<String, dynamic>> allTransactions) {
     double totalBalance = 0;
@@ -38,18 +62,10 @@ class GroupTransactionsUtil {
     );
   }
 
-  static void computeDynamicParticipantsSummary({
-    required Map<String, GroupParticipantSummaryModel> summary,
-  }) 
-  {  
-    // Step 4 - Combine movements and compute minimum transactions to balance the transactions
-    List<GroupParticipantSummaryModel> finalMovements = getSortedSummaryListByToReceiveNet(summary);
-    computeParticipantsFinalMovements(finalMovements, summary);
-  }
-
   static Map<String, GroupParticipantSummaryModel> computeParticipantsSummary({
     required List<GroupTransactionModel> transactions, 
-    required List<GroupParticipantModel> participants
+    required List<GroupParticipantModel> participants,
+    required List<GroupSettlementModel> settlements,
   }) 
   {    
     Map<String, GroupParticipantSummaryModel> summary = {};
@@ -75,17 +91,33 @@ class GroupTransactionsUtil {
     computeParticipantsMovementsToBalanceTransactions(summary: summary, transactions: transactions);
     log.fine("Summary: $summary.");
 
-    // Step 4 - Combine movements and compute minimum transactions to balance the transactions
-    List<GroupParticipantSummaryModel> finalMovements = getSortedSummaryListByToReceiveNet(summary);
-    computeParticipantsFinalMovements(finalMovements, summary);
+// TODO: DEBUG
+summary.forEach((key, value) {
+  log.info("After step 3 - User $key: toReceiveNet=${value.toReceiveNet}");
+});
+
+    // Step 4 - Apply already made settlements between participants to update the summary before computing the minimum transactions to balance the transactions
+    applySettlementsBetweenPartecipants(summary: summary, settlements: settlements);
+
+// TODO: DEBUG
+summary.forEach((key, value) {
+  log.info("After settlements - User $key: toReceiveNet=${value.toReceiveNet}");
+});
+
+    // Step 5 - Combine movements and compute minimum transactions to balance the transactions
+    computeParticipantsFinalMovements(summary);
 
     return summary;
   }
 
   // Compute final movements to balance the transactions, combining the movements of each participant and optimizing the transactions
-  static void computeParticipantsFinalMovements(List<GroupParticipantSummaryModel> balanceMovements, Map<String, GroupParticipantSummaryModel> summary) {
+  static void computeParticipantsFinalMovements(Map<String, GroupParticipantSummaryModel> summary) {
+    
+    // TODO: gestire il caso in cui il participantId ha già pagato il payerId
 
+    List<GroupParticipantSummaryModel> balanceMovements = getSortedSummaryListByToReceiveNet(summary);
     log.fine("Computing final movements to balance transactions. Initial balance movements: $balanceMovements.");
+
     for (int i = 0; i < balanceMovements.length; i++) {
       GroupParticipantSummaryModel currentUser = balanceMovements[i];
       GroupParticipantSummaryModel lastUser = balanceMovements.last;
@@ -100,8 +132,9 @@ class GroupTransactionsUtil {
         }
         
         if (diff < 0) {
-          summary[currentUser.userId]?.balanceMovements.add(
-            GroupTransactionSummaryBalanceMovementModel(
+          summary[currentUser.userId]?.balanceModels.add(
+            GroupTransactionSummaryBalanceModel(
+              userId: currentUser.userId,
               otherUserId: lastUser.userId,
               amount: lastUser.toReceiveNet.abs(),
               isToPay: true
@@ -111,8 +144,9 @@ class GroupTransactionsUtil {
           lastUser.toReceiveNet = 0;
         }
         else {
-          summary[currentUser.userId]?.balanceMovements.add(
-            GroupTransactionSummaryBalanceMovementModel(
+          summary[currentUser.userId]?.balanceModels.add(
+            GroupTransactionSummaryBalanceModel(
+              userId: currentUser.userId,
               otherUserId: lastUser.userId,
               amount: (diff == 0) ? lastUser.toReceiveNet.abs() : currentUser.toReceiveNet.abs(),
               isToPay: true
@@ -147,10 +181,7 @@ class GroupTransactionsUtil {
       final payerId = transaction.profileModel.id;
       log.fine("Computing movements for transaction ${transaction.id} with payer ${transaction.profileModel.name}. Total amount: ${transaction.totalAmount}, paid amount itself: ${transaction.paidAmount}, split rate: ${transaction.splitRate}.");
 
-      final participants = [
-        payerId,
-        ...transaction.expensePartecipants.map((e) => e.userId),
-      ];
+      final participants = [ payerId, ...transaction.expensePartecipants.map((e) => e.userId) ];
 
       final share = transaction.totalAmount / participants.length;
       for (final participantId in participants) {
@@ -158,12 +189,17 @@ class GroupTransactionsUtil {
           continue;
         }
 
+        // TODO: gestire il caso in cui il participantId ha già pagato il payerId
         summary[participantId]?.toReceiveNet -= share;
         summary[payerId]?.toReceiveNet += share;
 
+        // TODO: gestire il caso in cui il participantId ha già pagato il payerId
         log.fine("Transaction ${transaction.id}. total: ${transaction.totalAmount}, participants: ${participants.length}: $participantId owes $share to payer $payerId. Updated toReceiveNet for participant: ${summary[participantId]?.toReceiveNet}, for payer: ${summary[payerId]?.toReceiveNet}.");
-        summary[participantId]?.movements.add(
-          GroupTransactionSummaryBalanceMovementModel(
+        summary[participantId]?.movementModels.add(
+          GroupTransactionSummaryMovementModel(
+            transactionId: transaction.id,
+            groupId: transaction.groupId,
+            userId: participantId,
             otherUserId: payerId,
             amount: share,
             isToPay: true
@@ -185,7 +221,7 @@ class GroupTransactionsUtil {
       double paidAmountItself = transaction.paidAmount ?? 0;
       double paidAmountGroup = transaction.totalAmount;
       String? splitRate = transaction.splitRate;
-      double? receiveGrossAmount;
+      double? receiveGrossAmount;      
       int expenseParticipantsCount = transaction.expensePartecipants.length + 1; // +1 per includere il profilo del pagatore
 
       if (!summary.containsKey(userId)) {
@@ -292,17 +328,17 @@ class GroupTransactionsUtil {
 
   // TODO: da rumovedere, usato solo per debug
   static Map<String, GroupParticipantSummaryModel> mergeSummaries(Map<String, GroupParticipantSummaryModel> summary1, Map<String, GroupParticipantSummaryModel> summary2) {
-    // Copia summary1 resettando balanceMovements
+    // Copia summary1 resettando balanceModels
     final Map<String, GroupParticipantSummaryModel> result = {
       for (final entry in summary1.entries)
-        entry.key: entry.value.copyWith(balanceMovements: []),
+        entry.key: entry.value.copyWith(balanceModels: []),
     };
 
     for (final entry in summary2.entries) {
       result.update(
         entry.key,
-        (existing) => existing.merge(entry.value), // merge già resetta balanceMovements
-        ifAbsent: () => entry.value.copyWith(balanceMovements: []),
+        (existing) => existing.merge(entry.value), // merge già resetta balanceModels
+        ifAbsent: () => entry.value.copyWith(balanceModels: []),
       );
     }
 

@@ -1,17 +1,17 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/category_enum.dart';
-import 'package:Billy/models/balance_movement_item_model.dart';
+import 'package:Billy/models/balance_summary_item_model.dart';
 import 'package:Billy/models/group/group_participant_summary_model.dart';
 import 'package:flutter/material.dart';
 
 class BalanceCardWidget extends StatefulWidget {
 
-  final BalanceMovementItemModel balanceMovementItem;
+  final BalanceSummaryItemModel balanceSummaryItem;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
   const BalanceCardWidget({
     super.key,
-    required this.balanceMovementItem,
+    required this.balanceSummaryItem,
     required this.participantsSummary,
   });
 
@@ -34,7 +34,7 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         side: BorderSide(
-          color: widget.balanceMovementItem.isCurrentUser ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          color: widget.balanceSummaryItem.isCurrentUser ? Theme.of(context).colorScheme.primary : Colors.transparent,
           width: 2.0,
         ),
       ),
@@ -49,13 +49,13 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.balanceMovementItem.summary.profile.name} → ${widget.participantsSummary[widget.balanceMovementItem.movement.otherUserId]?.profile.name ?? 'Utente sconosciuto'}'),
+                  Text('${widget.balanceSummaryItem.summary.profile.name} → ${widget.participantsSummary[widget.balanceSummaryItem.balance.otherUserId]?.profile.name ?? 'Utente sconosciuto'}'),
                   const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Text(widget.balanceMovementItem.isCurrentUser ? 'Devi' : '', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                  Text(widget.balanceSummaryItem.isCurrentUser ? 'Devi' : '', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
                 ]
               ),
 
-              Text('${widget.balanceMovementItem.movement.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('${widget.balanceSummaryItem.balance.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),

@@ -91,7 +91,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   int _computeBalanceTransactionsCount() {
     int count = 0;
     for (var summary in _participantsSummary.values) {
-      count += summary.balanceMovements.length;
+      count += summary.movementModels.length;
     }
     return count;
   }
@@ -108,7 +108,11 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   }
 
   void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate transactions e group details hanno caricato i dati necessari
-    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails.participants);
+    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(
+      transactions: _groupTransactions,
+      participants: _groupDetails.participants,
+      settlements: _groupDetails.settlements,
+    );
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
@@ -224,6 +228,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
         title: 'Pagamenti da saldare',
         participantsSummary: _participantsSummary,
+        groupId: widget.groupId,
+        onShowMessage: (message) => GenericUtil.showSnackbar(context, message),
       ),
     );
   }
@@ -359,7 +365,8 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                                             title: 'Dettaglio partecipanti',
                                             participantsSummary: GroupTransactionsUtil.computeParticipantsSummary(
                                               transactions: [e], 
-                                              participants: _groupDetails.participants
+                                              participants: _groupDetails.participants,
+                                              settlements: _groupDetails.settlements,
                                             ),
                                           ),
                                         ),

@@ -1,21 +1,52 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
+import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class InvitationLinkBottomSheetWidget extends AppBottomSheet {
-  static final ScrollController _verticalController = ScrollController();
-
-  @override
+class InvitationLinkBottomSheetWidget extends StatefulWidget {
   final String title;
   final String subTitle;
   final String link;
 
-  InvitationLinkBottomSheetWidget({
+  const InvitationLinkBottomSheetWidget({
     super.key, required this.title, required this.subTitle, required this.link
-  }) : super( title: title, child: Container());
+  });
 
+  @override
+  State<InvitationLinkBottomSheetWidget> createState() => _InvitationLinkBottomSheetWidgetState();
+}
+
+class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSheetWidget> {
+  static final ScrollController _verticalController = ScrollController();
+
+  String get title => widget.title;
+  String get subTitle => widget.subTitle;
+  String get link => widget.link;
+
+  bool _showInfo = false;
+  String _infoMessage = '';
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    super.dispose();
+  }
+
+  void _showPopupMessage(String message) {
+    setState(() {
+      _showInfo = true;
+      _infoMessage = message;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() {
+        _showInfo = false;
+        _infoMessage = '';
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +67,11 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
             const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             _buildInviteLinkText(context),
 
+            if (_showInfo) ...[
+              const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+              _buildInfoMessage(context),
+            ],
+
             const SizedBox(height: AppConstants.mediumSizedBoxHeight),
             _buildActionButtonRow(context),
           ],
@@ -49,7 +85,8 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-  }) {
+  }) 
+  {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.only(bottom: 8),
@@ -85,27 +122,24 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
           onPressed: () {
             Clipboard.setData(ClipboardData(text: link));
             
+            _showPopupMessage('Link copiato negli appunti');
+
             // workaround con delay per evitare che il bottom sheet venga chiuso prima che venga mostrato lo snackbar
-            final rootContext = Navigator.of(context).context; // Salva PRIMA del pop!
-            Navigator.of(context).pop();
-            Future.delayed(const Duration(milliseconds: 200), () {
-              if (rootContext.mounted) {
-                GenericUtil.showSnackbar(rootContext, 'Link copiato negli appunti');
-              }
-            });
+            // final rootContext = Navigator.of(context).context; // Salva PRIMA del pop!
+            // Navigator.of(context).pop();
           },
         ),
         _buildActionsButton(
           context: context,
           icon: Icons.ios_share,
           label: 'Condividi',
-          onPressed: () => GenericUtil.showSnackbar(context, 'Funzione di condivisione non ancora implementata'), // TODO: implementare condivisione link
+          onPressed: () => _showPopupMessage('Funzione di condivisione non ancora implementata'), // TODO: implementare condivisione link
         ),
         _buildActionsButton(
           context: context,
           icon: Icons.refresh,
           label: 'Rigenera link',
-          onPressed: () => GenericUtil.showSnackbar(context, 'Funzione di rigenerazione link non ancora implementata'), // TODO: implementare rigenerazione link
+          onPressed: () => _showPopupMessage('Funzione di rigenerazione link non ancora implementata'), // TODO: implementare rigenerazione link
         ),
       ],
     );
@@ -134,6 +168,18 @@ class InvitationLinkBottomSheetWidget extends AppBottomSheet {
         ), 
         textAlign: TextAlign.center
       )
+    );
+  }
+
+  Widget _buildInfoMessage(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Theme.of(context).colorScheme.secondaryContainer,
+      ),
+      child: Text(_infoMessage, textAlign: TextAlign.center, style: TextStyle(fontSize: AppConstants.textSize, color: Theme.of(context).colorScheme.onSecondaryContainer)),
     );
   }
 
