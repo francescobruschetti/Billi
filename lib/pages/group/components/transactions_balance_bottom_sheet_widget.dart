@@ -1,10 +1,13 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/models/balance_summary_item_model.dart';
+import 'package:Billy/models/group/group_participant_summary_balance_model.dart';
 import 'package:Billy/models/group/group_participant_summary_model.dart';
 import 'package:Billy/services/transaction_service.dart';
+import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:Billy/widgets/components/balance_card_widget.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,6 +34,8 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
   final Logger log = Logger('TransactionsBalanceBottomSheetWidget');
   final ScrollController _scrollController = ScrollController();
   final TransactionService transactionService = TransactionService();
+
+  List<GroupTransactionSummaryBalanceModel> _selectedGroupTransactionSummaryBalanceModels = [];
   bool _showInfo = false;
   String _infoMessage = '';
 
@@ -40,7 +45,30 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
     super.dispose();
   }
 
-  Future<void> _settleAllUserDebts(final String groupId) async {
+  List<BalanceSummaryItemModel> _computeBalanceSummaryItems() {
+    final balanceSummaryItems = <BalanceSummaryItemModel>[];
+    for (final entry in widget.participantsSummary.entries) {
+      final summary = entry.value;
+      for (final balanceModel in summary.balanceModels) {
+        final item = BalanceSummaryItemModel(
+          isCurrentUser: summary.userId == Supabase.instance.client.auth.currentUser!.id,
+          summary: summary,
+          balance: balanceModel,
+        );
+
+        if (item.isCurrentUser) {
+          balanceSummaryItems.insert(0, item);
+        } 
+        else {
+          balanceSummaryItems.add(item);
+        }
+      }
+    }
+    
+    return balanceSummaryItems; 
+  }
+
+  Future<void> _settleAllUserDebts(final BuildContext context, final String groupId) async {
     try {
       GroupParticipantSummaryModel? currentUserSummary = widget.participantsSummary[Supabase.instance.client.auth.currentUser!.id];
       log.fine("Settle all debts pressed: ${currentUserSummary?.movementModels.length ?? 0} movements to settle");
@@ -50,12 +78,21 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
         return;
       }
 
-      transactionService.settleUserGroupExpenses(groupId, currentUserSummary.balanceModels).then((_) {
-        _showPopupMessage('Tutti i debiti saldati!');
+      transactionService.settleUserGroupExpenses(groupId, _selectedGroupTransactionSummaryBalanceModels).then((_) {
+       
+        // workaround con delay per evitare che il bottom sheet venga chiuso prima che venga mostrato lo snackbar
+        final rootContext = Navigator.of(context).context; // Salva PRIMA del pop!
+        Navigator.of(context).pop();
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (rootContext.mounted) {
+            GenericUtil.showSnackbar(rootContext, 'Tutti i debiti saldati!');
+          }
+        });
       });
     } 
     catch (e) {
-      // throw GroupException('Impossibile aggiornare i pagamenti: $e');
+      log.severe("Errore salvataggio saldo debiti: $e");
+      _showPopupMessage('Impossibile aggiornare i pagamenti. Riprova più tardi.');
     }
   }
 
@@ -75,22 +112,7 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
 
   @override
   Widget build(BuildContext context) {
-    final balanceSummaryItems = <BalanceSummaryItemModel>[];
-    for (final summary in widget.participantsSummary.values) {
-      for (final balanceModel in summary.balanceModels) {
-        final item = BalanceSummaryItemModel(
-          isCurrentUser: summary.userId == Supabase.instance.client.auth.currentUser!.id,
-          summary: summary,
-          balance: balanceModel,
-        );
-        if (item.isCurrentUser) {
-          balanceSummaryItems.insert(0, item);
-        } 
-        else {
-          balanceSummaryItems.add(item);
-        }
-      }
-    }
+    final balanceSummaryItems = _computeBalanceSummaryItems();
 
     return AppBottomSheet(
       title: widget.title,
@@ -115,7 +137,7 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
           
           CustomButtonWidget(
             text: 'Salda tutti i debiti',
-            onPressed: () => _settleAllUserDebts(widget.groupId),
+            onPressed: () => _settleAllUserDebts(context, widget.groupId),
           ),
         ],
       ),
@@ -130,9 +152,21 @@ class _TransactionsBalanceBottomSheetWidgetState extends State<TransactionsBalan
             controller: _scrollController,
             itemCount: balanceSummaryItems.length,
             itemBuilder: (context, index) {
+              final item = balanceSummaryItems[index];
+              final isSelected = _selectedGroupTransactionSummaryBalanceModels.contains(item.balance);
               return BalanceCardWidget(
-                balanceSummaryItem: balanceSummaryItems[index],
+                balanceSummaryItem: item,
                 participantsSummary: widget.participantsSummary,
+                isSelected: isSelected,
+                onToggle: (checked) {
+                  setState(() {
+                    if (checked == true) {
+                      _selectedGroupTransactionSummaryBalanceModels.add(item.balance);
+                    } else {
+                      _selectedGroupTransactionSummaryBalanceModels.remove(item.balance);
+                    }
+                  });
+                },
               );
             },
           ),

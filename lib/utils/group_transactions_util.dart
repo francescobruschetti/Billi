@@ -91,18 +91,8 @@ class GroupTransactionsUtil {
     computeParticipantsMovementsToBalanceTransactions(summary: summary, transactions: transactions);
     log.fine("Summary: $summary.");
 
-// TODO: DEBUG
-summary.forEach((key, value) {
-  log.info("After step 3 - User $key: toReceiveNet=${value.toReceiveNet}");
-});
-
     // Step 4 - Apply already made settlements between participants to update the summary before computing the minimum transactions to balance the transactions
     applySettlementsBetweenPartecipants(summary: summary, settlements: settlements);
-
-// TODO: DEBUG
-summary.forEach((key, value) {
-  log.info("After settlements - User $key: toReceiveNet=${value.toReceiveNet}");
-});
 
     // Step 5 - Combine movements and compute minimum transactions to balance the transactions
     computeParticipantsFinalMovements(summary);
@@ -189,11 +179,9 @@ summary.forEach((key, value) {
           continue;
         }
 
-        // TODO: gestire il caso in cui il participantId ha già pagato il payerId
         summary[participantId]?.toReceiveNet -= share;
         summary[payerId]?.toReceiveNet += share;
 
-        // TODO: gestire il caso in cui il participantId ha già pagato il payerId
         log.fine("Transaction ${transaction.id}. total: ${transaction.totalAmount}, participants: ${participants.length}: $participantId owes $share to payer $payerId. Updated toReceiveNet for participant: ${summary[participantId]?.toReceiveNet}, for payer: ${summary[payerId]?.toReceiveNet}.");
         summary[participantId]?.movementModels.add(
           GroupTransactionSummaryMovementModel(

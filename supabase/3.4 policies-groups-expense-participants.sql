@@ -35,14 +35,6 @@ using (
 
 --------------------------------------------------------------------------
 -- Auto-update updated_at
-create or replace function update_timestamp()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
 create trigger trg_update_group_expense_participants
 before update on group_expense_participants
 for each row execute function update_timestamp();

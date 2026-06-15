@@ -1,7 +1,5 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
-import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -121,12 +119,7 @@ class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSh
           label: 'Copia link',
           onPressed: () {
             Clipboard.setData(ClipboardData(text: link));
-            
             _showPopupMessage('Link copiato negli appunti');
-
-            // workaround con delay per evitare che il bottom sheet venga chiuso prima che venga mostrato lo snackbar
-            // final rootContext = Navigator.of(context).context; // Salva PRIMA del pop!
-            // Navigator.of(context).pop();
           },
         ),
         _buildActionsButton(

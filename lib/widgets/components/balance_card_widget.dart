@@ -9,10 +9,15 @@ class BalanceCardWidget extends StatefulWidget {
   final BalanceSummaryItemModel balanceSummaryItem;
   final Map<String, GroupParticipantSummaryModel> participantsSummary;
 
+  final bool isSelected;
+  final void Function(bool?) onToggle;
+
   const BalanceCardWidget({
     super.key,
     required this.balanceSummaryItem,
     required this.participantsSummary,
+    required this.isSelected,
+    required this.onToggle,
   });
 
   @override
@@ -43,18 +48,31 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget> {
         padding: const EdgeInsets.all(10),
         child:
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${widget.balanceSummaryItem.summary.profile.name} → ${widget.participantsSummary[widget.balanceSummaryItem.balance.otherUserId]?.profile.name ?? 'Utente sconosciuto'}'),
-                  const SizedBox(height: AppConstants.sizedBoxHeight),
-                  Text(widget.balanceSummaryItem.isCurrentUser ? 'Devi' : '', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
-                ]
-              ),
+              if (widget.balanceSummaryItem.isCurrentUser) ...[
+                Checkbox(
+                  value: widget.isSelected,
+                  onChanged: widget.onToggle,
+                  checkColor: Theme.of(context).colorScheme.primaryContainer,
 
+                ),
+              ],
+
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${widget.balanceSummaryItem.summary.profile.name} → ${widget.participantsSummary[widget.balanceSummaryItem.balance.otherUserId]?.profile.name ?? 'Utente sconosciuto'}'),
+
+                    if (widget.balanceSummaryItem.isCurrentUser) ...[
+                      const SizedBox(height: AppConstants.sizedBoxHeight),
+                      Text('Devi', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                    ],
+                  ]
+                ),
+              ),
+                
               Text('${widget.balanceSummaryItem.balance.amount.toStringAsFixed(2)}€', style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),

@@ -124,7 +124,7 @@ using (
 );
 
 --------------------------------------------------------------------------
--- Auto-update updated_at
+-- Auto-update updated_at (note: also used by group tables)
 create or replace function update_timestamp()
 returns trigger as $$
 begin
