@@ -1,4 +1,6 @@
 // Nuovo modello per i saldi
+import 'package:Billy/models/group/group_settlement_profile_model.dart';
+
 class GroupSettlementModel {
   final String id;
   final String groupId;
@@ -25,5 +27,13 @@ class GroupSettlementModel {
       amount: map['amount']?.toDouble() ?? 0.0,
       settledAt: DateTime.parse(map['settled_at']),
     );
+  }
+
+  static List<GroupSettlementModel> fromList(List<dynamic> settlementsMap) {
+    List<GroupSettlementModel> settlements = [];
+    for (var item in settlementsMap) {
+      settlements.add(GroupSettlementModel.fromMap(item));
+    }
+    return settlements;
   }
 }

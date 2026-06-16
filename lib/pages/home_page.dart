@@ -308,7 +308,9 @@ class _HomePageState
             child: SegmentedControl(
               selectedIndex: _selectedTimeFilterIndex,
               onChanged: (index) => _applyTimeFilter(index),
-              segments: _timeFilters.map((filter) => filter.shortValue).toList(),
+              segments: _timeFilters.map((filter) => 
+                MapEntry(filter.shortValue, null)
+              ).toList(),
             ),
           )
         : const SizedBox.shrink(key: ValueKey('nofilters')),

@@ -169,7 +169,7 @@ class GroupTransactionsUtil {
   }) {
     for (final transaction in transactions) {
       final payerId = transaction.profileModel.id;
-      log.fine("Computing movements for transaction ${transaction.id} with payer ${transaction.profileModel.name}. Total amount: ${transaction.totalAmount}, paid amount itself: ${transaction.paidAmount}, split rate: ${transaction.splitRate}.");
+      // debug: log.fine("Computing movements for transaction ${transaction.id} with payer ${transaction.profileModel.name}. Total amount: ${transaction.totalAmount}, paid amount itself: ${transaction.paidAmount}, split rate: ${transaction.splitRate}.");
 
       final participants = [ payerId, ...transaction.expensePartecipants.map((e) => e.userId) ];
 
@@ -182,7 +182,7 @@ class GroupTransactionsUtil {
         summary[participantId]?.toReceiveNet -= share;
         summary[payerId]?.toReceiveNet += share;
 
-        log.fine("Transaction ${transaction.id}. total: ${transaction.totalAmount}, participants: ${participants.length}: $participantId owes $share to payer $payerId. Updated toReceiveNet for participant: ${summary[participantId]?.toReceiveNet}, for payer: ${summary[payerId]?.toReceiveNet}.");
+        // debug: log.fine("Transaction ${transaction.id}. total: ${transaction.totalAmount}, participants: ${participants.length}: $participantId owes $share to payer $payerId. Updated toReceiveNet for participant: ${summary[participantId]?.toReceiveNet}, for payer: ${summary[payerId]?.toReceiveNet}.");
         summary[participantId]?.movementModels.add(
           GroupTransactionSummaryMovementModel(
             transactionId: transaction.id,

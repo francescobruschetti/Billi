@@ -183,7 +183,10 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
           child: SegmentedControl(
             selectedIndex: tabSelectedIndex,
             onChanged: _onTabChanged,
-            segments: const ['Dividi spesa', 'Specifica quota'],
+            segments: const [
+              MapEntry('Dividi spesa', Icons.pie_chart),
+              MapEntry('Specifica quota', Icons.edit),
+            ],
           ),
         ),
 

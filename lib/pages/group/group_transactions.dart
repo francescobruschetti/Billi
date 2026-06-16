@@ -226,7 +226,6 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
       builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
-        title: 'Pagamenti da saldare',
         participantsSummary: _participantsSummary,
         groupId: widget.groupId,
         onShowMessage: (message) => GenericUtil.showSnackbar(context, message),
