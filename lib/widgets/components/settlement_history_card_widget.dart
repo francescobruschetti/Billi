@@ -49,7 +49,7 @@ class _SettlementHistoryCardWidgetState extends State<SettlementHistoryCardWidge
 
                     if (widget.settlement.payer.id == widget.currentUserId) ...[
                       const SizedBox(height: AppConstants.sizedBoxHeight),
-                      Text('Devi', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                      Text('Hai pagato', style: const TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
                     ],
                   ]
                 ),

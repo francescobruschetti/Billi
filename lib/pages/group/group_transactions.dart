@@ -6,6 +6,7 @@ import 'package:Billy/extentions/datetime_extention.dart';
 import 'package:Billy/models/group/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
+import 'package:Billy/services/group_transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/time_filter_widget.dart';
@@ -36,7 +37,7 @@ class GroupTransactionsPage extends StatefulWidget {
 
 class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   final Logger log = Logger('GroupTransactionsPage');
-  final TransactionService service = TransactionService();
+  final GroupTransactionService groupTransactionService = GroupTransactionService();
   final ScrollController _scrollController = ScrollController();
   final String userId = Supabase.instance.client.auth.currentUser!.id;
 
@@ -73,10 +74,6 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _balanceExpenses() async {
-    
   }
 
   double _computeBalance() {
@@ -138,7 +135,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     }
 
     try {
-      _groupDetails = await service.fetchGroup(groupId: widget.groupId);
+      _groupDetails = await groupTransactionService.fetchGroup(groupId: widget.groupId);
 
       if (mounted) {
         setState(() {

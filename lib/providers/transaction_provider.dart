@@ -6,6 +6,7 @@ import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final transactionServiceProvider = Provider((ref) => TransactionService());
 
@@ -39,7 +40,7 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
     _pageSize = pageSize;
 
     // Ascolta i cambiamenti in realtime
-    // FUNZIONA! Da utilizzare per i gruppi! (Step 1/2) _subscribeToRealtime();
+    _subscribeTransactionsRealtime();
 
     return const AsyncLoading();
   }
@@ -182,34 +183,33 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   }
 
   //************************************* Realtime Updates *************************************//
-  // FUNZIONA! Da utilizzare per i gruppi! (Step 2/2)
-  // void _subscribeToRealtime() {
-  //   /* IMPORTANTE! By default Supabase non aggiorna in realtime i dati già presenti nella lista, ma solo quelli nuovi che arrivano dopo la subscription
-  //   * → Per attivare il realtime, andare in: Database → Tables → transactions → Edit table -> Enable Realtime → ✅ ON */
-  //   final supabase = Supabase.instance.client;
-  //   final userId = profileService.getCurrentUserId();
+  void _subscribeTransactionsRealtime() {
+    /* IMPORTANTE! By default Supabase non aggiorna in realtime i dati già presenti nella lista, ma solo quelli nuovi che arrivano dopo la subscription
+    * → Per attivare il realtime, andare in: Database → Tables → transactions → Edit table -> Enable Realtime → ON */
+    final supabase = Supabase.instance.client;
+    final userId = profileService.getCurrentUserId();
 
-  //   final subscription = supabase
-  //     .from('transactions')
-  //     .stream(primaryKey: ['id'])
-  //     .eq('user_id', userId)
-  //     .listen(
-  //       (data) {
-  //         log.fine('Realtime event received: ${data.length} transactions'); // ← deve stampare
-  //         refresh();
-  //       },
-  //       onError: (e) {
-  //         log.severe('Realtime subscription error: $e'); // ← errori di connessione
-  //       },
-  //       onDone: () {
-  //         log.fine('Realtime subscription closed'); // ← se si chiude inaspettatamente
-  //       },
-  //     );
-  //
-  //   // Cancella la subscription quando il provider viene distrutto
-  //   ref.onDispose(() {
-  //     log.fine('Cancelling realtime subscription');
-  //     subscription.cancel();
-  //   });
-  // }
+    final subscription = supabase
+      .from('transactions')
+      .stream(primaryKey: ['id'])
+      .eq('user_id', userId)
+      .listen(
+        (data) {
+          log.fine('Realtime event received: ${data.length} transactions');
+          refresh();
+        },
+        onError: (e) {
+          log.severe('Realtime transactions subscription error: $e'); // ← errori di connessione
+        },
+        onDone: () {
+          log.fine('Realtime transactions subscription closed'); // ← se si chiude inaspettatamente
+        },
+      );
+  
+    // Cancella la subscription quando il provider viene distrutto
+    ref.onDispose(() {
+      log.fine('Cancelling transactions realtime subscription');
+      subscription.cancel();
+    });
+  }
 }

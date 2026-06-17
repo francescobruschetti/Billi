@@ -5,6 +5,7 @@ import 'package:Billy/models/group/group_participant_summary_model.dart';
 import 'package:Billy/models/group/group_settlement_profile_model.dart';
 import 'package:Billy/pages/transaction/components/segment_control_page.dart';
 import 'package:Billy/providers/ui_provider.dart';
+import 'package:Billy/services/group_transaction_service.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -38,7 +39,7 @@ class _TransactionsBalanceBottomSheetWidgetState extends ConsumerState<Transacti
   final ScrollController _scrollController = ScrollController();
   late final PageController _controller;
   final ProfileService profileService = ProfileService();
-  final TransactionService transactionService = TransactionService();
+  final GroupTransactionService groupTransactionService = GroupTransactionService();
 
   final List<GroupTransactionSummaryBalanceModel> _selectedGroupTransactionSummaryBalanceModels = [];
   GroupSettlementsHistoryPageModel _settlementsHistory = GroupSettlementsHistoryPageModel();
@@ -87,7 +88,7 @@ class _TransactionsBalanceBottomSheetWidgetState extends ConsumerState<Transacti
 
   Future<void> _loadSettlementsHistory(final String groupId) async {
     try {
-      transactionService.loadSettlementsHistoryGroup(groupId: groupId, pageIndex: 0).then((data) {      
+      groupTransactionService.loadSettlementsHistoryGroup(groupId: groupId, pageIndex: 0).then((data) {      
         setState(() {
           _settlementsHistory = data;
           _isLoadingHistory = false;
@@ -122,7 +123,7 @@ class _TransactionsBalanceBottomSheetWidgetState extends ConsumerState<Transacti
         return;
       }
 
-      transactionService.settleUserGroupExpenses(groupId, _selectedGroupTransactionSummaryBalanceModels).then((_) {      
+      groupTransactionService.settleUserGroupExpenses(groupId, _selectedGroupTransactionSummaryBalanceModels).then((_) {      
 
         // TODO: trovare un modo per non utilizzare context: "Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
         // workaround con delay per evitare che il bottom sheet venga chiuso prima che venga mostrato lo snackbar

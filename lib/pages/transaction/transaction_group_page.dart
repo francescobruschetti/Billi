@@ -7,6 +7,7 @@ import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widge
 import 'package:Billy/pages/transaction/components/splitrate_vs_paidamount_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/ui_provider.dart';
+import 'package:Billy/services/group_transaction_service.dart';
 import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
@@ -34,6 +35,7 @@ class TransactionGroupPage extends ConsumerStatefulWidget {
 
 class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   final Logger log = Logger('TransactionGroupPage');
+  final GroupTransactionService groupTransactionService = GroupTransactionService();
   final double _defaultSizedBoxHeight = 6.0;
 
   late TextEditingController _priceController;
@@ -252,7 +254,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
 
       if (isEdit) { // Logica di salvataggio modifica gruppo
       // TODO:
-        // await TransactionService().updateGroupExpenseTransaction(
+        // await groupTransactionService.updateGroupExpenseTransaction(
         //   groupId: _selectedGroup!.id,
         //   transactionId: widget.transactionId!,
         //   price: formattedPrice,
@@ -262,7 +264,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         // );
       } 
       else { // Logica di creazione nuovo gruppo
-        await TransactionService().createGroupExpenseTransaction(
+        await groupTransactionService.createGroupExpenseTransaction(
           groupId: _selectedGroup!.id,
           price: formattedPrice,
           splitRateEnum: _selectedSplitRateValueEnum,
@@ -301,7 +303,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       double formattedPrice = _formatPriceInput();
 
       if (isEdit) { // Logica di salvataggio modifica gruppo
-        await TransactionService().updateGroupIncomeTransaction(
+        await groupTransactionService.updateGroupIncomeTransaction(
           groupId: _selectedGroup!.id,
           transactionId: widget.transactionId!,
           price: formattedPrice,
@@ -309,7 +311,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
         );
       } 
       else { // Logica di creazione nuovo gruppo
-        await TransactionService().createGroupIncomeTransaction(
+        await groupTransactionService.createGroupIncomeTransaction(
           groupId: _selectedGroup!.id,
           price: formattedPrice,
           note: _noteController.text.trim(),

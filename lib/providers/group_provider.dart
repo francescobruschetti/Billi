@@ -1,14 +1,19 @@
 import 'package:Billy/models/group/group_details_model.dart';
+import 'package:Billy/services/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:Billy/services/group_service.dart';
+import 'package:logging/logging.dart';
 
 final groupServiceProvider = Provider((ref) => GroupService());
 
 final groupsProvider = NotifierProvider<GroupsNotifier, AsyncValue<List<GroupDetailsModel>>>(
   GroupsNotifier.new,
+  name: 'groupsProvider',
 );
 
 class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
+  final Logger log = Logger('GroupsNotifier');
+  final ProfileService profileService = ProfileService();
   GroupService get _service => ref.read(groupServiceProvider);
 
   @override
@@ -19,6 +24,7 @@ class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
     return const AsyncLoading();
   }
 
+  //************************************* Data Management *************************************//
   // Carica dal server — chiamato solo all'avvio e su refresh forzato
   Future<void> _loadFromServer() async {
     try {
@@ -44,6 +50,7 @@ class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
     }
   }
 
+  //************************************* LOCAL Management *************************************//
   void addGroupLocally(GroupDetailsModel newGroup) {
     state = state.whenData((groups) => [newGroup, ...groups]);
   }
@@ -62,4 +69,5 @@ class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
       (groups) => groups.where((g) => g.id != id).toList(),
     );
   }
+
 }
