@@ -1,6 +1,7 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/category_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
+import 'package:Billy/models/group/group_expense_partecipants_model.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
@@ -17,6 +18,8 @@ class TransactionCardWidget extends StatefulWidget {
   final String? splitRate;
   final double? paidAmount;
   final ProfileModel? profileModel;
+  final List<GroupExpenseParticipantModel>? expenseParticipants;
+  final VoidCallback? expensePartecipantsOnPressed;
 
   const TransactionCardWidget({
     super.key,
@@ -30,6 +33,8 @@ class TransactionCardWidget extends StatefulWidget {
     this.splitRate,
     this.paidAmount,
     this.profileModel,
+    this.expenseParticipants, 
+    this.expensePartecipantsOnPressed,
   });
 
   @override
@@ -117,6 +122,16 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
             children: [
               if (widget.note != null && widget.note!.isNotEmpty) ...[
                 Icon(Icons.note, color: Colors.yellow[700], size: 20),
+              ],
+              if (widget.expenseParticipants != null && widget.expenseParticipants!.isNotEmpty) ...[
+                IconButton(
+                  icon: Badge(
+                    label: Text('${widget.expenseParticipants!.length + 1}'), // +1 per includere il profilo del pagatore
+                    backgroundColor: Colors.blueAccent,
+                    child: Icon(Icons.group, color: Colors.blue[700], size: 24),
+                  ),
+                  onPressed: widget.expensePartecipantsOnPressed,
+                ),
               ],
               const SizedBox(width: AppConstants.sizedBoxWidth),
               Text(
@@ -207,7 +222,6 @@ class _TransactionCardWidgetState extends State<TransactionCardWidget> {
 
   String _formatAmount(double amount, TransactionTypeEnum type) {
     String value = (type == TransactionTypeEnum.EXPENSE ? '-' : '') + amount.toStringAsFixed(2);
-
     return '€$value';
   }
 }

@@ -14,7 +14,7 @@ create table groups (
 
 create table group_participants (
   user_id uuid default auth.uid() references auth.users(id) on delete cascade,
-  group_id uuid references groups(id) on delete cascade,
+  group_id uuid references groups(id) on delete cascade, 
   group_user_id uuid not null, -- campo aggiuntivo per ottimizzare le policy di accesso ai partecipanti
   role group_role_enum not null default 'MEMBER',
 
@@ -22,10 +22,12 @@ create table group_participants (
   is_enabled boolean default true,
 
   joined_at timestamp with time zone default now(),
+  left_at timestamp with time zone,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
   primary key (group_id, user_id),
-  constraint fk_group_participants_profiles foreign key (user_id) references profiles(id) on delete cascade
+  constraint fk_group_participants_profiles 
+    foreign key (user_id) references profiles(id) 
 );
 
 -- ENUM per split_rate
@@ -42,7 +44,9 @@ create table group_transactions (
   transaction_type transaction_type_enum not null default 'EXPENSE',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now(),
-  constraint fk_group_transactions_profiles foreign key (user_id) references profiles(id) on delete cascade,
+  constraint fk_group_transactions_profiles 
+    foreign key (user_id) references profiles(id)
+    on delete cascade, -- delete users associated with this transaction
   constraint chk_paid_or_split_only
   check (
     (paid_amount is not null and (split_rate is null or split_rate = 'FIXED_AMOUNT')) 

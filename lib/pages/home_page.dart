@@ -5,7 +5,7 @@ import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/extentions/datetime_extention.dart';
 import 'package:Billy/extentions/timefilter_start_end_extention.dart';
 import 'package:Billy/models/balance_details_model.dart';
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
 import 'package:Billy/models/database/log_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_model.dart';
@@ -19,6 +19,7 @@ import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/balance_bar_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
@@ -288,6 +289,7 @@ class _HomePageState
     );
   }
 
+  @Preview(name: 'Time Filters', group: 'HomePage') // TODO: not working
   Widget _buildTimeFilters() {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -306,7 +308,9 @@ class _HomePageState
             child: SegmentedControl(
               selectedIndex: _selectedTimeFilterIndex,
               onChanged: (index) => _applyTimeFilter(index),
-              segments: _timeFilters.map((filter) => filter.shortValue).toList(),
+              segments: _timeFilters.map((filter) => 
+                MapEntry(filter.shortValue, null)
+              ).toList(),
             ),
           )
         : const SizedBox.shrink(key: ValueKey('nofilters')),

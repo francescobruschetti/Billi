@@ -1,6 +1,8 @@
 import 'package:Billy/enums/split_rate_mode_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
+import 'package:Billy/models/group/group_participant_summary_balance_model.dart';
+import 'package:Billy/models/group/group_settlement_profile_model.dart';
 import 'package:Billy/models/personal_transactions/personal_transaction_page_model.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:logging/logging.dart';
@@ -147,9 +149,25 @@ class TransactionService {
           user_id,
           created_at,
           updated_at,
-          group_participants:group_participants(user_id, profiles:profiles(*)),
-          group_transactions:group_transactions(*, merchant:merchants(*), category:categories(*), profile:profiles(*))
-        ''')
+          group_participants:group_participants(user_id, is_enabled, left_at, role, profiles:profiles(*)),
+          
+          group_settlements:group_settlements!group_settlements_group_id_fkey(
+            id, group_id, payer_id, receiver_id, amount, settled_at
+          ),
+          
+          group_transactions:group_transactions(
+            *,
+            merchant:merchants(*),
+            category:categories(*),
+
+            profile:profiles!fk_group_transactions_profiles(*),
+
+            expense_participants:group_expense_participants!fk_group_expense_participants_group_transactions(
+              *,
+              profiles(*)
+            )
+          )
+          ''')
         .eq('id', groupId)
         .single();
 
@@ -211,21 +229,6 @@ class TransactionService {
     String? note,
   })
   async {
-    // try {
-    //   final res = await supabase.rpc('update_group_and_participants', params: {
-    //     'p_group_id': id,
-    //     'p_name': name,
-    //     'p_description': description,
-    //     'p_participants_to_add': participantsToAdd?.map((u) => u['id']).toList() ?? [],
-    //     'p_participants_to_remove': participantsToRemoveIds ?? [],
-    //   });
-
-    //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
-    // } 
-    // catch (e) {
-    //   log.severe("Errore creazione gruppo: $e");
-    //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
-    // }
     throw Exception("Not implemented yet");
   }
   
@@ -238,23 +241,49 @@ class TransactionService {
     String? note,
   })
   async {
-    // try {
-    //   final res = await supabase.rpc('update_group_and_participants', params: {
-    //     'p_group_id': id,
-    //     'p_name': name,
-    //     'p_description': description,
-    //     'p_participants_to_add': participantsToAdd?.map((u) => u['id']).toList() ?? [],
-    //     'p_participants_to_remove': participantsToRemoveIds ?? [],
-    //   });
-
-    //   return ApiResponseModel<Map<String, dynamic>>(success: true, message: null, data: {'id': res});
-    // } 
-    // catch (e) {
-    //   log.severe("Errore creazione gruppo: $e");
-    //   return ApiResponseModel<Map<String, dynamic>>(success: false, message: e.toString(), data: {});
-    // }
     throw Exception("Not implemented yet");
   }
   
+  Future<void> settleUserGroupExpenses(final String groupId, final List<GroupTransactionSummaryBalanceModel> balanceModels) async {
+    try {
+      await supabase.rpc('settle_group_movements', params: {
+        'p_group_id': groupId,
+        'p_movements': balanceModels.map((m) => {
+          'receiver_id': m.otherUserId,  // chi riceve i soldi
+          'amount': m.amount,
+        }).toList(),
+      });
+    } 
+    catch (e) {
+      log.severe("Errore salvataggio saldo debiti: $e");
+      throw Exception("Errore salvataggio saldo debiti");
+    }
+  }
 
+  Future<GroupSettlementsHistoryPageModel> loadSettlementsHistoryGroup({ 
+    required String groupId, required int pageIndex,
+    int pageSize = 50,
+    DateTime? dateStart,
+    DateTime? dateEnd 
+  }) async {
+    try {
+      // TODO: al momento carico tutto: final userId = profileService.getCurrentUserId();
+      final from = pageIndex * pageSize;
+      final to = from + pageSize - 1;
+
+      final result = await supabase.rpc('get_group_settlements_history', params: {
+        'p_group_id': groupId,
+        'p_from': from,
+        'p_to': to,
+        'p_date_start': dateStart?.toIso8601String(),
+        'p_date_end': dateEnd?.toIso8601String(),
+      });
+
+      return GroupSettlementsHistoryPageModel.fromJson(result);
+    } 
+    catch (e) {
+      log.severe("Errore nel caricamento dei dati: $e");
+      throw Exception("Errore nel caricamento dei dati");
+    }
+  }
 }

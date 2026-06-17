@@ -5,7 +5,7 @@ enum SplitRateModeEnum {
   HALF('HALF'),
   THREE_QUARTERS('THREE_QUARTERS'),
   EVENLY('EVENLY'),
-  ZERO('ZERO'),
+  ZERO('ZERO'), // Hai anticipato tu e ti devono rimborsare il 100%
   CUSTOM_PERCENTAGE('CUSTOM_PERCENTAGE'),
   
   FIXED_1('FIXED_1'), // Paga 1 quota fissa (es. hai speso 100 ed eravate 5, paghi: 100/5 = 20)

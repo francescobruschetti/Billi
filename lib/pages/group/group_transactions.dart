@@ -3,7 +3,7 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/enums/time_filter_enum.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
 import 'package:Billy/extentions/datetime_extention.dart';
-import 'package:Billy/models/group_details_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
 import 'package:Billy/pages/group/components/transactions_balance_bottom_sheet_widget.dart';
 import 'package:Billy/pages/group/components/transactions_details_bottom_sheet_widget.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -12,8 +12,8 @@ import 'package:Billy/widgets/components/time_filter_widget.dart';
 import 'package:Billy/widgets/components/transaction_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/group_transaction_model.dart';
-import 'package:Billy/models/group_participant_summary_model.dart';
+import 'package:Billy/models/group/group_transaction_model.dart';
+import 'package:Billy/models/group/group_participant_summary_model.dart';
 import 'package:Billy/pages/transaction/transaction_group_page.dart';
 import 'package:Billy/pages/group/group_details.dart';
 import 'package:Billy/services/transaction_service.dart';
@@ -75,6 +75,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     super.dispose();
   }
 
+  Future<void> _balanceExpenses() async {
+    
+  }
+
   double _computeBalance() {
     double res = _groupTransactions.fold<double>(0, (sum, e) {
       final amount = e.totalAmount;
@@ -87,7 +91,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   int _computeBalanceTransactionsCount() {
     int count = 0;
     for (var summary in _participantsSummary.values) {
-      count += summary.balanceMovements.length;
+      count += summary.movementModels.length;
     }
     return count;
   }
@@ -103,19 +107,12 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     // TODO: da implementare filtro spese
   }
 
- String _formatDateTime(String dateTimeStr) {
-    try {
-      final dateTime = dateTimeStr.toDateTime();
-      return dateTime.toDateTimeStr();
-    } 
-    catch (e) {
-      log.severe('Error parsing date: $e');
-      return dateTimeStr;
-    }
-  }
-
   void _handleUsersSummary() { // TODO: capire come chiamarla all'avvio, dopo che le chiamate transactions e group details hanno caricato i dati necessari
-    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(transactions: _groupTransactions, participants: _groupDetails.participants);
+    _participantsSummary = GroupTransactionsUtil.computeParticipantsSummary(
+      transactions: _groupTransactions,
+      participants: _groupDetails.participants,
+      settlements: _groupDetails.settlements,
+    );
 
     setState(() {
       _participantsSummary = Map<String, GroupParticipantSummaryModel>.from(_participantsSummary);
@@ -127,6 +124,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
     if (mounted) {
       setState(() {
         _errorMessage = null;
+
         if (reset) {
           _isLoadingPage = true;
         } 
@@ -154,6 +152,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
             _groupTransactions.addAll(_groupDetails.transactions);
             _isLoadingContent = false;
           }
+          
           _handleUsersSummary();
           _groupParticipantsCnt = _groupDetails.participants.length;
           _groupTransactionsBalanceCnt = _computeBalanceTransactionsCount();
@@ -227,8 +226,9 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
       isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
       backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
       builder: (BuildContext context) => TransactionsBalanceBottomSheetWidget(
-        title: 'Compensa saldo',
         participantsSummary: _participantsSummary,
+        groupId: widget.groupId,
+        onShowMessage: (message) => GenericUtil.showSnackbar(context, message),
       ),
     );
   }
@@ -274,7 +274,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                     children: [
                       Expanded(
                         child: CustomButtonWidget(
-                          text: "Utenti: $_groupParticipantsCnt", 
+                          text: "Riepilogo: $_groupParticipantsCnt", 
                           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                           iconData: Icons.trending_up, 
                           onPressed: _openSummaryDetailsBottomSheet
@@ -338,7 +338,7 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                                       );
                                     }
                                     final e = _groupTransactions[index];
-                                    final formattedDateTime = _formatDateTime(e.updatedAt.toString());
+                                    final formattedDateTime = e.updatedAt.toDateTimeStr();
                                     final totalAmount = e.totalAmount;
                                     final merchant = e.merchant;
                                     final category = e.category;
@@ -354,6 +354,21 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
                                       splitRate: e.splitRate,
                                       paidAmount: e.paidAmount,
                                       profileModel: e.profileModel,
+                                      expenseParticipants: e.expensePartecipants,
+                                      expensePartecipantsOnPressed: () => // TODO: da implementare
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+                                          backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+                                          builder: (BuildContext context) => TransactionsDetailsBottomSheetWidget(
+                                            title: 'Dettaglio partecipanti',
+                                            participantsSummary: GroupTransactionsUtil.computeParticipantsSummary(
+                                              transactions: [e], 
+                                              participants: _groupDetails.participants,
+                                              settlements: _groupDetails.settlements,
+                                            ),
+                                          ),
+                                        ),
                                     );
                                   },
                                 ),
@@ -481,12 +496,10 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
           Expanded(
             child: 
               CustomButtonWidget(
-                onPressed: () async {
-                  _navigateToGroupTransactionPage(groupId: widget.groupId, transactionType: TransactionTypeEnum.INCOME, isEditAllowed: true);
-                },
-                text: 'Entrate',
-                iconData: Icons.login,
-                backgroundColor: AppConstants.defaultIncomeColor,
+                onPressed: _openSummaryTransactionBottomSheet,
+                text: 'Salda',
+                iconData: Icons.balance,
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               ),
           ),
         ],

@@ -23,7 +23,7 @@ class UserSettingsDao extends DatabaseAccessor<AppDatabase> with _$UserSettingsD
 
   Future<void> upsertSettings(UserSettingsTableCompanion settings) async {
     log.fine('Upserting settings into local database');
-    assert(settings.userId.present);
+    assert(settings.userId.present); // TODO: da errore 
     
     // v1: await into(userSettingsTable).insertOnConflictUpdate(settings);
     await transaction(() async {

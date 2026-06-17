@@ -1,6 +1,6 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/models/category_model.dart';
-import 'package:Billy/models/create_category_response_model.dart';
+import 'package:Billy/models/category/category_model.dart';
+import 'package:Billy/models/category/create_category_response_model.dart';
 import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';

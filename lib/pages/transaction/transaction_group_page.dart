@@ -1,8 +1,8 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/models/create_category_response_model.dart';
-import 'package:Billy/models/group_details_model.dart';
-import 'package:Billy/models/group_expense_split_response_model.dart';
+import 'package:Billy/models/category/create_category_response_model.dart';
+import 'package:Billy/models/group/group_details_model.dart';
+import 'package:Billy/models/group/group_expense_split_response_model.dart';
 import 'package:Billy/pages/transaction/components/categories_bottom_sheet_widget.dart';
 import 'package:Billy/pages/transaction/components/splitrate_vs_paidamount_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';

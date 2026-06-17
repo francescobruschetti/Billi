@@ -40,3 +40,20 @@ class SplitRateModeNotifier extends Notifier<SplitRateModeEnum?> {
     state = mode;
   }
 }
+
+// -------------------------------------------------------------------------------------------------------------------------
+// Used to handle Tabs in Group Settlement Active vs History bottom sheet
+final groupSettlementTabProvider = NotifierProvider<GroupSettlementTabNotifier, int>(
+  GroupSettlementTabNotifier.new,
+);
+
+class GroupSettlementTabNotifier extends Notifier<int> {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setTab(int tabIndex) {
+    state = tabIndex;
+  }
+}

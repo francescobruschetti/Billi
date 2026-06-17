@@ -1,5 +1,6 @@
 import 'package:Billy/enums/transaction_type_enum.dart';
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
+import 'package:Billy/models/group/group_expense_partecipants_model.dart';
 import 'package:Billy/models/merchant_model.dart';
 import 'package:Billy/models/profile_model.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -13,6 +14,7 @@ class GroupTransactionModel {
   final ProfileModel profileModel;
   final MerchantModel? merchant;
   final CategoryModel? category;
+  final List<GroupExpenseParticipantModel> expensePartecipants;
 
   final double? paidAmount;
   final double totalAmount;
@@ -28,6 +30,7 @@ class GroupTransactionModel {
     required this.profileModel,
     this.merchant,
     this.category,
+    required this.expensePartecipants,
     this.paidAmount,
     required this.totalAmount,
     this.splitRate,
@@ -44,6 +47,11 @@ class GroupTransactionModel {
       profileModel: ProfileModel.fromMap(map['profile']),
       merchant: map['merchant'] != null ? MerchantModel.fromMap(map['merchant']) : null,
       category: map['category'] != null ? CategoryModel.fromMap(map['category']) : null,
+
+      expensePartecipants: (map['expense_participants'] as List? ?? [])
+        .map((e) => GroupExpenseParticipantModel.fromMap(e as Map<String, dynamic>))
+        .toList(),
+
       paidAmount: map['paid_amount'] != null ? (map['paid_amount'] as num).toDouble() : null,
       totalAmount: (map['total_amount'] as num).toDouble(),
       splitRate: map['split_rate'],

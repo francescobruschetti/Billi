@@ -1,4 +1,4 @@
-import 'package:Billy/models/category_model.dart';
+import 'package:Billy/models/category/category_model.dart';
 
 class CreateCategoryResponseModel {
   final CategoryModel? category;

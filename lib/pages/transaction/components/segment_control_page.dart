@@ -1,9 +1,10 @@
+import 'package:Billy/constants.dart';
 import 'package:flutter/material.dart';
 
 class SegmentedControl extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onChanged;
-  final List<String> segments;
+  final List<MapEntry<String, IconData?>> segments;
 
   const SegmentedControl({
     super.key,
@@ -26,7 +27,7 @@ class SegmentedControl extends StatelessWidget {
 
           return Stack(
             children: [
-              // PILLA ANIMATA
+              // PILA ANIMATA
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(
                   begin: 0,
@@ -61,7 +62,7 @@ class SegmentedControl extends StatelessWidget {
 
               Row(
                 children: segments.asMap().entries.map((entry) {
-                  return _buildItem(entry.value, entry.key);
+                  return _buildItem(entry.value.key, entry.key, entry.value.value);
                 }).toList(),
               ),
             ],
@@ -71,19 +72,27 @@ class SegmentedControl extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(String text, int index) {
+  Widget _buildItem(String text, int index, IconData? icon) {
     return Expanded(
       child: GestureDetector(
         onTap: () => onChanged(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) Icon(icon, size: AppConstants.smallIconSize, color: Colors.black),
+                if (icon != null) const SizedBox(width: 4),
+
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

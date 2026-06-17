@@ -1,6 +1,7 @@
 import 'package:Billy/constants.dart';
+import 'package:Billy/enums/group_role_enum.dart';
 import 'package:Billy/exceptions/app_exception.dart';
-import 'package:Billy/models/group_participant_model.dart';
+import 'package:Billy/models/group/group_participant_model.dart';
 import 'package:Billy/pages/group/components/invitation_link_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/utils/generic_util.dart';
@@ -10,7 +11,6 @@ import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:Billy/models/profile_model.dart';
 import 'package:Billy/services/group_service.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/widgets/components/loading_scaffold.dart';
@@ -41,7 +41,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   late String _invitationLink;
   final List<GroupParticipantModel> _selectedUsers = [];
   final List<String> _removedUserIds = [];
-  final List<ProfileModel> _existingUsers = [];
+  final List<GroupParticipantModel> _usersToBeRemoved = [];
+  final List<GroupParticipantModel> _existingUsers = [];
+  final List<GroupParticipantModel> _currentUsers = [];
+  final List<GroupParticipantModel> _pastUsers = [];
 
   late final bool isEdit;
 
@@ -122,12 +125,12 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       
       if (mounted) {
         setState(() {
-          if (_existingUsers.any((u) => u.id == res.id)) {
+          if (_existingUsers.any((u) => u.userId == res.id)) {
             GenericUtil.showSnackbar(context, 'Utente ${res.username} già presente nel gruppo');
             return; // Salta utenti già presenti nel gruppo
           }
           if (!_selectedUsers.any((u) => u.userId == res.id)) {
-            _selectedUsers.add(GroupParticipantModel(userId: res.id, profile: res));
+            _selectedUsers.add(GroupParticipantModel(userId: res.id, role: GroupRoleEnum.MEMBER, profile: res, isEnabled: true, leftAt: null));
           }
         });
       }
@@ -165,10 +168,20 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         _descriptionController.text = groupDetailsResponse.description ?? '';
         _invitationLink = groupDetailsResponse.link;
 
-        final userProfiles = groupDetailsResponse.participants.map((p) => p.profile).toList();
         setState(() {
           _existingUsers.clear();
-          _existingUsers.addAll(userProfiles);
+          _existingUsers.addAll(groupDetailsResponse.participants);
+
+          _currentUsers.clear();
+          _pastUsers.clear();
+          for (var participant in groupDetailsResponse.participants) {
+            if (participant.leftAt == null) {
+              _currentUsers.add(participant);
+            } 
+            else {
+              _pastUsers.add(participant);
+            }
+          }
         });
       }
     } 
@@ -330,11 +343,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 if (widget.groupId != null) ...[
                   _buildAddUsersToGroup(),
 
-                  // List of users to be added to group
                   _buildListOfUsersToBeAddedToGroup(),
+
+                  _buildListOfUsersToBeRemovedToGroup(),
                   
-                  // List of users already in group
                   _buildListOfUsersAlreadyInGroup(),
+
+                  _buildListOfUsersLeftFromTheGroup(),
                 ],
                       
                 // Alert errore
@@ -420,6 +435,110 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     );
   }
 
+  Widget _buildListOfUsersAlreadyInGroup() {   
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        if (_currentUsers.isEmpty) ...[
+          const Text('Nessun partecipante nel gruppo'),
+        ]
+        else ...[
+          Row(
+            children: [
+              const Text('Partecipanti', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(width: AppConstants.mediumSizedBoxWidth),
+              Text('(${_currentUsers.length})'),
+            ],
+          ),
+
+          const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _currentUsers.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final user = _currentUsers[i];
+              return ListTile(
+                leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.profile.name),
+                    Text(" (@${user.profile.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                  ],
+                ),
+                trailing: user.role != GroupRoleEnum.CREATOR
+                    ? IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: AppConstants.red),
+                        tooltip: 'Rimuovi dal gruppo',
+                        onPressed: () {
+                          setState(() {
+                            _removedUserIds.add(user.userId);
+                            _usersToBeRemoved.add(user);
+                            _currentUsers.removeWhere((u) => u.userId == user.userId);
+                          });
+                        },
+                      )
+                    : const Text('Creatore', style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic))
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+  
+  Widget _buildListOfUsersLeftFromTheGroup() {
+    if (_pastUsers.isEmpty) return SizedBox.shrink();
+
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        Row(
+          children: [
+            const Text('Passati', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(width: AppConstants.mediumSizedBoxWidth),
+              Text('(${_pastUsers.length})'),
+          ],
+        ),
+
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: _pastUsers.length,
+          separatorBuilder: (context, index) => const Divider(height: 1),
+          itemBuilder: (context, i) {
+            final user = _pastUsers[i];
+            return ListTile(
+              leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.profile.name),
+                  Text(" (@${user.profile.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                ],
+              ),
+              trailing: 
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Riaggiungi al gruppo',
+                  onPressed: () {
+                    setState(() {
+                      _selectedUsers.add(user);
+                      _removedUserIds.remove(user.userId);
+                      _pastUsers.removeWhere((u) => u.userId == user.userId);
+                    });
+                  },
+                ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildListOfUsersToBeAddedToGroup() {
     return Column(
       children: [
@@ -427,7 +546,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
         if (_selectedUsers.isNotEmpty) ...[
           Row(
             children: [
-              const Text('Nuovi partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Nuovi partecipanti', style: TextStyle(fontWeight: FontWeight.bold)),
               
               const SizedBox(width: AppConstants.mediumSizedBoxWidth),
               Text('(${_selectedUsers.length})'),
@@ -469,49 +588,48 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       ],
     );
   }
-
-  Widget _buildListOfUsersAlreadyInGroup() {
+  
+  Widget _buildListOfUsersToBeRemovedToGroup() {
     return Column(
       children: [
         const SizedBox(height: AppConstants.mediumSizedBoxHeight),
-        if (_existingUsers.isEmpty) ...[
-          const Text('Nessun partecipante nel gruppo'),
-        ]
-        else ...[
+        if (_usersToBeRemoved.isNotEmpty) ...[
           Row(
             children: [
-              const Text('Partecipanti:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Partecipanti da rimuovere', style: TextStyle(fontWeight: FontWeight.bold)),
+              
               const SizedBox(width: AppConstants.mediumSizedBoxWidth),
-              Text('(${_existingUsers.length})'),
+              Text('(${_usersToBeRemoved.length})'),
             ],
           ),
-
+          
           const SizedBox(height: AppConstants.mediumSizedBoxHeight),
           ListView.separated(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            itemCount: _existingUsers.length,
+            itemCount: _usersToBeRemoved.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, i) {
-              final user = _existingUsers[i];
+              final user = _usersToBeRemoved[i];
               return ListTile(
                 leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user.name),
-                    Text(" (@${user.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
+                    Text(user.profile.name),
+                    Text(" (@${user.profile.username})", style: TextStyle(fontSize: AppConstants.smallTextSize, fontStyle: FontStyle.italic)),
                   ],
                 ),
                 trailing: 
                   // TODO: add icon only user is not a CREATOR
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, color: AppConstants.red),
-                    tooltip: 'Rimuovi dal gruppo',
+                    tooltip: 'Rimuovi',
                     onPressed: () {
                       setState(() {
-                        _removedUserIds.add(user.id);
-                        _existingUsers.removeWhere((u) => u.id == user.id);
+                        _removedUserIds.remove(user.userId);
+                        _usersToBeRemoved.removeWhere((u) => u.profile.id == user.profile.id);
+                        _pastUsers.add(user);
                       });
                     },
                   ),
@@ -520,38 +638,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
           ),
         ],
       ],
-    );
-  }
-
-
-  Widget _buildListTile({ required String name, required String username}) {
-    // return ListTile(
-    //   leading: Icon(Icons.account_circle_rounded, color: Colors.orange[700], size: 32),
-    //   title: Row(
-    //     children: [
-    //       Text(name),
-    //       const Spacer(),
-    //       Text('@$username', style: TextStyle(color: Colors.grey[600])),
-
-    //     ],
-    //   ),
-    //   // onTap: onTap
-    // );
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: _existingUsers.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, i) {
-          final user = _existingUsers[i];
-          return _buildListTile(
-            name: user.name,
-            username: user.username,
-          );
-        },
-      ),
     );
   }
 }
