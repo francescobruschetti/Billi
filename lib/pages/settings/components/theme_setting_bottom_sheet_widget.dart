@@ -17,7 +17,7 @@ class ThemeSettingBottomSheetWidget extends ConsumerStatefulWidget {
 
 class _ThemeSettingBottomSheetWidgetState extends ConsumerState<ThemeSettingBottomSheetWidget> {
   final Logger log = Logger('ThemeSettingBottomSheetWidget');
-  static final ScrollController _verticalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
 
   late List<bool> _selectedThemes;
   final List<Widget> themeWidgets = <Widget>[

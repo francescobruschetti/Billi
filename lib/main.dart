@@ -1,3 +1,4 @@
+import 'package:Billy/app-config.dart';
 import 'package:Billy/authGate/auth_gate.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
@@ -20,8 +21,8 @@ void main() async {
   setupLogging(); // Initialize logging
 
   await Supabase.initialize(
-    url: 'https://qislfeuyfqydzocxuwsw.supabase.co',
-    anonKey: 'sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd',
+    url: AppConfig.supabaseUrl,
+    anonKey: AppConfig.supabaseAnonKey,
   );
 
   runApp(

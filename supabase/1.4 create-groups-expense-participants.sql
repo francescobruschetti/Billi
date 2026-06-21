@@ -29,4 +29,4 @@ create index idx_group_expense_participants_transaction_id on group_expense_part
 
 --------------------------------------------------------------------------
 -- Row Level Security (RLS)
-alter table group_settlements enable row level security;
+alter table group_expense_participants enable row level security;

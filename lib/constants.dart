@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   static const String appDatabaseName = 'billy-db-2026.sqlite';
+  static const String apiTokenPrefix = 'fi_tok_';
 
   static const double zeroPadding = 0.0;
   static const double zeroHeight = 0.0;

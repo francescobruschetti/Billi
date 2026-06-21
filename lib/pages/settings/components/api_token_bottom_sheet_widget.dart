@@ -3,25 +3,27 @@ import 'package:Billy/widgets/components/app_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class InvitationLinkBottomSheetWidget extends StatefulWidget {
+class ApiTokenBottomSheetWidget extends StatefulWidget {
   final String title;
   final String subTitle;
-  final String link;
+  final String token;
+  final String warningMsg;
 
-  const InvitationLinkBottomSheetWidget({
-    super.key, required this.title, required this.subTitle, required this.link
+  const ApiTokenBottomSheetWidget({
+    super.key, required this.title, required this.subTitle, required this.warningMsg, required this.token
   });
 
   @override
-  State<InvitationLinkBottomSheetWidget> createState() => _InvitationLinkBottomSheetWidgetState();
+  State<ApiTokenBottomSheetWidget> createState() => _ApiTokenBottomSheetWidgetState();
 }
 
-class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSheetWidget> {
+class _ApiTokenBottomSheetWidgetState extends State<ApiTokenBottomSheetWidget> {
   final ScrollController _verticalController = ScrollController();
 
   String get title => widget.title;
   String get subTitle => widget.subTitle;
-  String get link => widget.link;
+  String get warningMsg => widget.warningMsg;
+  String get token => widget.token;
 
   bool _showInfo = false;
   String _infoMessage = '';
@@ -50,9 +52,9 @@ class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSh
   Widget build(BuildContext context) {
     return AppBottomSheet(
       title: title,
-      initialSize: 0.5,
-      minSize: 0.25,
-      maxSize: 0.51,
+      initialSize: 0.6,
+      minSize: 0.05,
+      maxSize: 0.85,
 
       child: SingleChildScrollView(
         controller: _verticalController,
@@ -62,8 +64,10 @@ class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSh
           children: [
             _buildSubTitle(context),
 
+            _buildWarningMessage(context),
+
             const SizedBox(height: AppConstants.mediumSizedBoxHeight),
-            _buildInviteLinkText(context),
+            _buildTokenText(context),
 
             if (_showInfo) ...[
               const SizedBox(height: AppConstants.mediumSizedBoxHeight),
@@ -116,52 +120,15 @@ class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSh
         _buildActionsButton(
           context: context,
           icon: Icons.copy,
-          label: 'Copia link',
+          label: 'Copia token',
           onPressed: () {
-            Clipboard.setData(ClipboardData(text: link));
-            _showPopupMessage('Link copiato negli appunti');
+            Clipboard.setData(ClipboardData(text: token));
+            _showPopupMessage('Token copiato negli appunti');
           },
-        ),
-        _buildActionsButton(
-          context: context,
-          icon: Icons.ios_share,
-          label: 'Condividi',
-          onPressed: () => _showPopupMessage('Funzione di condivisione non ancora implementata'), // TODO: implementare condivisione link
-        ),
-        _buildActionsButton(
-          context: context,
-          icon: Icons.refresh,
-          label: 'Rigenera link',
-          onPressed: () => _showPopupMessage('Funzione di rigenerazione link non ancora implementata'), // TODO: implementare rigenerazione link
         ),
       ],
     );
           
-  }
-
-  Widget _buildInviteLinkText(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondary,
-        border: Border.all(
-          color: AppConstants.defaultButtonBorderColor, // borderColor ?? Theme.of(context).colorScheme.primary,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: SelectableText(link, 
-        style: TextStyle(
-          fontSize: AppConstants.subtitleTextSize, 
-          color: Theme.of(context).colorScheme.onSecondary,
-          fontStyle: FontStyle.italic,
-          fontWeight: FontWeight.bold,
-        ), 
-        textAlign: TextAlign.center
-      )
-    );
   }
 
   Widget _buildInfoMessage(BuildContext context) {
@@ -185,6 +152,54 @@ class _InvitationLinkBottomSheetWidgetState extends State<InvitationLinkBottomSh
         style: TextStyle(
           fontSize: AppConstants.textSize, 
         ),
+      ),
+    );
+  }
+
+  Widget _buildTokenText(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary,
+        border: Border.all(
+          color: AppConstants.defaultButtonBorderColor, // borderColor ?? Theme.of(context).colorScheme.primary,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: SelectableText(token, 
+        style: TextStyle(
+          fontSize: AppConstants.subtitleTextSize, 
+          color: Theme.of(context).colorScheme.onSecondary,
+          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold,
+        ), 
+        textAlign: TextAlign.center
+      )
+    );
+  }
+
+  Widget _buildWarningMessage(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(Icons.warning, color: Theme.of(context).colorScheme.error),
+          
+          const SizedBox(width: AppConstants.mediumSizedBoxWidth),
+          Expanded(
+            child: Text(
+              warningMsg,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppConstants.textSize,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,5 @@
 grant usage on schema public to authenticated;
 
-
 --------------------------------------------------------------------------
 -- GroupRoles (ENUMS)
 create type group_role_enum as enum ('ADMIN', 'CREATOR', 'MEMBER');

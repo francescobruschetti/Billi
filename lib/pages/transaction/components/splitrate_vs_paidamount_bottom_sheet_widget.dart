@@ -23,7 +23,7 @@ class SplitrateVsPaidamountBottomSheetWidget extends ConsumerStatefulWidget {
 
 class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<SplitrateVsPaidamountBottomSheetWidget> {
   final Logger log = Logger('SplitrateVsPaidamountBottomSheetWidget');
-  static final ScrollController _verticalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
   late final PageController _controller;
 
   late TextEditingController _customPercentageController;

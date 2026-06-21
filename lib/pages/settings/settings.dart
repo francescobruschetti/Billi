@@ -3,6 +3,7 @@ import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/local/database/app_database.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
+import 'package:Billy/pages/settings/components/api_token_bottom_sheet_widget.dart';
 import 'package:Billy/pages/settings/logs_page.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
@@ -11,6 +12,8 @@ import 'package:Billy/providers/transaction_provider.dart';
 import 'package:Billy/providers/ui_provider.dart';
 import 'package:Billy/services/profile_service.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
+import 'package:Billy/services/api_token_service.dart';
+import 'package:Billy/utils/dialog_util.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,9 +21,11 @@ import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 enum TileName {
+  APPLE_PAY,
   CHANGE_PASSWORD,
   CLEAR_LOCAL_DATA,
   DELETE_ACCOUNT,
+  GENERATE_ACCESS_TOKEN,
   LANGUAGE,
   LOGOUT,
   NOTIFICATIONS,
@@ -40,6 +45,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   final Logger log = Logger('SettingsPage');
   final SigninSignupLogoutService signinSignupLogoutService = SigninSignupLogoutService();
   final ProfileService profileService = ProfileService();
+  final ApiTokenService apiTokenService = ApiTokenService();
+
   bool _isLoadingLogout = false;
   TileName? _loadingTileName;
   String _themeLabel = 'Caricamento...';
@@ -101,7 +108,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     bool? proceed = true;
     if (askConfirmation) {
-      proceed = await GenericUtil.showConfirmationBeforeDeleteDialog(
+      proceed = await DialogUtil.showConfirmationBeforeDeleteDialog(
         context, 'Conferma eliminazione dati locali', 'Sei sicuro di voler eliminare tutti i dati locali? L\'operazione non è reversibile.'
       );
     }
@@ -115,6 +122,36 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     } 
     
     if (mounted) setState(() => _loadingTileName = null);
+  }
+
+  void _generateAccessToken() async {
+    try {
+      if (!mounted) return;
+
+      final String token = apiTokenService.generateApiToken();
+      final String hashedToken = apiTokenService.sha256Hash(token);
+
+      // TODO: permettere all'utente di inserire un nome per il token (es: "Apple Pay")
+      await apiTokenService.saveHashedTokenToSecureStorage(hashedToken: hashedToken, tokenName: 'Token generato il ${DateTime.now()}');
+
+      await showModalBottomSheet<ApiTokenBottomSheetWidget>(
+        context: context,
+        isScrollControlled: true, // obbligatorio per DraggableScrollableSheet
+        backgroundColor: Colors.transparent, // lascia gestire il colore al sheet
+        builder: (BuildContext context) => ApiTokenBottomSheetWidget(
+          title: 'Token di Accesso',
+          subTitle: 'Il token generato ti permetterà di accedere all\'app senza inserire le credenziali.',
+          token: token,
+          warningMsg: 'Il token non sarà più visibile dopo la chiusura di questo pannello!',
+        ),
+    );
+    }
+    catch (e) {
+      log.severe('Errore durante la generazione del token di accesso: $e');
+      if (mounted) {
+        GenericUtil.showSnackbar(context, 'Errore durante la generazione del token di accesso');
+      }
+    }
   }
 
   void _invalidateCache() {
@@ -192,6 +229,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   // --- ACCOUNT ---
                   _buildAccountGroup(),
 
+                  // --- ACCESS CONFIGURATION ---
+                  _buildAccessGroup(),
+                  
                   // --- OTHER SETTINGS ---
                   _buildOtherGroup(),
 
@@ -247,6 +287,90 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAccessGroup() {
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Configura Strumenti',
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
+          ),
+        ),
+
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            children: [
+              // --- GENERATE ACCESS TOKEN ---
+              _buildListTile(
+                icon: Icon(Icons.key, color: Colors.orange[700]), 
+                title: 'Genera Token di Accesso',
+                tileName: TileName.GENERATE_ACCESS_TOKEN,
+                onTap: _generateAccessToken,
+              ),
+
+              // --- APPLE SHORTCUT ---
+              const Divider(height: 1),
+              _buildListTile(
+                icon: Icon(Icons.apple, color: Colors.orange[700]), 
+                title: 'Apple Pay',
+                tileName: TileName.APPLE_PAY,
+                // TODO: add onTap to open share options
+              ),
+            ],
+          ),
+        ),
+        
+      ],
+    );
+  }
+  
+  Widget _buildDeleteDataGroup() {
+    return Column(
+      children: [
+        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Elimina Dati',
+              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
+          ),
+        ),
+        
+        // --- DELETE LOCAL DATA and ACCOUNT ---
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Column(
+            children: [
+              _buildListTile(
+                icon: Icon(Icons.sd_storage, color: Colors.orange[700]), 
+                title: 'Elimina Dati locali',    
+                tileName: TileName.CLEAR_LOCAL_DATA,                
+                onTap: () => _clearLocalData(askConfirmation: true),
+              ),
+
+              const Divider(height: 1),
+              _buildListTile(
+                icon: Icon(Icons.heart_broken_rounded, color: Colors.orange[700]), 
+                title: 'Elimina account',        
+                tileName: TileName.DELETE_ACCOUNT,            
+                // TODO: add onTap to delete account
+              ),
+            ],
+          ),
+        ),
+      ]
     );
   }
 
@@ -344,47 +468,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
   
-  Widget _buildDeleteDataGroup() {
-    return Column(
-      children: [
-        const SizedBox(height: AppConstants.mediumSizedBoxHeight),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Elimina Dati',
-              style: TextStyle(fontSize: AppConstants.textSize, fontWeight: FontWeight.bold, color: Colors.grey),
-            ),
-          ),
-        ),
-        
-        // --- DELETE LOCAL DATA and ACCOUNT ---
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Column(
-            children: [
-              _buildListTile(
-                icon: Icon(Icons.sd_storage, color: Colors.orange[700]), 
-                title: 'Elimina Dati locali',    
-                tileName: TileName.CLEAR_LOCAL_DATA,                
-                onTap: () => _clearLocalData(askConfirmation: true),
-              ),
-
-              const Divider(height: 1),
-              _buildListTile(
-                icon: Icon(Icons.heart_broken_rounded, color: Colors.orange[700]), 
-                title: 'Elimina account',        
-                tileName: TileName.DELETE_ACCOUNT,            
-                // TODO: add onTap to delete account
-              ),
-            ],
-          ),
-        ),
-      ]
-    );
-  }
-
   Widget _buildListTile({ 
     required Icon icon, required String title, 
     String? subtitle, required TileName? tileName, VoidCallback? onTap}) 

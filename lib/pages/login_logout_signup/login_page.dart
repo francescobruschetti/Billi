@@ -1,6 +1,7 @@
 import 'package:Billy/constants.dart';
 import 'package:Billy/providers/local-database/user_settings_provider.dart';
 import 'package:Billy/services/signin_signup_logout_service.dart';
+import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _passwordController = TextEditingController();
   bool _loading = false;
   bool _isFormValid = false;
+  bool _showPassword = false;
   String? _errorMessage;
 
   @override
@@ -109,8 +111,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               CustomValidatedTextField(
                 controller: _passwordController,
                 labelText: 'Password',
-                obscureText: true,
+                obscureText: !_showPassword,
                 prefixIcon: Icon(Icons.key, size: 24),
+                suffixIcon: IconButton(
+                  icon: CustomIconWidget(
+                    assetPath: 'assets/images/icons/${_showPassword ? 'eye_closed.PNG' : 'eye_open.PNG'}',
+                    size: 24
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showPassword = !_showPassword;
+                    });
+                  },
+                ),
                 onSubmitted: (_) => _login(),
                 validator: (value) => value.trim().isEmpty ? 'Campo obbligatorio' : null,
               ),

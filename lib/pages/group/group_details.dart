@@ -4,6 +4,7 @@ import 'package:Billy/exceptions/app_exception.dart';
 import 'package:Billy/models/group/group_participant_model.dart';
 import 'package:Billy/pages/group/components/invitation_link_bottom_sheet_widget.dart';
 import 'package:Billy/providers/group_provider.dart';
+import 'package:Billy/utils/dialog_util.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/custom_validated_textfield_widget.dart';
@@ -71,7 +72,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   }
 
   Future<void> _deleteGroup(String groupId) async {
-    final confirmed = await GenericUtil.showConfirmationBeforeDeleteDialog(
+    final confirmed = await DialogUtil.showConfirmationBeforeDeleteDialog(
       context, 
       'Conferma eliminazione', 
       'Sei sicuro di voler eliminare questo gruppo e tutti i dati associati?\nL\'operazione non è reversibile.',

@@ -10,46 +10,32 @@
 -- Data security is still maintained as long as your RLS policies are correct.
 -- Do not rely on GRANT alone — RLS is the only thing protecting row-level access.
 --------------------------------------------------------------------------
-grant select, insert, update, delete on table group_settlements to authenticated;
+grant select, insert, update, delete on table api_tokens to authenticated;
 --------------------------------------------------------------------------
 
--- TODO: da implementare: policies per group_settlements (ruoli, visibilità partecipanti, ecc.)
 --------------------------------------------------------------------------
--- -- Group Settlements table
-create policy "Group participants can view settlements"
-on group_settlements
+create policy "Users can view own tokens"
+on public.api_tokens
 for select
 to authenticated
 using (
-  exists (
-    select 1 from group_participants
-    where group_participants.group_id = group_settlements.group_id
-      and group_participants.user_id = auth.uid()
-      and group_participants.is_enabled = true
-  )
+    auth.uid() = user_id
 );
 
-create policy "Group participants can insert settlements"
-on group_settlements
+--------------------------------------------------------------------------
+create policy "Users can create own tokens"
+on public.api_tokens
 for insert
 to authenticated
 with check (
-  payer_id = auth.uid()
-  and exists (
-    select 1 from group_participants
-    where group_participants.group_id = group_settlements.group_id
-      and group_participants.user_id = auth.uid()
-      and group_participants.is_enabled = true
-  )
+    auth.uid() = user_id
 );
 
-create policy "Payer can delete own settlements"
-on group_settlements
-for delete
+--------------------------------------------------------------------------
+create policy "Users can update own tokens"
+on public.api_tokens
+for update
 to authenticated
 using (
-  payer_id = auth.uid()
+    auth.uid() = user_id
 );
-
-
-

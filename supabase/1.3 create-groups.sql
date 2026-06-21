@@ -52,7 +52,7 @@ create table group_transactions (
     (paid_amount is not null and (split_rate is null or split_rate = 'FIXED_AMOUNT')) 
     or 
     (paid_amount is null and split_rate is not null)
-  );
+  )
 );
 
 --------------------------------------------------------------------------

@@ -9,6 +9,7 @@ import 'package:Billy/providers/group_provider.dart';
 import 'package:Billy/providers/ui_provider.dart';
 import 'package:Billy/services/group_transaction_service.dart';
 import 'package:Billy/services/transaction_service.dart';
+import 'package:Billy/utils/dialog_util.dart';
 import 'package:Billy/utils/generic_util.dart';
 import 'package:Billy/widgets/components/custom_button_widget.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
@@ -95,7 +96,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   }
 
   Future<bool> _confirmSave({required String content}) async {
-    final confirmed = await GenericUtil.showConfirmationDialog(
+    final confirmed = await DialogUtil.showConfirmationDialog(
       context, 
       'Conferma salvataggio', 
       content,
@@ -239,7 +240,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
       if (_groupExpenseSplitResponseModel?.fixedAmount != null) {
         paidAmount = _groupExpenseSplitResponseModel?.fixedAmount;
         if (paidAmount! > formattedPrice) {
-          final bool proceed = await GenericUtil.showConfirmationBeforeSaveDialog(
+          final bool proceed = await DialogUtil.showConfirmationBeforeSaveDialog(
             context: context,
             contentMessage: "La quota pagata è maggiore del totale. Vuoi procedere comunque?"
           );

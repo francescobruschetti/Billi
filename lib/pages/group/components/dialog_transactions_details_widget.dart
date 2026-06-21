@@ -16,8 +16,8 @@
 // */
 
 // class DialogTransactionsDetailsWidget extends StatelessWidget {
-//   static final ScrollController _verticalController = ScrollController();
-//   static final ScrollController _horizontalController = ScrollController();
+//   final ScrollController _verticalController = ScrollController();
+//   stac final ScrollController _horizontalController = ScrollController();
   
 //   final String? title;
 //   final Map<String, GroupParticipantSummaryModel> participantsSummary;

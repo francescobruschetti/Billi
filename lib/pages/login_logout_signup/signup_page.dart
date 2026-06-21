@@ -156,6 +156,7 @@ class _SignupPageState extends State<SignupPage> {
             CustomValidatedTextField(
               controller: _repeatPasswordController,
               labelText: 'Ripeti Password',
+              obscureText: !_showRepeatPassword,
               prefixIcon: Icon(Icons.key, size: 24),
               suffixIcon: IconButton(
                 icon: CustomIconWidget(
