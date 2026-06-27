@@ -20,5 +20,12 @@ as $$
 $$;
 
 --------------------------------------------------------------------------
--- Function: validate_api_token
+-- Support Function: current_db_user
+create or replace function public.current_db_user()
+returns text
+language sql
+security invoker
+as $$
+select current_user;
+$$;
 

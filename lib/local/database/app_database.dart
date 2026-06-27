@@ -1,10 +1,11 @@
 
 
 
-import 'package:Billy/enums/log_level_enum.dart';
 import 'package:Billy/enums/theme_enum.dart';
+import 'package:Billy/local/database/data_access_object/api_token_dao.dart';
 import 'package:Billy/local/database/data_access_object/logs_dao.dart';
 import 'package:Billy/local/database/data_access_object/user_settings_dao.dart';
+import 'package:Billy/local/database/tables/api_token_table.dart';
 import 'package:Billy/local/database/tables/logs_table.dart';
 import 'package:Billy/local/database/tables/user_settings_table.dart';
 import 'package:Billy/providers/local-database/logs_provider.dart';
@@ -14,7 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
-part 'app_database.g.dart'; // Mandatory to generate file 'app_database.g.dart'. Use command "flutter pub run build_runner build" to generate it.
+part 'app_database.g.dart'; // Mandatory to generate file 'app_database.g.dart'. Use command "dart run build_runner build" to generate it.
 
 // =========================
 // PROVIDER
@@ -26,8 +27,8 @@ final localDatabaseProvider = Provider<AppDatabase>((ref) {
 });
 
 @DriftDatabase(
-  tables: [UserSettingsTable, LogsTable],
-  daos: [UserSettingsDao, LogsDao],
+  tables: [ApiTokenTable, LogsTable, UserSettingsTable],
+  daos: [ApiTokenDao, LogsDao, UserSettingsDao],
 )
 class AppDatabase extends _$AppDatabase {
   static final Logger log = Logger('AppDatabase');
@@ -60,18 +61,21 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 2;
 
   // getter per accedere ai DAO
-  late final userSettingsDao = UserSettingsDao(this);
+  late final apiTokenDao = ApiTokenDao(this);
   late final logsDao = LogsDao(this);
+  late final userSettingsDao = UserSettingsDao(this);
 
   // TODO: da implelmentare
   // Metodo per resettare il database (usato in fase di sviluppo/testing e al logout)
   Future<void> wipeDatabase() async {
     await transaction(() async {
+      final deletedApiTokens = await delete(apiTokenTable).go();
       final deletedLogs = await delete(logsTable).go();
       final deletedUserSettings = await delete(userSettingsTable).go();
 
       // TODO: add here all tables to be deleted...
 
+      log.fine('Deleted rows from apiTokenTable: $deletedApiTokens');
       log.fine('Deleted rows from logsTable: $deletedLogs');
       log.fine('Deleted rows from userSettingsTable: $deletedUserSettings');
 
@@ -89,8 +93,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(logsTable);
       }
 
-      // if (from < 3) { ... }
+      if (from < 3) {
+        await m.createTable(apiTokenTable);    
+      }
+      
       // if (from < 4) { ... }
+      // if (from < 5) { ... }
     },
   );
 }

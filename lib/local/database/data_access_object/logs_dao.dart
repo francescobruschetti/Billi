@@ -3,7 +3,7 @@ import 'package:Billy/local/database/app_database.dart';
 import 'package:Billy/local/database/tables/logs_table.dart';
 import 'package:drift/drift.dart';
 
-part 'logs_dao.g.dart'; // Mandatory to generate file 'logs_dao.g.dart'. Use command "flutter pub run build_runner build" to generate it.
+part 'logs_dao.g.dart'; // Mandatory to generate file 'logs_dao.g.dart'. Use command "dart run build_runner build" to generate it.
 
 @DriftAccessor(tables: [LogsTable])
 class LogsDao extends DatabaseAccessor<AppDatabase> with _$LogsDaoMixin {

@@ -3,7 +3,7 @@ import 'package:Billy/local/database/tables/user_settings_table.dart';
 import 'package:drift/drift.dart';
 import 'package:logging/logging.dart';
 
-part 'user_settings_dao.g.dart'; // Mandatory to generate file 'user_settings_dao.g.dart'. Use command "flutter pub run build_runner build" to generate it.
+part 'user_settings_dao.g.dart'; // Mandatory to generate file 'user_settings_dao.g.dart'. Use command "dart run build_runner build" to generate it.
 
 @DriftAccessor(tables: [UserSettingsTable])
 class UserSettingsDao extends DatabaseAccessor<AppDatabase> with _$UserSettingsDaoMixin {

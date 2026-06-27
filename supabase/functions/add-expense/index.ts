@@ -8,6 +8,11 @@ Deno.serve(async (req) => {
 
   try {
     const auth = await authenticateRequest(req);
+
+    // DEBUG: Log the current database user
+    // const { data } = await supabase.rpc("current_db_user");
+    // console.log("Current DB User:", data);
+
     if (!auth) {
       return unauthorized();
     }

@@ -1,0 +1,25 @@
+
+import 'package:drift/drift.dart';
+
+@DataClassName('ApiTokenTableData')
+class ApiTokenTable extends Table {
+
+  TextColumn get id => text()(); // Mandatory: not is set to UUID in the BE
+
+  TextColumn get userId => text()(); // Mandatory
+
+  TextColumn get name => text()(); // Mandatory
+
+  TextColumn get tokenHash => text()(); // Mandatory
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  DateTimeColumn get lastUsedAt => dateTime()();
+  
+  DateTimeColumn get revokedAt => dateTime()();
+      
+  // Specifying which from the field above is the primary key
+  @override
+  Set<Column> get primaryKey => {id};
+
+}
