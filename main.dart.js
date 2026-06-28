@@ -35363,10 +35363,8 @@ else if(e==null)return a[b](c,d)
 else{s=a[b](c,d,e)
 return s}},
 bll(){switch("prod"){case"prod":return"https://qislfeuyfqydzocxuwsw.supabase.co"
-case"test":return"https://test-project.supabase.co"
 default:return"http://127.0.0.1:54321"}},
 blk(){switch("prod"){case"prod":return"sb_publishable_AKPVXyVowkiKw-j1eGfHlw_D3YRGyGd"
-case"test":return"sb_publishable_TEST"
 default:return"sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"}},
 b8K(a){switch(a.toUpperCase()){case"BILLS":return B.Sp
 case"CLOTHES":return B.Sy
