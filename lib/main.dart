@@ -1,4 +1,4 @@
-import 'package:Billy/app-config.dart';
+import 'package:Billy/app_config.dart';
 import 'package:Billy/authGate/auth_gate.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
