@@ -30,6 +30,12 @@ class $ApiTokenTableTable extends ApiTokenTable
   late final GeneratedColumn<String> tokenHash = GeneratedColumn<String>(
       'token_hash', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _validUntilMeta =
+      const VerificationMeta('validUntil');
+  @override
+  late final GeneratedColumn<DateTime> validUntil = GeneratedColumn<DateTime>(
+      'valid_until', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -38,21 +44,36 @@ class $ApiTokenTableTable extends ApiTokenTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _lastUsedAtMeta =
       const VerificationMeta('lastUsedAt');
   @override
   late final GeneratedColumn<DateTime> lastUsedAt = GeneratedColumn<DateTime>(
-      'last_used_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      'last_used_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _revokedAtMeta =
       const VerificationMeta('revokedAt');
   @override
   late final GeneratedColumn<DateTime> revokedAt = GeneratedColumn<DateTime>(
-      'revoked_at', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      'revoked_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, userId, name, tokenHash, createdAt, lastUsedAt, revokedAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        userId,
+        name,
+        tokenHash,
+        validUntil,
+        createdAt,
+        updatedAt,
+        lastUsedAt,
+        revokedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -86,23 +107,31 @@ class $ApiTokenTableTable extends ApiTokenTable
     } else if (isInserting) {
       context.missing(_tokenHashMeta);
     }
+    if (data.containsKey('valid_until')) {
+      context.handle(
+          _validUntilMeta,
+          validUntil.isAcceptableOrUnknown(
+              data['valid_until']!, _validUntilMeta));
+    } else if (isInserting) {
+      context.missing(_validUntilMeta);
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
     if (data.containsKey('last_used_at')) {
       context.handle(
           _lastUsedAtMeta,
           lastUsedAt.isAcceptableOrUnknown(
               data['last_used_at']!, _lastUsedAtMeta));
-    } else if (isInserting) {
-      context.missing(_lastUsedAtMeta);
     }
     if (data.containsKey('revoked_at')) {
       context.handle(_revokedAtMeta,
           revokedAt.isAcceptableOrUnknown(data['revoked_at']!, _revokedAtMeta));
-    } else if (isInserting) {
-      context.missing(_revokedAtMeta);
     }
     return context;
   }
@@ -121,12 +150,16 @@ class $ApiTokenTableTable extends ApiTokenTable
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       tokenHash: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}token_hash'])!,
+      validUntil: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}valid_until'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
       lastUsedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_used_at'])!,
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_used_at']),
       revokedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}revoked_at'])!,
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}revoked_at']),
     );
   }
 
@@ -142,17 +175,21 @@ class ApiTokenTableData extends DataClass
   final String userId;
   final String name;
   final String tokenHash;
+  final DateTime validUntil;
   final DateTime createdAt;
-  final DateTime lastUsedAt;
-  final DateTime revokedAt;
+  final DateTime? updatedAt;
+  final DateTime? lastUsedAt;
+  final DateTime? revokedAt;
   const ApiTokenTableData(
       {required this.id,
       required this.userId,
       required this.name,
       required this.tokenHash,
+      required this.validUntil,
       required this.createdAt,
-      required this.lastUsedAt,
-      required this.revokedAt});
+      this.updatedAt,
+      this.lastUsedAt,
+      this.revokedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -160,9 +197,17 @@ class ApiTokenTableData extends DataClass
     map['user_id'] = Variable<String>(userId);
     map['name'] = Variable<String>(name);
     map['token_hash'] = Variable<String>(tokenHash);
+    map['valid_until'] = Variable<DateTime>(validUntil);
     map['created_at'] = Variable<DateTime>(createdAt);
-    map['last_used_at'] = Variable<DateTime>(lastUsedAt);
-    map['revoked_at'] = Variable<DateTime>(revokedAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || lastUsedAt != null) {
+      map['last_used_at'] = Variable<DateTime>(lastUsedAt);
+    }
+    if (!nullToAbsent || revokedAt != null) {
+      map['revoked_at'] = Variable<DateTime>(revokedAt);
+    }
     return map;
   }
 
@@ -172,9 +217,17 @@ class ApiTokenTableData extends DataClass
       userId: Value(userId),
       name: Value(name),
       tokenHash: Value(tokenHash),
+      validUntil: Value(validUntil),
       createdAt: Value(createdAt),
-      lastUsedAt: Value(lastUsedAt),
-      revokedAt: Value(revokedAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      lastUsedAt: lastUsedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastUsedAt),
+      revokedAt: revokedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(revokedAt),
     );
   }
 
@@ -186,9 +239,11 @@ class ApiTokenTableData extends DataClass
       userId: serializer.fromJson<String>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       tokenHash: serializer.fromJson<String>(json['tokenHash']),
+      validUntil: serializer.fromJson<DateTime>(json['validUntil']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      lastUsedAt: serializer.fromJson<DateTime>(json['lastUsedAt']),
-      revokedAt: serializer.fromJson<DateTime>(json['revokedAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      lastUsedAt: serializer.fromJson<DateTime?>(json['lastUsedAt']),
+      revokedAt: serializer.fromJson<DateTime?>(json['revokedAt']),
     );
   }
   @override
@@ -199,9 +254,11 @@ class ApiTokenTableData extends DataClass
       'userId': serializer.toJson<String>(userId),
       'name': serializer.toJson<String>(name),
       'tokenHash': serializer.toJson<String>(tokenHash),
+      'validUntil': serializer.toJson<DateTime>(validUntil),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'lastUsedAt': serializer.toJson<DateTime>(lastUsedAt),
-      'revokedAt': serializer.toJson<DateTime>(revokedAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'lastUsedAt': serializer.toJson<DateTime?>(lastUsedAt),
+      'revokedAt': serializer.toJson<DateTime?>(revokedAt),
     };
   }
 
@@ -210,17 +267,21 @@ class ApiTokenTableData extends DataClass
           String? userId,
           String? name,
           String? tokenHash,
+          DateTime? validUntil,
           DateTime? createdAt,
-          DateTime? lastUsedAt,
-          DateTime? revokedAt}) =>
+          Value<DateTime?> updatedAt = const Value.absent(),
+          Value<DateTime?> lastUsedAt = const Value.absent(),
+          Value<DateTime?> revokedAt = const Value.absent()}) =>
       ApiTokenTableData(
         id: id ?? this.id,
         userId: userId ?? this.userId,
         name: name ?? this.name,
         tokenHash: tokenHash ?? this.tokenHash,
+        validUntil: validUntil ?? this.validUntil,
         createdAt: createdAt ?? this.createdAt,
-        lastUsedAt: lastUsedAt ?? this.lastUsedAt,
-        revokedAt: revokedAt ?? this.revokedAt,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        lastUsedAt: lastUsedAt.present ? lastUsedAt.value : this.lastUsedAt,
+        revokedAt: revokedAt.present ? revokedAt.value : this.revokedAt,
       );
   ApiTokenTableData copyWithCompanion(ApiTokenTableCompanion data) {
     return ApiTokenTableData(
@@ -228,7 +289,10 @@ class ApiTokenTableData extends DataClass
       userId: data.userId.present ? data.userId.value : this.userId,
       name: data.name.present ? data.name.value : this.name,
       tokenHash: data.tokenHash.present ? data.tokenHash.value : this.tokenHash,
+      validUntil:
+          data.validUntil.present ? data.validUntil.value : this.validUntil,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       lastUsedAt:
           data.lastUsedAt.present ? data.lastUsedAt.value : this.lastUsedAt,
       revokedAt: data.revokedAt.present ? data.revokedAt.value : this.revokedAt,
@@ -242,7 +306,9 @@ class ApiTokenTableData extends DataClass
           ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('tokenHash: $tokenHash, ')
+          ..write('validUntil: $validUntil, ')
           ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('lastUsedAt: $lastUsedAt, ')
           ..write('revokedAt: $revokedAt')
           ..write(')'))
@@ -250,8 +316,8 @@ class ApiTokenTableData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, userId, name, tokenHash, createdAt, lastUsedAt, revokedAt);
+  int get hashCode => Object.hash(id, userId, name, tokenHash, validUntil,
+      createdAt, updatedAt, lastUsedAt, revokedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -260,7 +326,9 @@ class ApiTokenTableData extends DataClass
           other.userId == this.userId &&
           other.name == this.name &&
           other.tokenHash == this.tokenHash &&
+          other.validUntil == this.validUntil &&
           other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
           other.lastUsedAt == this.lastUsedAt &&
           other.revokedAt == this.revokedAt);
 }
@@ -270,16 +338,20 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
   final Value<String> userId;
   final Value<String> name;
   final Value<String> tokenHash;
+  final Value<DateTime> validUntil;
   final Value<DateTime> createdAt;
-  final Value<DateTime> lastUsedAt;
-  final Value<DateTime> revokedAt;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> lastUsedAt;
+  final Value<DateTime?> revokedAt;
   final Value<int> rowid;
   const ApiTokenTableCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
     this.tokenHash = const Value.absent(),
+    this.validUntil = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.lastUsedAt = const Value.absent(),
     this.revokedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -289,22 +361,25 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
     required String userId,
     required String name,
     required String tokenHash,
+    required DateTime validUntil,
     this.createdAt = const Value.absent(),
-    required DateTime lastUsedAt,
-    required DateTime revokedAt,
+    this.updatedAt = const Value.absent(),
+    this.lastUsedAt = const Value.absent(),
+    this.revokedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         userId = Value(userId),
         name = Value(name),
         tokenHash = Value(tokenHash),
-        lastUsedAt = Value(lastUsedAt),
-        revokedAt = Value(revokedAt);
+        validUntil = Value(validUntil);
   static Insertable<ApiTokenTableData> custom({
     Expression<String>? id,
     Expression<String>? userId,
     Expression<String>? name,
     Expression<String>? tokenHash,
+    Expression<DateTime>? validUntil,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
     Expression<DateTime>? lastUsedAt,
     Expression<DateTime>? revokedAt,
     Expression<int>? rowid,
@@ -314,7 +389,9 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
       if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
       if (tokenHash != null) 'token_hash': tokenHash,
+      if (validUntil != null) 'valid_until': validUntil,
       if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (lastUsedAt != null) 'last_used_at': lastUsedAt,
       if (revokedAt != null) 'revoked_at': revokedAt,
       if (rowid != null) 'rowid': rowid,
@@ -326,16 +403,20 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
       Value<String>? userId,
       Value<String>? name,
       Value<String>? tokenHash,
+      Value<DateTime>? validUntil,
       Value<DateTime>? createdAt,
-      Value<DateTime>? lastUsedAt,
-      Value<DateTime>? revokedAt,
+      Value<DateTime?>? updatedAt,
+      Value<DateTime?>? lastUsedAt,
+      Value<DateTime?>? revokedAt,
       Value<int>? rowid}) {
     return ApiTokenTableCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
       tokenHash: tokenHash ?? this.tokenHash,
+      validUntil: validUntil ?? this.validUntil,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       lastUsedAt: lastUsedAt ?? this.lastUsedAt,
       revokedAt: revokedAt ?? this.revokedAt,
       rowid: rowid ?? this.rowid,
@@ -357,8 +438,14 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
     if (tokenHash.present) {
       map['token_hash'] = Variable<String>(tokenHash.value);
     }
+    if (validUntil.present) {
+      map['valid_until'] = Variable<DateTime>(validUntil.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
     if (lastUsedAt.present) {
       map['last_used_at'] = Variable<DateTime>(lastUsedAt.value);
@@ -379,7 +466,9 @@ class ApiTokenTableCompanion extends UpdateCompanion<ApiTokenTableData> {
           ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('tokenHash: $tokenHash, ')
+          ..write('validUntil: $validUntil, ')
           ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('lastUsedAt: $lastUsedAt, ')
           ..write('revokedAt: $revokedAt, ')
           ..write('rowid: $rowid')
@@ -1104,9 +1193,11 @@ typedef $$ApiTokenTableTableCreateCompanionBuilder = ApiTokenTableCompanion
   required String userId,
   required String name,
   required String tokenHash,
+  required DateTime validUntil,
   Value<DateTime> createdAt,
-  required DateTime lastUsedAt,
-  required DateTime revokedAt,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> lastUsedAt,
+  Value<DateTime?> revokedAt,
   Value<int> rowid,
 });
 typedef $$ApiTokenTableTableUpdateCompanionBuilder = ApiTokenTableCompanion
@@ -1115,9 +1206,11 @@ typedef $$ApiTokenTableTableUpdateCompanionBuilder = ApiTokenTableCompanion
   Value<String> userId,
   Value<String> name,
   Value<String> tokenHash,
+  Value<DateTime> validUntil,
   Value<DateTime> createdAt,
-  Value<DateTime> lastUsedAt,
-  Value<DateTime> revokedAt,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> lastUsedAt,
+  Value<DateTime?> revokedAt,
   Value<int> rowid,
 });
 
@@ -1142,8 +1235,14 @@ class $$ApiTokenTableTableFilterComposer
   ColumnFilters<String> get tokenHash => $composableBuilder(
       column: $table.tokenHash, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<DateTime> get validUntil => $composableBuilder(
+      column: $table.validUntil, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get lastUsedAt => $composableBuilder(
       column: $table.lastUsedAt, builder: (column) => ColumnFilters(column));
@@ -1173,8 +1272,14 @@ class $$ApiTokenTableTableOrderingComposer
   ColumnOrderings<String> get tokenHash => $composableBuilder(
       column: $table.tokenHash, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<DateTime> get validUntil => $composableBuilder(
+      column: $table.validUntil, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get lastUsedAt => $composableBuilder(
       column: $table.lastUsedAt, builder: (column) => ColumnOrderings(column));
@@ -1204,8 +1309,14 @@ class $$ApiTokenTableTableAnnotationComposer
   GeneratedColumn<String> get tokenHash =>
       $composableBuilder(column: $table.tokenHash, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get validUntil => $composableBuilder(
+      column: $table.validUntil, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get lastUsedAt => $composableBuilder(
       column: $table.lastUsedAt, builder: (column) => column);
@@ -1244,9 +1355,11 @@ class $$ApiTokenTableTableTableManager extends RootTableManager<
             Value<String> userId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> tokenHash = const Value.absent(),
+            Value<DateTime> validUntil = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
-            Value<DateTime> lastUsedAt = const Value.absent(),
-            Value<DateTime> revokedAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<DateTime?> lastUsedAt = const Value.absent(),
+            Value<DateTime?> revokedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ApiTokenTableCompanion(
@@ -1254,7 +1367,9 @@ class $$ApiTokenTableTableTableManager extends RootTableManager<
             userId: userId,
             name: name,
             tokenHash: tokenHash,
+            validUntil: validUntil,
             createdAt: createdAt,
+            updatedAt: updatedAt,
             lastUsedAt: lastUsedAt,
             revokedAt: revokedAt,
             rowid: rowid,
@@ -1264,9 +1379,11 @@ class $$ApiTokenTableTableTableManager extends RootTableManager<
             required String userId,
             required String name,
             required String tokenHash,
+            required DateTime validUntil,
             Value<DateTime> createdAt = const Value.absent(),
-            required DateTime lastUsedAt,
-            required DateTime revokedAt,
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<DateTime?> lastUsedAt = const Value.absent(),
+            Value<DateTime?> revokedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ApiTokenTableCompanion.insert(
@@ -1274,7 +1391,9 @@ class $$ApiTokenTableTableTableManager extends RootTableManager<
             userId: userId,
             name: name,
             tokenHash: tokenHash,
+            validUntil: validUntil,
             createdAt: createdAt,
+            updatedAt: updatedAt,
             lastUsedAt: lastUsedAt,
             revokedAt: revokedAt,
             rowid: rowid,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:Billy/constants.dart';
+import 'package:Billy/models/database/api_token_model.dart';
 import 'package:logging/logging.dart';
 import 'package:crypto/crypto.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,18 +19,37 @@ class ApiTokenService {
     return sha256.convert(utf8.encode(input)).toString();
   }
 
-  Future<void> saveHashedTokenToSecureStorage({required String hashedToken, String? tokenName}) async {
+  Future<ApiTokenModel> saveHashedTokenToSecureStorage({required String hashedToken, required DateTime validUntil, required String? tokenName}) async {
     try {
-      await supabase
+      final res = await supabase
         .from('api_tokens')
         .insert({
           'user_id': supabase.auth.currentUser!.id,
           'name': tokenName,
+          'valid_until': validUntil.toIso8601String(),
           'token_hash': hashedToken,
-        });
+        })
+        .select()
+        .single();
+        return ApiTokenModel.fromMap(res);
     } 
     catch (e) {
       log.severe('Error saving hashed token to secure storage: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<ApiTokenModel>> fetchApiTokens() async {
+    try {
+      final response = await supabase
+        .from('api_tokens')
+        .select()
+        .eq('user_id', supabase.auth.currentUser!.id);
+
+      return ApiTokenModel.fromList(response);
+    } 
+    catch (e) {
+      log.severe('Error fetching API tokens: $e');
       rethrow;
     }
   }

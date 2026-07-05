@@ -17,7 +17,7 @@ class UserSettingsNotifier extends AsyncNotifier<UserSettingsTableData?> {
   static final Logger log = Logger('UserSettingsNotifier');
 
   @override
-  Future<UserSettingsTableData?> build() async {
+  Future<UserSettingsTableData?> build() async { // TODO: non c'è un TTL?
     try {
       // Prova dalla cache locale → funziona anche offline
       final local = await ref.read(localDatabaseProvider).userSettingsDao.getSettings();

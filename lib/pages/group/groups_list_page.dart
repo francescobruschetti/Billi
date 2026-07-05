@@ -3,21 +3,21 @@ import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/floating_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:Billy/providers/group_provider.dart';
-import 'package:Billy/pages/group/group_transactions.dart';
-import 'package:Billy/pages/group/group_details.dart';
+import 'package:Billy/pages/group/group_transactions_page.dart';
+import 'package:Billy/pages/group/group_details_page.dart';
 import 'package:Billy/widgets/components/search_field_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-class GroupsPage extends ConsumerStatefulWidget {
-  const GroupsPage({super.key});
+class GroupsListPage extends ConsumerStatefulWidget {
+  const GroupsListPage({super.key});
 
   @override
-  ConsumerState<GroupsPage> createState() => _GroupsPageState();
+  ConsumerState<GroupsListPage> createState() => _GroupsListPageState();
 }
 
-class _GroupsPageState extends ConsumerState<GroupsPage> {
-  final Logger log = Logger('GroupsPage');
+class _GroupsListPageState extends ConsumerState<GroupsListPage> {
+  final Logger log = Logger('GroupsListPage');
 
   String _searchText = '';
   bool _showSearchBar = false;

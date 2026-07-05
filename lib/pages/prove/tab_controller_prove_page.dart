@@ -1,6 +1,6 @@
 import 'package:Billy/main.dart';
 import 'package:Billy/pages/home_page.dart';
-import 'package:Billy/pages/settings/settings.dart';
+import 'package:Billy/pages/settings/settings_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';

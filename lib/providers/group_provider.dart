@@ -1,5 +1,4 @@
 import 'package:Billy/models/group/group_details_model.dart';
-import 'package:Billy/services/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:Billy/services/group_service.dart';
 import 'package:logging/logging.dart';
@@ -13,7 +12,7 @@ final groupsProvider = NotifierProvider<GroupsNotifier, AsyncValue<List<GroupDet
 
 class GroupsNotifier extends Notifier<AsyncValue<List<GroupDetailsModel>>> {
   final Logger log = Logger('GroupsNotifier');
-  final ProfileService profileService = ProfileService();
+
   GroupService get _service => ref.read(groupServiceProvider);
 
   @override

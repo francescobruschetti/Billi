@@ -92,16 +92,16 @@ using (
   public.is_user_in_group(group_participants.group_id)
 );
 
-drop policy if exists "Only creator can add participants" on group_participants;
-create policy "Only creator can add participants"
+drop policy if exists "Only creator can add group participants" on group_participants;
+create policy "Only creator can add group participants"
 on group_participants
 for insert
 with check (
   (select user_id from groups where id = group_participants.group_id) = auth.uid()
 );
 
-drop policy if exists "Only creator can update participants" on group_participants;
-create policy "Only creator can update participants"
+drop policy if exists "Only creator can update group participants" on group_participants;
+create policy "Only creator can update group participants"
 on group_participants
 for update
 with check (
@@ -110,8 +110,8 @@ with check (
 
 --------------------------------------------------------------------------
 -- Group Transactions table
-drop policy if exists "User can view transactions" on group_transactions;
-create policy "User can view transactions"
+drop policy if exists "User can view group transactions" on group_transactions;
+create policy "User can view group transactions"
 on group_transactions
 for select
 using (
@@ -123,7 +123,7 @@ using (
   )
 );
 
-create policy "Participants can insert transactions"
+create policy "Participants can insert group transactions"
 on group_transactions
 for insert
 with check (
@@ -135,12 +135,12 @@ with check (
   )
 );
 
-create policy "Only creator can update transactions"
+create policy "Only creator can update group transactions"
 on group_transactions
 for update
 using (user_id = auth.uid());
 
-create policy "Only creator can delete transactions"
+create policy "Only creator can delete group transactions"
 on group_transactions
 for delete
 using (user_id = auth.uid());

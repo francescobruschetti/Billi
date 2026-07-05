@@ -75,7 +75,6 @@ class GroupTransactionService {
         'p_note': note,
         'p_transaction_type': transactionType.value,
       }).select().single();
-
       
       return result;
     } 

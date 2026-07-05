@@ -11,12 +11,17 @@ class ApiTokenTable extends Table {
   TextColumn get name => text()(); // Mandatory
 
   TextColumn get tokenHash => text()(); // Mandatory
+  
+  DateTimeColumn get validUntil => dateTime()(); // Mandatory
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  DateTimeColumn get lastUsedAt => dateTime()();
   
-  DateTimeColumn get revokedAt => dateTime()();
+  DateTimeColumn? get updatedAt => dateTime().nullable()();
+
+  DateTimeColumn? get lastUsedAt => dateTime().nullable()();
+  
+  DateTimeColumn? get revokedAt => dateTime().nullable()();
+
       
   // Specifying which from the field above is the primary key
   @override

@@ -224,7 +224,8 @@ class _TransactionPageState extends State<TransactionPage> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ // -- Campi di input
+              children: [ 
+                // -- Campi di input
                 // -- Prezzo
                 CustomValidatedTextField(
                   controller: _priceController,

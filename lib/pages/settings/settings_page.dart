@@ -2,8 +2,8 @@ import 'package:Billy/constants.dart';
 import 'package:Billy/enums/theme_enum.dart';
 import 'package:Billy/extentions/user_settings_extensions.dart';
 import 'package:Billy/local/database/app_database.dart';
+import 'package:Billy/pages/settings/api_token_page.dart';
 import 'package:Billy/pages/settings/components/theme_setting_bottom_sheet_widget.dart';
-import 'package:Billy/pages/settings/components/api_token_bottom_sheet_widget.dart';
 import 'package:Billy/pages/settings/logs_page.dart';
 import 'package:Billy/providers/category_provider.dart';
 import 'package:Billy/providers/group_provider.dart';
@@ -124,6 +124,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     if (mounted) setState(() => _loadingTileName = null);
   }
 
+  /* TODO: api-token old: 
   void _generateAccessToken() async {
     try {
       if (!mounted) return;
@@ -153,6 +154,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     }
   }
+  */
 
   void _invalidateCache() {
 
@@ -314,7 +316,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 icon: Icon(Icons.key, color: Colors.orange[700]), 
                 title: 'Genera Token di Accesso',
                 tileName: TileName.GENERATE_ACCESS_TOKEN,
-                onTap: _generateAccessToken,
+                // TODO: api-token old: onTap: _generateAccessToken,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ApiTokenPage())),
               ),
 
               // --- APPLE SHORTCUT ---

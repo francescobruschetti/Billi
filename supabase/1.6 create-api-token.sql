@@ -5,7 +5,9 @@ create table public.api_tokens (
     user_id uuid not null references auth.users(id) on delete cascade,
     name text not null,
     token_hash text not null unique,
+    valid_until timestamptz not null,
     created_at timestamptz not null default now(),
+    updated_at timestamptz,
     last_used_at timestamptz,
     revoked_at timestamptz
 );

@@ -1,8 +1,8 @@
 import 'package:Billy/constants.dart';
-import 'package:Billy/pages/group/groups_page.dart';
+import 'package:Billy/pages/group/groups_list_page.dart';
 import 'package:Billy/pages/home_page.dart';
 import 'package:Billy/pages/prove/ui_prove_page.dart';
-import 'package:Billy/pages/settings/settings.dart';
+import 'package:Billy/pages/settings/settings_page.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +19,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   final _pages = const [ // *Note: queste sono le pagine che verranno mostrate nel body del main_scaffold (items: const [...])*
     HomePage(),
-    GroupsPage(),
+    GroupsListPage(),
     // TODO: da implementare: SplitBillCalculatorPage(),
     SettingsPage(),
     UIProvePage(),

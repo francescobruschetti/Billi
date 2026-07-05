@@ -12,11 +12,9 @@ class ApiTokenDao extends DatabaseAccessor<AppDatabase> with _$ApiTokenDaoMixin 
 
   ApiTokenDao(super.db);
 
-  Future<ApiTokenTableData?> getApiTokenDetails() {
-    log.fine('Fetching api token from local database');
-    //  TODO: da implementare
-    // return select(apiTokenTable).getSingleOrNull();
-    throw UnimplementedError('getApiTokenDetails is not implemented yet');
+  Future<List<ApiTokenTableData>> getApiTokens() {
+    log.fine('Fetching api tokens from local database');
+    return select(apiTokenTable).get();
   }
 
   Stream<ApiTokenTableData?> watchApiTokenDetails() {
@@ -26,18 +24,16 @@ class ApiTokenDao extends DatabaseAccessor<AppDatabase> with _$ApiTokenDaoMixin 
     throw UnimplementedError('watchApiTokenDetails is not implemented yet');
   }
 
-  Future<void> upsertApiTokenDetails(ApiTokenTableCompanion settings) async {
+  Future<void> upsertApiTokenDetails(ApiTokenTableCompanion apiTokens) async {
     //  TODO: da implementare
-    // log.fine('Upserting api token into local database');
-    // assert(settings.userId.present); // TODO: da errore 
+    log.fine('Upserting api token into local database');
+    assert(apiTokens.userId.present); // TODO: da errore 
     
-    // // v1: await into(apiTokenTable).insertOnConflictUpdate(settings);
-    // await transaction(() async {
-    //   await delete(apiTokenTable).go(); // elimina tutto
-    //   await into(apiTokenTable).insert(
-    //     settings,
-    //   );
-    // });
-    throw UnimplementedError('upsertApiTokenDetails is not implemented yet');
+    await transaction(() async {
+      await delete(apiTokenTable).go(); // elimina tutto
+      await into(apiTokenTable).insert(
+        apiTokens,
+      );
+    });
   }
 }

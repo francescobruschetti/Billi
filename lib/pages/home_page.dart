@@ -54,8 +54,8 @@ class _HomePageState
   final int _autoRefreshThresholdMinutes = 5; // Tempo dopo il quale forzare un refresh dei dati al ritorno in foreground
   int _selectedTimeFilterIndex = 2; // default: CURRENT_MONTH
 
-  bool _isLoading = false;
   bool _hasMore = false;
+  bool _isLoading = false;
   bool _showFilters = false;
   
   @override
