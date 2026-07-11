@@ -17,7 +17,6 @@ import 'package:Billy/models/group/group_transaction_model.dart';
 import 'package:Billy/models/group/group_participant_summary_model.dart';
 import 'package:Billy/pages/transaction/transaction_group_page.dart';
 import 'package:Billy/pages/group/group_details_page.dart';
-import 'package:Billy/services/transaction_service.dart';
 import 'package:Billy/utils/group_transactions_util.dart';
 import 'package:Billy/widgets/components/custom_icon_widget.dart';
 import 'package:Billy/widgets/components/error_alert_widget.dart';
