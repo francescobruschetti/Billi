@@ -1,8 +1,7 @@
 import { authenticateRequest } from "../_shared/auth.ts";
-
 import { supabase }from "../_shared/supabase.ts";
-
 import { unauthorized, badRequest, internalServerError, } from "../_shared/responses.ts";
+import { normalizePrice } from "../_shared/number_utils.ts";
 
 Deno.serve(async (req) => {
 
@@ -23,14 +22,18 @@ Deno.serve(async (req) => {
     //   return badRequest("text is required");
     // }
 
+    const price = normalizePrice(body.price);
+    const paidAmount = normalizePrice(body.paidAmount);
+    const splitRateEnum = body.splitRateEnum ?? "EVENLY";
+
     // TODO: 1. verificare che l'utente sia membro del gruppo
 
     const { error } = await supabase.rpc('insert_group_transaction_with_merchant_category', {
       'p_group_id': body.groupId,
       'p_user_id': auth.userId,
-      'p_paid_amount': body.paidAmount ?? null,
-      'p_total_amount': body.price,
-      'p_split_rate': body.splitRateEnum ?? null,
+      'p_paid_amount': paidAmount,
+      'p_total_amount': price,
+      'p_split_rate': splitRateEnum,
       'p_merchant_name': body.merchant ?? null,
       'p_category_name': body.categories ?? null,
       'p_note': body.note ?? null,

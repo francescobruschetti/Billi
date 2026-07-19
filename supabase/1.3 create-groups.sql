@@ -39,7 +39,7 @@ create table group_transactions (
   category_id uuid references categories(id),
   paid_amount numeric(10,2) check (paid_amount >= 0),
   total_amount numeric(10,2) not null check (total_amount >= 0),
-  split_rate split_rate_enum,
+  split_rate split_rate_enum not null,
   note text,
   transaction_type transaction_type_enum not null default 'EXPENSE',
   created_at timestamp with time zone default now(),

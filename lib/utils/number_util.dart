@@ -10,5 +10,4 @@ class NumberUtil {
     final factor = pow(10, precision);
     return (value * factor).truncate() / factor;
   }
-
 }
