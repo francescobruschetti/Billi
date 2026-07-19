@@ -38,7 +38,7 @@ class TransactionService {
 
   Future<PersonalTransactionPageModel> fetchLatestPersonalTransactions({
     required int pageIndex,
-    int pageSize = 50,
+    int pageSize = 500000,
     DateTime? dateStart,
     DateTime? dateEnd
   }) async {

@@ -28,14 +28,14 @@ class TransactionsNotifier extends Notifier<AsyncValue<List<PersonalTransactionM
   PersonalTransactionTotalsModel? get totals => _totals;
 
   int _currentPage = 0;
-  int _pageSize = 50;
+  int _pageSize = 500000;
   bool _hasMore = true;
 
   bool _isRefreshing = false;
   bool get isRefreshing => _isRefreshing;
 
   @override
-  AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 5}) { // TODO: valore di test!!
+  AsyncValue<List<PersonalTransactionModel>> build({int pageSize = 500000}) { // TODO: valore di test!!
     // stato iniziale
     _pageSize = pageSize;
 

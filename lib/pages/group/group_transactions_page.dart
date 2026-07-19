@@ -184,13 +184,14 @@ class _GroupTransactionsPageState extends State<GroupTransactionsPage> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || _isLoadingPage) return;
+    // TODO: disabilitato perché buggato (fa l'append dei dati)
+    // if (!_scrollController.hasClients || _isLoadingPage) return;
     
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (currentScroll >= maxScroll) {
-      _loadData();
-    }
+    // final maxScroll = _scrollController.position.maxScrollExtent;
+    // final currentScroll = _scrollController.position.pixels;
+    // if (currentScroll >= maxScroll) {
+    //   _loadData();
+    // }
   }
 
   void _openPage(StatefulWidget widget) {

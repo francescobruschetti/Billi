@@ -135,22 +135,23 @@ class _HomePageState
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || _isLoading) return;
+    // TODO: disabilitato perché buggato (fa l'append dei dati)
+    // if (!_scrollController.hasClients || _isLoading) return;
 
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
+    // final maxScroll = _scrollController.position.maxScrollExtent;
+    // final currentScroll = _scrollController.position.pixels;
 
-    // Carica altri elementi quando si arriva in fondo
-    if (currentScroll >= maxScroll - 50) {
-      setState(() {
-        _hasMore = true;
-      });
-      ref.read(transactionProvider.notifier).loadMore().then( (_) {
-        setState(() {
-          _hasMore = false;
-        });
-      });
-    }
+    // // Carica altri elementi quando si arriva in fondo
+    // if (currentScroll >= maxScroll - 50) {
+    //   setState(() {
+    //     _hasMore = true;
+    //   });
+    //   ref.read(transactionProvider.notifier).loadMore().then( (_) {
+    //     setState(() {
+    //       _hasMore = false;
+    //     });
+    //   });
+    // }
   }
 
   Future<void> _refreshTransactions() async {

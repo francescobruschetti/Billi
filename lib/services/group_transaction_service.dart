@@ -198,7 +198,7 @@ class GroupTransactionService {
 
   Future<GroupSettlementsHistoryPageModel> loadSettlementsHistoryGroup({ 
     required String groupId, required int pageIndex,
-    int pageSize = 50,
+    int pageSize = 500000,
     DateTime? dateStart,
     DateTime? dateEnd 
   }) async {

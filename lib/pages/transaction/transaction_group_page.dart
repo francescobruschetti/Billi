@@ -49,7 +49,7 @@ class _TransactionGroupPageState extends ConsumerState<TransactionGroupPage> {
   late final bool isEdit;
   String? _errorMessage;
   String pageTitle = 'Inserisci Spesa';
-  SplitRateModeEnum? _selectedSplitRateValueEnum;
+  SplitRateModeEnum _selectedSplitRateValueEnum = SplitRateModeEnum.EVENLY;
   GroupExpenseSplitResponseModel? _groupExpenseSplitResponseModel;
 
   @override

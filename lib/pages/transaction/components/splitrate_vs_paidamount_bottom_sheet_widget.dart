@@ -58,6 +58,11 @@ class _SplitrateVsPaidamountBottomSheetWidgetState extends ConsumerState<Splitra
         ref.read(splitRateModeProvider.notifier).state = widget.splitRateModeEnum!;
       });
     }
+    else {
+      Future(() {
+        ref.read(splitRateModeProvider.notifier).state = SplitRateModeEnum.EVENLY;
+      });
+    }
   }
 
   @override
